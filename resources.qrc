@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/Main.qml</file>
+        <file>qml/ManualApp/Theme.qml</file>
+        <file>qml/ManualApp/qmldir</file>
+        <file>qml/Screens/MainScreen.qml</file>
+        <file>qml/Screens/TOSelectionScreen.qml</file>
+        <file>qml/Screens/ServicesScreen.qml</file>
+        <file>qml/Screens/SummaryScreen.qml</file>
+        <file>qml/Screens/SettingsScreen.qml</file>
+        <file>qml/Screens/qmldir</file>
+        <file>media/jsons/TO1.json</file>
+        <file>media/jsons/TO2.json</file>
+        <file>media/jsons/TO3.json</file>
+    </qresource>
+</RCC>

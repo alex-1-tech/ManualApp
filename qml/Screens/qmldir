@@ -1,0 +1,6 @@
+module Screens
+MainScreen 1.0 MainScreen.qml
+TOSelectionScreen 1.0 TOSelectionScreen.qml
+ServicesScreen 1.0 ServicesScreen.qml
+SummaryScreen 1.0 SummaryScreen.qml
+SettingsScreen 1.0 SettingsScreen.qml
