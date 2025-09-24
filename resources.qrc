@@ -1,16 +1,57 @@
 <RCC>
     <qresource prefix="/">
+        <!-- test -->
+        <file>qml/Test.qml</file>
+
+        <!-- first start -->
+        <file>qml/Start.qml</file>
+        <file>qml/InitSettings.qml</file>
+
+        <!-- main -->
         <file>qml/Main.qml</file>
-        <file>qml/ManualApp/Theme.qml</file>
-        <file>qml/ManualApp/qmldir</file>
-        <file>qml/Screens/MainScreen.qml</file>
-        <file>qml/Screens/TOSelectionScreen.qml</file>
-        <file>qml/Screens/ServicesScreen.qml</file>
-        <file>qml/Screens/SummaryScreen.qml</file>
-        <file>qml/Screens/SettingsScreen.qml</file>
-        <file>qml/Screens/qmldir</file>
+        <file>qml/About.qml</file>
+        <file>qml/Dashboard.qml</file>
+        <file>qml/Reports.qml</file>
+        <file>qml/Settings.qml</file>
+
+        <!-- dasboard -->
+        <file>qml/SelectTO.qml</file>
+        <file>qml/Services.qml</file>
+        <file>qml/UploadReport.qml</file>
+        <file>qml/UploadWindow.qml</file>
+        <file>qml/Summary.qml</file>
+        
+        <!-- components -->
+        <file>qml/components/RepairMethodEditor.qml</file>
+        <file>qml/components/FormField.qml</file>
+        <file>qml/components/CardDelegate.qml</file>
+        <file>qml/components/CardSection.qml</file>
+        <file>qml/components/NewTextField.qml</file>
+        <file>qml/components/NewDateField.qml</file>
+        <file>qml/components/NotesTextArea.qml</file>
+        <file>qml/components/SettingCheckBox.qml</file>
+        <file>qml/components/Constants.qml</file>
+
+        <!-- styles -->
+        <file>qml/styles/qmldir</file>
+        <file>qml/styles/Theme.qml</file>
+
+        <!-- jsons -->
         <file>media/jsons/TO1.json</file>
         <file>media/jsons/TO2.json</file>
         <file>media/jsons/TO3.json</file>
+
+        <!-- icons -->
+        <file>media/icons/icon-settings.svg</file>
+        <file>media/icons/icon-dashboard.svg</file>
+        <file>media/icons/icon-servers.svg</file>
+        <file>media/icons/icon-about.svg</file>
+        <file>media/icons/icon-rules.svg</file>
+        <file>media/icons/icon-reports.svg</file>
+        <file>media/icons/app.png</file>
+
+        <!-- js -->
+        <file>qml/utils/Utils.js</file>
+        <file>qml/utils/DateUtils.js</file>
     </qresource>
 </RCC>

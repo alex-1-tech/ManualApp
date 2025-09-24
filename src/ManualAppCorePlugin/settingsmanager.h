@@ -2,12 +2,15 @@
 #include <QDate>
 #include <QJsonObject>
 #include <QObject>
+#include <QQmlEngine>
 #include <QSettings>
 
 #define DEFINE_SETTING(Type, Name, Default)                                    \
   Q_PROPERTY(Type Name READ Name WRITE set##Name NOTIFY Name##Changed)         \
 public:                                                                        \
-  Type Name() const { return m_settings.value(#Name, Default).value<Type>(); } \
+  [[nodiscard]] Type Name() const {                                            \
+    return m_settings.value(#Name, Default).value<Type>();                     \
+  }                                                                            \
   void set##Name(const Type &value) {                                          \
     if (value != Name()) {                                                     \
       m_settings.setValue(#Name, value);                                       \
@@ -19,7 +22,7 @@ public:                                                                        \
 #define DEFINE_DATE_SETTING(Name)                                              \
   Q_PROPERTY(QDate Name READ Name WRITE set##Name NOTIFY Name##Changed)        \
 public:                                                                        \
-  QDate Name() const {                                                         \
+  [[nodiscard]] QDate Name() const {                                           \
     return QDate::fromString(m_settings.value(#Name).toString(), Qt::ISODate); \
   }                                                                            \
   void set##Name(const QDate &value) {                                         \
@@ -32,6 +35,9 @@ public:                                                                        \
 
 class SettingsManager : public QObject {
   Q_OBJECT
+  QML_ELEMENT
+  QML_SINGLETON
+
   // Registration data
   DEFINE_SETTING(QString, serialNumber, QString())
   DEFINE_DATE_SETTING(shipmentDate)
@@ -45,7 +51,7 @@ class SettingsManager : public QObject {
   // Blocks and modules
   DEFINE_SETTING(QString, aosBlock, QString())
   DEFINE_SETTING(QString, flashDrive, QString())
-  DEFINE_SETTING(QString, coThreeRMeasureChanged, QString())
+  DEFINE_SETTING(QString, coThreeRMeasure, QString())
 
   // Certification and checks
   DEFINE_SETTING(QString, calibrationCertificate, QString())
@@ -69,14 +75,19 @@ class SettingsManager : public QObject {
   DEFINE_SETTING(QString, straight, QString())
   DEFINE_SETTING(QString, photoUrl, QString())
 
+  // first run
+  DEFINE_SETTING(bool, isFirstRun, true);
+
 public:
   explicit SettingsManager(QObject *parent = nullptr);
   ~SettingsManager() = default;
 
+  Q_INVOKABLE void completeFirstRun();
+
   void debugPrint() const;
   void saveAllSettings();
   void loadAllSettings();
-  QJsonObject toJson() const;
+  [[nodiscard]] QJsonObject toJsonForDjango() const;
   void fromJson(const QJsonObject &obj);
 
 private:

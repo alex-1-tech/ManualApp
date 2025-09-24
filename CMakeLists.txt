@@ -1,44 +1,46 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(ManualApp VERSION 0.1 LANGUAGES CXX)
+project(ManualApp VERSION 1.0 LANGUAGES CXX)
+
+if(POLICY QTP0001)
+    cmake_policy(SET QTP0001 NEW)
+endif()
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_package(QuaZip-Qt6 REQUIRED)
 
 find_package(Qt6 REQUIRED COMPONENTS
-     Core
-     Gui
-     Qml
-     Quick
-     QuickControls2
-     QuickDialogs2
-     QuickTemplates2
-     QuickLayouts
-     PrintSupport
+    Core
+    Gui
+    Qml
+    Quick
+    QuickControls2
+    QuickDialogs2
+    QuickTemplates2
+    QuickLayouts
+    PrintSupport
+    Network
 )
 
-SET(SRC_FILES
-    "src/main.cpp"
-    "src/data/settingsmanager.cpp"
-    "src/data/settingsmanager.h"
-    "src/data/datamanager.cpp"
-    "src/data/datamanager.h"
-    "src/data/jsonstorage.cpp"
-    "src/data/jsonstorage.h"
-    "src/data/pdfexporter.cpp"
-    "src/data/pdfexporter.h"
-    "src/data/stepmodel.cpp"
-    "src/data/stepmodel.h"
-    "src/data/step.h"
-    "src/data/utils.h"
+qt_standard_project_setup(REQUIRES 6.8)
+
+file(GLOB DATA_SOURCES "src/data/*.cpp" "src/data/*.h")
+file(GLOB MAIN_SOURCES "src/main.cpp")
+
+set(SRC_FILES
+    ${MAIN_SOURCES}
+    ${DATA_SOURCES}
 )
 
-SET(RESOURCES
+set(RESOURCES
     "resources.qrc"
 )
+
+# set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "" FORCE)
 
 qt_add_executable(${PROJECT_NAME}
     ${SRC_FILES}
@@ -52,24 +54,27 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
-    MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-    MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
 )
 
+add_subdirectory(src/ManualAppCorePlugin)
+
 target_link_libraries(ManualApp PRIVATE
-     Qt6::Core
-     Qt6::Gui
-     Qt6::Qml
-     Qt6::Quick
-     Qt6::QuickControls2   
-     Qt6::QuickTemplates2  
-     Qt6::QuickDialogs2
-     Qt6::QuickLayouts     
-    Qt6::PrintSupport 
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Qml
+    Qt6::Quick
+    Qt6::QuickControls2
+    Qt6::QuickTemplates2
+    Qt6::QuickDialogs2
+    Qt6::QuickLayouts
+    Qt6::PrintSupport
+    Qt6::Network
+    QuaZip::QuaZip
+    ManualAppCorePlugin
 )
-# qt6_import_qml_plugins(${PROJECT_NAME})
+
+
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME}
     BUNDLE DESTINATION .

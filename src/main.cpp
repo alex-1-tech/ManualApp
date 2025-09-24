@@ -1,44 +1,26 @@
 #include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QQmlEngine>
 #include <qdebug.h>
-#include "data/datamanager.h"
-#include "data/settingsmanager.h"
-#include "data/stepmodel.h"
+#include <qurl.h>
+#include <QDir>
 
 int main(int argc, char *argv[])
-{
-    QGuiApplication app(argc, argv);
+{   
 
-    SettingsManager* settingsManager = new SettingsManager(&app);
-    DataManager* dataManager = new DataManager(&app);
-    
-    
+    QApplication app(argc, argv);
+    QString appVersion = "1.0";
+    qDebug() << "Qt version: " << qVersion();
 
     QQmlApplicationEngine engine;
-
-    engine.addImportPath("qrc:/qml");
-    engine.addImportPath("qrc:/");
-
-    // engine.rootContext()->setContextProperty("settingsManager", settingsManager);
-    // engine.rootContext()->setContextProperty("dataManager", dataManager);
-
-    qmlRegisterSingletonInstance("ManualApp.Core", 1, 0, "DataManager", dataManager);
-    qmlRegisterSingletonInstance("ManualApp.Core", 1, 0, "SettingsManager", settingsManager);
-    qmlRegisterType<StepModel>("datamanager.Models", 1, 0, "StepModel");
-
-    // qmlRegisterType<DataManager>("datamanager", 1, 0, "DataManager");
     
-
-    QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
-        &app, []() { 
-            qCritical() << "Failed to load QML file!";
-            QCoreApplication::exit(-1); 
-        },
-        Qt::QueuedConnection
-    );
-    dataManager->setSettingsManager(settingsManager);
-    engine.load(QUrl("qrc:/qml/Main.qml"));
+    engine.addImportPath("qrc:/qml");
+    engine.addImportPath(QDir::currentPath()+ "/src");
+    qDebug() << "QML import paths:" << engine.importPathList();
+    qDebug() << "App dir:" << QCoreApplication::applicationDirPath();
+    engine.load(QUrl("qrc:/qml/Start.qml"));
 
     if (engine.rootObjects().isEmpty()) {
         qCritical() << "No root objects loaded!";

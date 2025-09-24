@@ -1,36 +1,21 @@
+pragma ComponentBehavior: Bound
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Controls.Material 2.15
 import QtQuick.Layouts 1.15
-import datamanager.Models 1.0
-import ManualApp.Core 1.0
+import ManualAppCorePlugin 1.0
+import "utils/Utils.js" as Utils
+import "styles"
 
 Item {
+    id: root
 
-    // Локальные функции для преобразования статусов в текст
-    function getStatusText(status) {
-        switch(status) {
-            case 0: return qsTr("Not started");
-            case 1: return qsTr("Completed");
-            case 2: return qsTr("Defect found");
-            case 3: return qsTr("Skipped");
-            default: return qsTr("Unknown");
-        }
-    }
-
-    function getFixStatusText(fixStatus) {
-        switch(fixStatus) {
-            case 0: return qsTr("Fixed");
-            case 1: return qsTr("Postponed");
-            case 2: return qsTr("Not required");
-            case 3: return qsTr("Not fixed");
-            default: return qsTr("Unknown");
-        }
-    }
+    property var stackView
+    property var toSelectionScreen
 
     Rectangle {
         anchors.fill: parent
-        color: "#f9f9f9"
+        color: Theme.colorBgPrimary
     }
 
     ColumnLayout {
@@ -38,7 +23,6 @@ Item {
         anchors.margins: 20
         spacing: 16
 
-        // Заголовок
         Text {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter
@@ -46,9 +30,9 @@ Item {
             font.bold: true
             text: qsTr("SUMMARY")
             horizontalAlignment: Text.AlignHCenter
+            color: Theme.colorTextPrimary
         }
 
-        // Список шагов
         ScrollView {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -59,136 +43,140 @@ Item {
                 spacing: 12
 
                 Repeater {
+                    id: repeater
                     model: DataManager.stepsModel.rowCount()
-
                     ColumnLayout {
+                        id: delegate
+
+                        required property int index
                         width: parent.width
                         spacing: 8
 
-                        // Номер шага и заголовок
                         RowLayout {
                             spacing: 10
 
                             Rectangle {
-                                width: 30
-                                height: 30
-                                color: "#000000"
+                                Layout.preferredWidth: 30
+                                Layout.preferredHeight: 30
+                                color: Theme.colorAccent
                                 radius: 15
 
                                 Text {
                                     anchors.centerIn: parent
-                                    color: "#ffffff"
-                                    text: index + 1
+                                    color: Theme.colorTextPrimary
+                                    text: delegate.index + 1
                                     font.pixelSize: 18
                                     font.bold: true
                                 }
                             }
 
                             Text {
-                                text: DataManager.stepsModel.getData(index, StepModel.TitleRole)
+                                text: DataManager.stepsModel.getData(delegate.index, StepModel.TitleRole)
                                 font.pixelSize: 18
                                 font.bold: true
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
+                                color: Theme.colorTextPrimary
                             }
                         }
 
-                        // Статус выполнения
                         RowLayout {
                             spacing: 10
 
                             Text {
-                                text: qsTr("Status:") + " "
+                                text: qsTr("Status:")
                                 font.pixelSize: 16
-                                color: "#555555"
+                                color: Theme.colorTextMuted
                             }
 
                             Text {
-                                text: getStatusText(DataManager.stepsModel.getData(index, StepModel.StatusRole))
+                                text: Utils.getStatusText(DataManager.stepsModel.getData(delegate.index, StepModel.StatusRole))
                                 font.pixelSize: 16
                                 font.bold: true
                                 color: {
-                                    var status = DataManager.stepsModel.getData(index, StepModel.StatusRole)
-                                    if (status === 1) return "#4CAF50"     // Completed - зеленый
-                                    if (status === 2) return "#FF9800"     // Defect found - оранжевый
-                                    if (status === 3) return "#9E9E9E"     // Skipped - серый
-                                    return "#f44336"                       // Not started - красный
+                                    var status = DataManager.stepsModel.getData(delegate.index, StepModel.StatusRole);
+                                    if (status === 1)
+                                        return Theme.colorSuccess;     // Completed - зелёный
+                                    if (status === 2)
+                                        return Theme.colorWarning;     // Defect found - оранжевый
+                                    if (status === 3)
+                                        return Theme.colorNeutral;     // Skipped - серый
+                                    return Theme.colorError;           // Not started - красный
                                 }
                             }
                         }
 
-                        // Описание дефекта (если есть)
                         ColumnLayout {
-                            visible: DataManager.stepsModel.getData(index, StepModel.StatusRole) === 2
+                            visible: DataManager.stepsModel.getData(delegate.index, StepModel.StatusRole) === 2
                             spacing: 4
                             Layout.fillWidth: true
 
                             Text {
-                                text: qsTr("Defect description:")
+                                text: qsTr("Breakdown description:")
                                 font.pixelSize: 16
-                                color: "#555555"
+                                color: Theme.colorTextMuted
                             }
 
                             Text {
-                                text: DataManager.stepsModel.getData(index, StepModel.DefectDescriptionRole) || qsTr("No description")
+                                text: DataManager.stepsModel.getData(delegate.index, StepModel.DefectDescriptionRole) || qsTr("No description")
                                 font.pixelSize: 14
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                                 padding: 8
+                                color: Theme.colorTextPrimary
                             }
                         }
 
-                        // Метод ремонта (если есть)
                         ColumnLayout {
-                            visible: DataManager.stepsModel.getData(index, StepModel.StatusRole) === 2 && 
-                                     DataManager.stepsModel.getData(index, StepModel.DefectRepairMethodRole)
+                            visible: DataManager.stepsModel.getData(delegate.index, StepModel.StatusRole) === 2 && DataManager.stepsModel.getData(delegate.index, StepModel.DefectRepairMethodRole)
                             spacing: 4
                             Layout.fillWidth: true
 
                             Text {
                                 text: qsTr("Repair method:")
                                 font.pixelSize: 16
-                                color: "#555555"
+                                color: Theme.colorTextMuted
                             }
 
                             Text {
-                                text: DataManager.stepsModel.getData(index, StepModel.DefectRepairMethodRole)
+                                text: DataManager.stepsModel.getData(delegate.index, StepModel.DefectRepairMethodRole)
                                 font.pixelSize: 14
                                 wrapMode: Text.WordWrap
                                 Layout.fillWidth: true
                                 padding: 8
+                                color: Theme.colorTextPrimary
                             }
                         }
 
-                        // Статус исправления дефекта
                         RowLayout {
-                            visible: DataManager.stepsModel.getData(index, StepModel.StatusRole) === 2
+                            visible: DataManager.stepsModel.getData(delegate.index, StepModel.StatusRole) === 2
                             spacing: 10
 
                             Text {
-                                text: qsTr("Fix status:") + " "
+                                text: qsTr("Fix status:")
                                 font.pixelSize: 16
-                                color: "#555555"
+                                color: Theme.colorTextMuted
                             }
 
                             Text {
-                                text: getFixStatusText(DataManager.stepsModel.getData(index, StepModel.DefectFixStatus))
+                                text: Utils.getFixStatusText(DataManager.stepsModel.getData(delegate.index, StepModel.DefectFixStatus))
                                 font.pixelSize: 16
                                 font.bold: true
                                 color: {
-                                    var status = DataManager.stepsModel.getData(index, StepModel.DefectFixStatus)
-                                    if (status === 0) return "#4CAF50"     // Fixed - зеленый
-                                    if (status === 3) return "#f44336"     // Not fixed - красный
-                                    return "#FF9800"                       // Postponed/Not required - оранжевый
+                                    var status = DataManager.stepsModel.getData(delegate.index, StepModel.DefectFixStatus);
+                                    if (status === 0)
+                                        return Theme.colorSuccess;     // Fixed - зелёный
+                                    if (status === 3)
+                                        return Theme.colorError;       // Not fixed - красный
+                                    return Theme.colorWarning;         // Postponed/Not required - оранжевый
                                 }
                             }
                         }
 
-                        // Разделитель
                         Rectangle {
                             Layout.fillWidth: true
-                            height: 1
-                            color: "#e0e0e0"
+                            Layout.preferredHeight: 1
+                            color: Theme.colorSidebar
                             Layout.topMargin: 8
                             Layout.bottomMargin: 8
                         }
@@ -197,7 +185,6 @@ Item {
             }
         }
 
-        // Кнопки
         RowLayout {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter
@@ -207,24 +194,32 @@ Item {
                 Layout.preferredWidth: 140
                 Layout.preferredHeight: 40
                 text: qsTr("BACK")
-                onClicked: stackView.pop()
+                onClicked: root.stackView.pop(StackView.Immediate)
                 font.pixelSize: 14
-                Material.background: "#e0e0e0"
-                Material.foreground: "#000000"
+                Material.background: Theme.colorNavActive
+                Material.foreground: Theme.colorTextPrimary
             }
 
             Button {
+                id: saveButton
                 Layout.preferredWidth: 140
                 Layout.preferredHeight: 40
                 text: qsTr("SAVE")
                 onClicked: {
-                    DataManager.save(false);
-                    stackView.clear();
-                    stackView.push(toSelectionScreen);
+                    if (DataManager.currentNumberTO() == "TO-2") {
+                        root.stackView.push("UploadReport.qml", {
+                            mode: "after",
+                            stackView: root.stackView
+                        }, StackView.Immediate);
+                    }else {
+                        root.stackView.push("UploadWindow.qml", {
+                            stackView: root.stackView
+                        }, StackView.Immediate);
+                    }
                 }
                 font.pixelSize: 14
-                Material.background: "#4CAF50"
-                Material.foreground: "#ffffff"
+                Material.background: Theme.colorAccent
+                Material.foreground: Theme.colorTextPrimary
             }
         }
     }
