@@ -1,5 +1,5 @@
 #include "settingsmanager.h"
-#include "../data/utils.h"
+#include "utils.h"
 #include <QDebug>
 #include <QMetaProperty>
 

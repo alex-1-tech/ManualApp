@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../data/step.h"
+#include "step.h"
 #include <QAbstractListModel>
 #include <QQmlEngine>
 

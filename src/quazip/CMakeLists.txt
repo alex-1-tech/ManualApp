@@ -1,3 +1,5 @@
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 project(quazip)
 
 find_package(ZLIB REQUIRED)

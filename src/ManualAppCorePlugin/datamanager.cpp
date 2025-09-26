@@ -1,8 +1,8 @@
 #include "datamanager.h"
-#include "../data/fileservice.h"
-#include "../data/networkservice.h"
-#include "../data/reportmanager.h"
-#include "../data/utils.h"
+#include "fileservice.h"
+#include "networkservice.h"
+#include "reportmanager.h"
+#include "utils.h"
 #include "settingsmanager.h"
 
 #include <QCoreApplication>

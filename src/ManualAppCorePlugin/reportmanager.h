@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../ManualAppCorePlugin/settingsmanager.h"
-#include "../ManualAppCorePlugin/stepmodel.h"
+#include "settingsmanager.h"
+#include "stepmodel.h"
 #include <QObject>
 #include <QVariant>
 #include <qtmetamacros.h>

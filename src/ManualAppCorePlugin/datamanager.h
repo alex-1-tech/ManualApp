@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../data/reportmanager.h"
+#include "reportmanager.h"
 #include "stepmodel.h"
 #include <QObject>
 #include <QQmlEngine>

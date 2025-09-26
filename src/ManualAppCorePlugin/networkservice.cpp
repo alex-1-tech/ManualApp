@@ -1,5 +1,5 @@
 #include "networkservice.h"
-#include "../ManualAppCorePlugin/settingsmanager.h"
+#include "settingsmanager.h"
 #include "fileservice.h"
 #include "reportmanager.h"
 #include "utils.h"
