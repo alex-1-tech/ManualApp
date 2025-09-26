@@ -11,8 +11,6 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QuaZip-Qt6 REQUIRED)
-
 find_package(Qt6 REQUIRED COMPONENTS
     Core
     Gui
@@ -28,6 +26,8 @@ find_package(Qt6 REQUIRED COMPONENTS
 
 qt_standard_project_setup(REQUIRES 6.8)
 
+add_subdirectory(src/quazip)
+
 file(GLOB DATA_SOURCES "src/data/*.cpp" "src/data/*.h")
 file(GLOB MAIN_SOURCES "src/main.cpp")
 
@@ -40,14 +40,10 @@ set(RESOURCES
     "resources.qrc"
 )
 
-# set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "" FORCE)
-
 qt_add_executable(${PROJECT_NAME}
     ${SRC_FILES}
     ${RESOURCES}
 )
-
-
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     QT_QML_RESOURCE_USE_URI_PATHS
@@ -70,10 +66,9 @@ target_link_libraries(ManualApp PRIVATE
     Qt6::QuickLayouts
     Qt6::PrintSupport
     Qt6::Network
-    QuaZip::QuaZip
+    quazip
     ManualAppCorePlugin
 )
-
 
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME}

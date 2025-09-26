@@ -282,7 +282,6 @@ void NetworkService::uploadReportJsonFile() {
     QString jsonPath = reportDir.filePath("report.json");
     
     if (!QFile::exists(jsonPath)) {
-        // Пропускаем этот шаг и переходим к следующему
         uploadReportPdfFile();
         return;
     }
@@ -299,7 +298,6 @@ void NetworkService::uploadReportJsonFile() {
     jsonUrl.setPath(path + m_currentSerialNumber + "/json/");
     jsonUrl.setQuery(query);
 
-    // Подключаем обработчик для этого шага
     connect(this, &NetworkService::uploadFinished, this, 
             &NetworkService::handleJsonFileUploadFinished);
 
@@ -325,7 +323,6 @@ void NetworkService::uploadReportPdfFile() {
     QString pdfPath = reportDir.filePath("report.pdf");
     
     if (!QFile::exists(pdfPath)) {
-        // Пропускаем этот шаг и переходим к следующему
         uploadReportBeforeFiles();
         return;
     }
@@ -356,7 +353,6 @@ void NetworkService::handlePdfFileUploadFinished(bool success, const QString &er
         return;
     }
 
-    // Переходим к загрузке before files
     uploadReportBeforeFiles();
 }
 
@@ -370,7 +366,6 @@ void NetworkService::uploadReportBeforeFiles() {
     QString beforePath = beforeDir.filePath("rail_record.zip");
     
     if (!QFile::exists(beforePath)) {
-        // Пропускаем этот шаг и переходим к следующему
         uploadReportAfterFiles();
         return;
     }
@@ -402,7 +397,6 @@ void NetworkService::handleBeforeFilesUploadFinished(bool success, const QString
         return;
     }
 
-    // Переходим к загрузке after files
     uploadReportAfterFiles();
 }
 void NetworkService::uploadReportAfterFiles() {
@@ -415,7 +409,6 @@ void NetworkService::uploadReportAfterFiles() {
     QString afterPath = afterDir.filePath("rail_record.zip");
     
     if (!QFile::exists(afterPath)) {
-        // Завершаем загрузку
         completeUpload();
         return;
     }
@@ -446,7 +439,6 @@ void NetworkService::handleAfterFilesUploadFinished(bool success, const QString 
         return;
     }
 
-    // Завершаем загрузку
     completeUpload();
 }
 void NetworkService::completeUpload() {

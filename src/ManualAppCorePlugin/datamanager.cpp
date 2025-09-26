@@ -181,7 +181,6 @@ void DataManager::uploadSettingsToDjango(const QUrl &apiUrl) {
     return;
   }
 
-  // Загружаем JSON из файла
   QJsonObject json = m_reportManager->settingsManager()->toJsonForDjango();
   if (json.isEmpty()) {
     setError("Failed to load JSON settings.");
@@ -240,7 +239,6 @@ void DataManager::processServerReports(const QJsonObject &serverReports,
   QStringList numbersTO = {"TO-1", "TO-2", "TO-3"};
   QString basePath = getReportDirPath();
 
-  // Очищаем очередь перед добавлением новых отчетов
   m_pendingReports.clear();
 
   QDate oneMonthAgo = QDate::currentDate().addMonths(-1).addDays(-1);
@@ -337,7 +335,6 @@ void DataManager::startNextUpload() {
                     .arg(m_pendingReports.size()),
                 COLOR_CYAN, COLOR_CYAN);
 
-  // Отключаем предыдущие соединения и подключаем новое
   disconnect(m_reportManager->networkService(), &NetworkService::uploadFinished,
              this, &DataManager::handleSingleReportUploadFinished);
 
@@ -345,7 +342,6 @@ void DataManager::startNextUpload() {
           this, &DataManager::handleSingleReportUploadFinished,
           Qt::UniqueConnection);
 
-  // Запускаем загрузку
   m_reportManager->networkService()->uploadReport(
       QUrl(apiUrl), nextReportList[0], nextReportList[1], nextReportList[2]);
 }
