@@ -12,7 +12,6 @@
 #include <qdebug.h>
 #include <qjsonarray.h>
 #include <qjsonobject.h>
-#include <unistd.h>
 
 DataManager::DataManager(QObject *parent) : QObject(parent) {
 
