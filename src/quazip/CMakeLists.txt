@@ -12,6 +12,7 @@ set(QUAZIP_SOURCES
     qioapi.cpp
     quaadler32.cpp
     quacrc32.cpp
+    quachecksum32.cpp
     quagzipfile.cpp
     quaziodevice.cpp
     quazipdir.cpp
@@ -42,13 +43,14 @@ set(QUAZIP_HEADERS
     quazip_textcodec.h
 )
 
-add_library(quazip STATIC ${QUAZIP_SOURCES} ${QUAZIP_HEADERS})
+add_library(quazip SHARED ${QUAZIP_SOURCES} ${QUAZIP_HEADERS})
 
 target_include_directories(quazip PUBLIC .)
 target_link_libraries(quazip PRIVATE Qt6::Core ZLIB::ZLIB)
 
 target_compile_definitions(quazip PRIVATE
     QUAZIP_BUILD
+    QUAZIP_SHARED  # Добавьте это для shared библиотеки
     _LARGEFILE64_SOURCE
     _FILE_OFFSET_BITS=64
 )
@@ -58,4 +60,20 @@ if(WIN32)
         _CRT_SECURE_NO_WARNINGS
         _CRT_NONSTDC_NO_DEPRECATE
     )
+    
+    set_target_properties(quazip PROPERTIES
+        VERSION 1.0.0
+        SOVERSION 1
+    )
+else()
+    set_target_properties(quazip PROPERTIES
+        VERSION 1.0.0
+        SOVERSION 1
+    )
+endif()
+
+if(WIN32)
+    set_target_properties(quazip PROPERTIES OUTPUT_NAME "quazip")
+else()
+    set_target_properties(quazip PROPERTIES OUTPUT_NAME "quazip")
 endif()
