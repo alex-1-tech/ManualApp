@@ -7,6 +7,21 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(WIN32)
+    set(ZLIB_ROOT "C:/libs/zlib")
+    set(ZLIB_INCLUDE_DIR "C:/libs/zlib/include")
+    set(ZLIB_LIBRARY "C:/libs/zlib/lib/zlib.lib")
+endif()
+
+find_package(ZLIB REQUIRED)
+if(NOT TARGET ZLIB::ZLIB)
+    add_library(ZLIB::ZLIB UNKNOWN IMPORTED)
+    set_target_properties(ZLIB::ZLIB PROPERTIES
+        IMPORTED_LOCATION "C:/libs/zlib/lib/zlib.lib"
+        INTERFACE_INCLUDE_DIRECTORIES "C:/libs/zlib/include"
+    )
+endif()
+
 find_package(Qt6 REQUIRED COMPONENTS
     Core
     Gui
@@ -29,6 +44,62 @@ qt_add_executable(${PROJECT_NAME}
     src/main.cpp
     resources.qrc
 )
+
+if(WIN32)
+    function(deploy_qt_app target)
+        get_target_property(QMAKE_EXE Qt6::qmake IMPORTED_LOCATION)
+        get_filename_component(QT_BIN_DIR "${QMAKE_EXE}" DIRECTORY)
+
+        set(QT_DLLS
+            Qt6Core Qt6Gui Qt6Widgets
+            Qt6Qml Qt6Quick Qt6Network
+            Qt6PrintSupport
+        )
+
+        foreach(DLL ${QT_DLLS})
+            add_custom_command(TARGET ${target} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${QT_BIN_DIR}/${DLL}.dll"
+                "$<TARGET_FILE_DIR:${target}>"
+                COMMENT "Copying ${DLL}.dll"
+            )
+        endforeach()
+
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+            "$<TARGET_FILE_DIR:${target}>/platforms"
+        )
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${QT_BIN_DIR}/../plugins/platforms/qwindows.dll"
+            "$<TARGET_FILE_DIR:${target}>/platforms/"
+        )
+
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:quazip>"
+            "$<TARGET_FILE_DIR:${target}>"
+        )
+
+        if(EXISTS "C:/libs/zlib/bin/zlib.dll")
+            add_custom_command(TARGET ${target} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "C:/libs/zlib/bin/zlib.dll"
+                "$<TARGET_FILE_DIR:${target}>"
+            )
+        endif()
+
+        if(TARGET ManualAppCorePlugin)
+            add_custom_command(TARGET ${target} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<TARGET_FILE:ManualAppCorePlugin>"
+                "$<TARGET_FILE_DIR:${target}>"
+            )
+        endif()
+    endfunction()
+
+    deploy_qt_app(ManualApp)
+endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     QT_QML_RESOURCE_USE_URI_PATHS

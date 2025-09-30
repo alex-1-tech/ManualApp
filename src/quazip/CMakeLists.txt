@@ -1,8 +1,10 @@
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 project(quazip)
-
-find_package(ZLIB REQUIRED)
+if(WIN32)
+    set(ZLIB_INCLUDE_DIRS "C:/libs/zlib/include")
+    set(ZLIB_LIBRARIES "C:/libs/zlib/lib/zlib.lib")
+endif()
 
 set(QUAZIP_SOURCES
     quazip.cpp
@@ -45,12 +47,12 @@ set(QUAZIP_HEADERS
 
 add_library(quazip SHARED ${QUAZIP_SOURCES} ${QUAZIP_HEADERS})
 
-target_include_directories(quazip PUBLIC .)
-target_link_libraries(quazip PRIVATE Qt6::Core ZLIB::ZLIB)
+target_include_directories(quazip PUBLIC . ${ZLIB_INCLUDE_DIRS})
+target_link_libraries(quazip PRIVATE Qt6::Core ${ZLIB_LIBRARIES})
 
 target_compile_definitions(quazip PRIVATE
     QUAZIP_BUILD
-    QUAZIP_SHARED  # Добавьте это для shared библиотеки
+    QUAZIP_SHARED
     _LARGEFILE64_SOURCE
     _FILE_OFFSET_BITS=64
 )
@@ -60,20 +62,4 @@ if(WIN32)
         _CRT_SECURE_NO_WARNINGS
         _CRT_NONSTDC_NO_DEPRECATE
     )
-    
-    set_target_properties(quazip PROPERTIES
-        VERSION 1.0.0
-        SOVERSION 1
-    )
-else()
-    set_target_properties(quazip PROPERTIES
-        VERSION 1.0.0
-        SOVERSION 1
-    )
-endif()
-
-if(WIN32)
-    set_target_properties(quazip PROPERTIES OUTPUT_NAME "quazip")
-else()
-    set_target_properties(quazip PROPERTIES OUTPUT_NAME "quazip")
 endif()
