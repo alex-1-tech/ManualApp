@@ -131,7 +131,12 @@ Item {
     function openReport(categoryKey, dateIso) {
         var filePath = DataManager.findReportPdf(categoryKey, dateIso);
         if (filePath && filePath.length > 0) {
-            var url = "file://" + encodeURI(filePath.replace(/\\/g, "/"));
+            var url;
+            if (Qt.platform.os === "windows") {
+                url = encodeURI(filePath.replace(/\\/g, "/"));
+            } else {
+                url = "file://" + encodeURI(filePath.replace(/\\/g, "/"));
+            }
             Qt.openUrlExternally(url);
         } else {
             console.warn("Report PDF not found:", categoryKey, dateIso);

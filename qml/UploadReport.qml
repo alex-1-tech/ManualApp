@@ -58,7 +58,14 @@ ColumnLayout {
     FolderDialog {
         id: folderDialog
         title: root.mode === "before" ? "Select folder with BEFORE maintenance recording" : "Select folder with AFTER maintenance recording"
-        onAccepted: root.selectedFolderPath = selectedFolder.toString().replace("file:///", "/")
+        onAccepted: {
+            var selectedPath = selectedFolder.toString();
+            if (Qt.platform.os === "windows") {
+                root.selectedFolderPath = selectedPath.replace("file:///", "");
+            } else {
+                root.selectedFolderPath = selectedPath.replace("file://", "/");
+            }
+        }
     }
 
     Dialog {

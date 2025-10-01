@@ -10,17 +10,17 @@ Item {
 
     property var menuItems: [
         {
-            name: "TO-1 ( daily )",
+            name: "Daily maint.",
             to: "TO-1",
             file: "TO1.json"
         },
         {
-            name: "TO-2 ( monthly )",
+            name: "Montfly maint.",
             to: "TO-2",
             file: "TO2.json"
         },
         {
-            name: "TO-3 ( annual )",
+            name: "Annual maint.",
             to: "TO-3",
             file: "TO3.json"
         }
@@ -32,7 +32,7 @@ Item {
         anchors.centerIn: parent
 
         Text {
-            text: "Выберите ТО"
+            text: "Select maintence"
             font.pixelSize: 24
             color: "white"
             anchors.horizontalCenter: parent.horizontalCenter

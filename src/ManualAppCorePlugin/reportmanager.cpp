@@ -254,7 +254,7 @@ void ReportManager::exportReportToPdf(const QString &path) {
           "<th>#</th>"
           "<th>Step</th>"
           "<th>Status</th>"
-          "<th>Breakdown Details</th>"
+          "<th>Damage Details</th>"
           "</tr>";
 
   for (int i = 0; i < m_model.rowCount(); ++i) {
@@ -268,7 +268,7 @@ void ReportManager::exportReportToPdf(const QString &path) {
       statusText = "Completed";
       break;
     case Step::CompletionStatus::HasDefect:
-      statusText = "Has Breakdown";
+      statusText = "Has Damage";
       break;
     case Step::CompletionStatus::Skipped:
       statusText = "Skipped";

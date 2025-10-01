@@ -86,14 +86,14 @@ ScrollView {
             title: qsTr("Main components")
             model: [
                 {
-                    label: qsTr("Converter PA2.25L16 1.1х10-17:"),
+                    label: qsTr("Probe PA2.25L16 1.1х10-17:"),
                     value: SettingsManager.firstPhasedArrayConverters,
-                    hint: qsTr("First converter S/N")
+                    hint: qsTr("Left probe S/N")
                 },
                 {
-                    label: qsTr("Converter PA2.25L16 1.1х10-17:"),
+                    label: qsTr("Probe PA2.25L16 1.1х10-17:"),
                     value: SettingsManager.secondPhasedArrayConverters,
-                    hint: qsTr("Second converter S/N")
+                    hint: qsTr("Right probe S/N")
                 },
                 {
                     label: qsTr("Battery case:"),
@@ -116,7 +116,7 @@ ScrollView {
                     value: SettingsManager.flashDrive
                 },
                 {
-                    label: qsTr("CO3R measure:"),
+                    label: qsTr("CO-3R:"),
                     value: SettingsManager.coThreeRMeasure
                 }
             ]
@@ -193,11 +193,11 @@ ScrollView {
             title: qsTr("Additional components")
             model: [
                 {
-                    label: qsTr("Manual inclined converter:"),
+                    label: qsTr("Manual angle beam probe:"),
                     value: SettingsManager.manualInclined
                 },
                 {
-                    label: qsTr("Straight converter:"),
+                    label: qsTr("Normal probe:"),
                     value: SettingsManager.straight
                 },
                 {

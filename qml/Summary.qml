@@ -71,7 +71,10 @@ Item {
                             }
 
                             Text {
-                                text: DataManager.stepsModel.getData(delegate.index, StepModel.TitleRole)
+                                text: {
+                                    var fullText = DataManager.stepsModel.getData(delegate.index, StepModel.TitleRole);
+                                    return fullText.length > 45 ? fullText.substring(0, 45) + "..." : fullText;
+                                }
                                 font.pixelSize: 18
                                 font.bold: true
                                 wrapMode: Text.WordWrap
@@ -112,7 +115,7 @@ Item {
                             Layout.fillWidth: true
 
                             Text {
-                                text: qsTr("Breakdown description:")
+                                text: qsTr("Damage description:")
                                 font.pixelSize: 16
                                 color: Theme.colorTextMuted
                             }

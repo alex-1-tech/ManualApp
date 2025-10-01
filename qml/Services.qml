@@ -168,7 +168,7 @@ Item {
                 CheckBox {
                     id: defectFoundCheck
                     Layout.alignment: Qt.AlignLeft
-                    text: qsTr("Breakdown found")
+                    text: qsTr("Damage found")
                     font.pointSize: 14
                     checked: root.isValidStep && (root.stepsModel.getData(root.currentStep, StepModel.StatusRole) === root.hasDefect)
                     enabled: stepCompletedCheck.checked && root.isValidStep
@@ -323,6 +323,11 @@ Item {
                 font.pixelSize: 14
                 wrapMode: Text.Wrap
                 horizontalAlignment: Text.AlignHCenter
+            }
+            
+            Item {
+                Layout.fillHeight: true
+                Layout.minimumHeight: 400
             }
         }
     }

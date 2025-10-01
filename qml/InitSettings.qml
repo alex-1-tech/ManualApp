@@ -71,15 +71,15 @@ ScrollView {
                 title: qsTr("Main components")
 
                 FormField {
-                    label: qsTr("Converter PA2.25L16 1.1х10-17:")
-                    placeholder: qsTr("S/N of first phased array converter")
+                    label: qsTr("Probe PA2.25L16 1.1х10-17:")
+                    placeholder: qsTr("S/N of left phased array probe")
                     settingName: "firstPhasedArrayConverters"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Converter PA2.25L16 1.1х10-17:")
-                    placeholder: qsTr("S/N of second phased array converter")
+                    label: qsTr("Probe PA2.25L16 1.1х10-17:")
+                    placeholder: qsTr("S/N of right phased array probe")
                     settingName: "secondPhasedArrayConverters"
                     Layout.fillWidth: true
                 }
@@ -108,8 +108,8 @@ ScrollView {
                     Layout.fillWidth: true
                 }
                 FormField {
-                    label: qsTr("CO3R measure:")
-                    placeholder: qsTr("CO3R measured value")
+                    label: qsTr("CO-3R:")
+                    placeholder: qsTr("CO-3R serial number")
                     settingName: "coThreeRMeasure"
                     Layout.fillWidth: true
                 }
@@ -212,15 +212,15 @@ ScrollView {
                 title: qsTr("Additional components")
 
                 FormField {
-                    label: qsTr("Manual inclined converter:")
-                    placeholder: qsTr("Manual inclined converter serial number")
+                    label: qsTr("Manual angle beam probe:")
+                    placeholder: qsTr("Manual angle beam probe serial number")
                     settingName: "manualInclined"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Straight converter:")
-                    placeholder: qsTr("Straight converter serial number")
+                    label: qsTr("Normal probe:")
+                    placeholder: qsTr("Normal probe serial number")
                     settingName: "straight"
                     Layout.fillWidth: true
                 }
@@ -295,7 +295,7 @@ ScrollView {
             }
             Item {
                 Layout.fillHeight: true
-                Layout.minimumHeight: 20
+                Layout.minimumHeight: 400
             }
         }
         Dialog {

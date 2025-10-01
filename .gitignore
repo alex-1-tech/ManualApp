@@ -42,7 +42,9 @@
 
 .cache/
 .vscode/
+CMakeLists.txt.user
 build/
+build-win/
 media/reports/
 media/images/
 20240111_2002_0000.452

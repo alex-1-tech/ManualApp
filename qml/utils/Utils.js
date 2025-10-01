@@ -5,7 +5,7 @@ function getStatusText(status) {
         case 1:
             return qsTr("Completed");
         case 2:
-            return qsTr("Breakdown found");
+            return qsTr("Damage found");
         case 3:
             return qsTr("Skipped");
         default:
