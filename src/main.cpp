@@ -1,4 +1,4 @@
-#include <QGuiApplication>
+﻿#include <QGuiApplication>
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -6,6 +6,7 @@
 #include <qdebug.h>
 #include <qurl.h>
 #include <QDir>
+#include <QQuickStyle>
 
 int main(int argc, char *argv[])
 {   
@@ -14,8 +15,9 @@ int main(int argc, char *argv[])
     QString appVersion = "1.0";
     qDebug() << "Qt version: " << qVersion();
 
+    // QQuickStyle::setStyle("Material");
     QQmlApplicationEngine engine;
-    
+
     engine.addImportPath("qrc:/qml");
     engine.addImportPath(QDir::currentPath()+ "/src");
     qDebug() << "QML import paths:" << engine.importPathList();
