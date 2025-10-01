@@ -30,7 +30,7 @@ ScrollView {
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter
                 Text {
-                    text: qsTr("Введите характеристики")
+                    text: qsTr("Enter characteristics")
                     color: Theme.colorTextPrimary
                     font.pointSize: 24
                 }
@@ -39,15 +39,15 @@ ScrollView {
                 title: qsTr("Registration data")
 
                 FormField {
-                    label: qsTr("Серийный номер:")
-                    placeholder: qsTr("Уникальный серийный номер оборудования")
+                    label: qsTr("Serial number:")
+                    placeholder: qsTr("Unique equipment serial number")
                     settingName: "serialNumber"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Номер кейса:")
-                    placeholder: qsTr("Номер кейса для хранения оборудования")
+                    label: qsTr("Case number:")
+                    placeholder: qsTr("Equipment storage case number")
                     settingName: "caseNumber"
                     Layout.fillWidth: true
                 }
@@ -55,8 +55,8 @@ ScrollView {
                     Layout.fillWidth: true
                     spacing: 8
                     Label {
-                        Layout.preferredWidth: 350
-                        text: qsTr("Дата отгрузки:")
+                        Layout.preferredWidth: 250
+                        text: qsTr("Shipment date:")
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
@@ -71,21 +71,21 @@ ScrollView {
                 title: qsTr("Main components")
 
                 FormField {
-                    label: qsTr("Преобразователь РА2.25L16 1.1х10-17:")
-                    placeholder: qsTr("S/n первого преобразователя на фазированной решетке")
+                    label: qsTr("Converter PA2.25L16 1.1х10-17:")
+                    placeholder: qsTr("S/N of first phased array converter")
                     settingName: "firstPhasedArrayConverters"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Преобразователь РА2.25L16 1.1х10-17:")
-                    placeholder: qsTr("S/n второго преобразователя на фазированной решетке")
+                    label: qsTr("Converter PA2.25L16 1.1х10-17:")
+                    placeholder: qsTr("S/N of second phased array converter")
                     settingName: "secondPhasedArrayConverters"
                     Layout.fillWidth: true
                 }
                 FormField {
-                    label: qsTr("Корпус АКБ:")
-                    placeholder: qsTr("Серийный номер корпуса аккумулятора")
+                    label: qsTr("Battery case:")
+                    placeholder: qsTr("Battery case serial number")
                     settingName: "batteryCase"
                     Layout.fillWidth: true
                 }
@@ -95,21 +95,21 @@ ScrollView {
                 title: qsTr("Blocks and modules")
 
                 FormField {
-                    label: qsTr("Блок АОС:")
-                    placeholder: qsTr("Серийный номер блока АОС")
+                    label: qsTr("AOS block:")
+                    placeholder: qsTr("AOS block serial number")
                     settingName: "aosBlock"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Флеш-накопитель:")
-                    placeholder: qsTr("Серийный номер флеш-накопителя")
+                    label: qsTr("Flash drive:")
+                    placeholder: qsTr("Flash drive serial number")
                     settingName: "flashDrive"
                     Layout.fillWidth: true
                 }
                 FormField {
                     label: qsTr("CO3R measure:")
-                    placeholder: qsTr("Измеренное значение CO3R")
+                    placeholder: qsTr("CO3R measured value")
                     settingName: "coThreeRMeasure"
                     Layout.fillWidth: true
                 }
@@ -119,8 +119,8 @@ ScrollView {
                 title: qsTr("Certification and checks")
 
                 FormField {
-                    label: qsTr("Сертификат калибровки:")
-                    placeholder: qsTr("Номер сертификата калибровки")
+                    label: qsTr("Calibration certificate:")
+                    placeholder: qsTr("Calibration certificate number")
                     settingName: "calibrationCertificate"
                     Layout.fillWidth: true
                 }
@@ -128,8 +128,8 @@ ScrollView {
                     Layout.fillWidth: true
                     spacing: 8
                     Label {
-                        Layout.preferredWidth: 350
-                        text: qsTr("Дата калибровки:")
+                        Layout.preferredWidth: 250
+                        text: qsTr("Calibration date:")
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
@@ -148,15 +148,15 @@ ScrollView {
                     Layout.fillWidth: true
                     spacing: 8
                     Label {
-                        Layout.preferredWidth: 350
-                        text: qsTr("Винты для планшета:")
+                        Layout.preferredWidth: 250
+                        text: qsTr("Tablet screws:")
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
 
                     SettingCheckBox {
                         settingName: "hasTabletScrews"
-                        text: qsTr("Присутствуют")
+                        text: qsTr("Included")
                         Layout.columnSpan: 1
                     }
                 }
@@ -165,29 +165,29 @@ ScrollView {
                     Layout.fillWidth: true
                     spacing: 8
                     Label {
-                        Layout.preferredWidth: 350
-                        text: qsTr("Ethernet кабель:")
+                        Layout.preferredWidth: 250
+                        text: qsTr("Ethernet cable:")
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
 
                     SettingCheckBox {
                         settingName: "hasEthernetCable"
-                        text: qsTr("Присутствует")
+                        text: qsTr("Included")
                         Layout.columnSpan: 1
                     }
                 }
 
                 FormField {
-                    label: qsTr("Зарядное АКБ:")
-                    placeholder: qsTr("Серийный номер зарядного АКБ")
+                    label: qsTr("Battery charger:")
+                    placeholder: qsTr("Battery charger serial number")
                     settingName: "batteryCharger"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Зарядное планшета:")
-                    placeholder: qsTr("Серийный номер зарядного планшета")
+                    label: qsTr("Tablet charger:")
+                    placeholder: qsTr("Tablet charger serial number")
                     settingName: "tabletCharger"
                     Layout.fillWidth: true
                 }
@@ -195,16 +195,15 @@ ScrollView {
                     Layout.fillWidth: true
                     spacing: 8
                     Label {
-
-                        Layout.preferredWidth: 350
-                        text: qsTr("Инструментальный набор:")
+                        Layout.preferredWidth: 250
+                        text: qsTr("Tool kit:")
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
 
                     SettingCheckBox {
                         settingName: "hasToolKit"
-                        text: qsTr("Присутствует")
+                        text: qsTr("Included")
                         Layout.columnSpan: 1
                     }
                 }
@@ -213,22 +212,22 @@ ScrollView {
                 title: qsTr("Additional components")
 
                 FormField {
-                    label: qsTr("Ручной наклонный преобразователь:")
-                    placeholder: qsTr("Серийный номер manual inclined")
+                    label: qsTr("Manual inclined converter:")
+                    placeholder: qsTr("Manual inclined converter serial number")
                     settingName: "manualInclined"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Прямой преобразователь:")
-                    placeholder: qsTr("Серийный номер straight")
+                    label: qsTr("Straight converter:")
+                    placeholder: qsTr("Straight converter serial number")
                     settingName: "straight"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Фото URL:")
-                    placeholder: qsTr("Ссылка на фотографии")
+                    label: qsTr("Photo URL:")
+                    placeholder: qsTr("Link to photos")
                     settingName: "photoUrl"
                     Layout.fillWidth: true
                 }
@@ -237,21 +236,21 @@ ScrollView {
                 title: qsTr("Inspection and documentation")
 
                 FormField {
-                    label: qsTr("Проверка ПО:")
-                    placeholder: qsTr("Версия и статус ПО")
+                    label: qsTr("Software check:")
+                    placeholder: qsTr("Software version and status")
                     settingName: "softwareCheck"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Фото/видео URL:")
-                    placeholder: qsTr("Ссылка на медиаматериалы")
+                    label: qsTr("Photo/Video URL:")
+                    placeholder: qsTr("Link to media materials")
                     settingName: "photoVideoUrl"
                     Layout.fillWidth: true
                 }
                 FormField {
-                    label: qsTr("Вес (кг):")
-                    placeholder: qsTr("Общий вес оборудования")
+                    label: qsTr("Weight (kg):")
+                    placeholder: qsTr("Total equipment weight")
                     settingName: "weight"
                     Layout.fillWidth: true
 
@@ -262,8 +261,8 @@ ScrollView {
                 }
 
                 FormField {
-                    label: qsTr("Заметки:")
-                    placeholder: qsTr("Дополнительные заметки и комментарии")
+                    label: qsTr("Notes:")
+                    placeholder: qsTr("Additional notes and comments")
                     settingName: "notes"
                     Layout.fillWidth: true
                     multiline: true
@@ -273,7 +272,7 @@ ScrollView {
             Button {
                 id: button
 
-                text: qsTr("Сохранить")
+                text: qsTr("Save")
                 font.pixelSize: 18
                 onClicked: confirmDialog.open()
                 Layout.preferredWidth: 240
@@ -302,7 +301,7 @@ ScrollView {
         Dialog {
             id: confirmDialog
             modal: true
-            title: qsTr("Подтверждение сохранения")
+            title: qsTr("Save confirmation")
             standardButtons: Dialog.Ok | Dialog.Cancel
             anchors.centerIn: Overlay.overlay
             width: 400
@@ -316,7 +315,7 @@ ScrollView {
                 spacing: 20
 
                 Label {
-                    text: qsTr("Вы точно уверены, что хотите сохранить настройки?\nПосле сохранения некоторые из них будет уже невозможно изменить.")
+                    text: qsTr("Are you sure you want to save the settings?\nAfter saving, some of them cannot be changed.")
                     wrapMode: Text.WordWrap
                     color: Theme.colorTextPrimary
                     Layout.fillWidth: true

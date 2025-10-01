@@ -34,7 +34,7 @@ ReportManager::ReportManager(FileService *fileService,
           });
 }
 QString ReportManager::getReportDirPath() const {
-  return QCoreApplication::applicationDirPath() + "/../media/reports/";
+  return QCoreApplication::applicationDirPath() + "/media/reports/";
 }
 QVariantMap ReportManager::performedTOs() const {
   QVariantMap result;
@@ -313,7 +313,16 @@ void ReportManager::exportReportToPdf(const QString &path) {
   }
 
   html += "</table></body></html>";
-  QString stableSavePath = getReportDirPath() + "TOs/" + startTime() + "-" +
+  QString tosDirPath = getReportDirPath() + "TOs/";
+  QDir tosDir(tosDirPath);
+  if (!tosDir.exists()) {
+    if (!tosDir.mkpath(".")) {
+      setError(tr("Cannot create directory: %1").arg(tosDirPath));
+      return;
+    }
+  }
+  
+  QString stableSavePath = tosDirPath + startTime() + "-" +
                            currentNumberTO() + ".pdf";
   if (!PdfExporter::exportToPdf(html, path, stableSavePath)) {
     setError(tr("PDF export error: %1 and %2").arg(path, stableSavePath));

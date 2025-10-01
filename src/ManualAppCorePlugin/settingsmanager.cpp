@@ -6,7 +6,7 @@
 SettingsManager::SettingsManager(QObject *parent)
     : QObject(parent), m_settings("votum", "ManualApp") {
   loadAllSettings();
-  // m_settings.clear();
+  m_settings.clear();
   // qDebug() << isFirstRun();
   // debugPrint();
 }

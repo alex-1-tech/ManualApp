@@ -31,6 +31,10 @@ bool PdfExporter::exportToPdf(const QString &html, const QString &filePath,
   if (!secondFilePath.isEmpty()) {
     printer.setOutputFileName(secondFilePath);
     document.print(&printer);
+    DEBUG_COLORED("PdfExporter", "exportToPdf",
+                QString("PDF успешно сохранен в %1")
+                    .arg(QFileInfo(secondFilePath).absoluteFilePath()),
+                COLOR_CYAN, COLOR_CYAN);
   }
   DEBUG_COLORED("PdfExporter", "exportToPdf",
                 QString("PDF успешно сохранен в %1")

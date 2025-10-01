@@ -8,10 +8,10 @@ import "styles"
 ApplicationWindow {
     id: appWindow
 
-    minimumWidth: 1440
-    minimumHeight: 900
-    maximumWidth: minimumWidth
-    maximumHeight: minimumHeight
+    visibility: Window.Maximized
+    minimumWidth: 800
+    minimumHeight: 600
+
     visible: true
     title: qsTr("Техническое обслуживание")
     color: Theme.colorBgPrimary
