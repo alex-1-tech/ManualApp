@@ -6,6 +6,7 @@
         <!-- first start -->
         <file>qml/Start.qml</file>
         <file>qml/InitSettings.qml</file>
+        <file>qml/InitSerial.qml</file>
 
         <!-- main -->
         <file>qml/Main.qml</file>

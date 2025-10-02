@@ -59,7 +59,7 @@ ScrollView {
 
         // Helper function for status display
         function getStatusText(value) {
-            return value ? qsTr("Present") : qsTr("Absent");
+            return value ? qsTr("+") : qsTr("-");
         }
 
         // Section: Registration data

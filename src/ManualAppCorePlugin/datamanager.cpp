@@ -2,8 +2,8 @@
 #include "fileservice.h"
 #include "networkservice.h"
 #include "reportmanager.h"
-#include "utils.h"
 #include "settingsmanager.h"
+#include "utils.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -121,7 +121,6 @@ bool DataManager::uploadReport(const QString &sourceFolderPath, bool after) {
   return result;
 }
 
-
 void DataManager::setStepStatus(int index, Step::CompletionStatus status) {
   DEBUG_COLORED("DataManager", "setStepStatus",
                 QString("Setting status for step: %1").arg(index), COLOR_CYAN,
@@ -164,6 +163,48 @@ bool DataManager::deleteSettingsJsonFile(const QString &filePath) {
                 QString("Deleting file: %1").arg(filePath), COLOR_CYAN,
                 COLOR_CYAN);
   return m_reportManager->fileService()->deleteFile(filePath);
+}
+void DataManager::setCurrentSettings(const QUrl &apiUrl) {
+  DEBUG_COLORED("DataManager", "setCurrentSettings",
+                QString("Download settings from %1").arg(apiUrl.toString()),
+                COLOR_CYAN, COLOR_CYAN);
+
+  if (!apiUrl.isValid() || apiUrl.scheme().isEmpty()) {
+    setError("Invalid API URL: must include http:// or https://");
+    return;
+  }
+
+  setLoading(true);
+  setError("");
+
+  m_reportManager->networkService()->getJsonFromDjango(
+      apiUrl,
+      [this](const QJsonObject &json) {
+        if (json.isEmpty()) {
+          setError("Received empty settings JSON.");
+          setLoading(false);
+          return;
+        }
+
+        QJsonObject settingsObj = json;
+        if (json.contains("settings") && json["settings"].isObject()) {
+          settingsObj = json["settings"].toObject();
+        }
+        m_reportManager->settingsManager()->fromJson(settingsObj);
+
+        DEBUG_COLORED("DataManager", "setCurrentSettings",
+                      "Settings successfully downloaded and applied",
+                      COLOR_CYAN, COLOR_CYAN);
+
+        setLoading(false);
+      },
+      [this](const QString &error) {
+        DEBUG_ERROR_COLORED("DataManager", "setCurrentSettings",
+                            QString("Failed to download settings: %1").arg(error),
+                            COLOR_CYAN, COLOR_CYAN);
+        setError(error);
+        setLoading(false);
+      });
 }
 
 void DataManager::uploadSettingsToDjango(const QUrl &apiUrl) {

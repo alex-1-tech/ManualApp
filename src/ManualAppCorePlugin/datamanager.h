@@ -6,6 +6,7 @@
 #include <QQmlEngine>
 #include <QQueue>
 #include <qcontainerfwd.h>
+#include <qtmetamacros.h>
 
 class NetworkService;
 class FileService;
@@ -47,6 +48,7 @@ public:
   Q_INVOKABLE QString createSettingsJsonFile(const QString &filePath);
   Q_INVOKABLE bool deleteSettingsJsonFile(const QString &filePath);
   Q_INVOKABLE void uploadSettingsToDjango(const QUrl &apiUrl);
+  Q_INVOKABLE void setCurrentSettings(const QUrl &apiUrl);
 
   // Q_INVOKABLE methods - Step Management
   Q_INVOKABLE void setStepStatus(int index, Step::CompletionStatus status);

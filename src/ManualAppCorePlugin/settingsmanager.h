@@ -86,7 +86,7 @@ public:
 
   void debugPrint() const;
   void saveAllSettings();
-  void loadAllSettings();
+  Q_INVOKABLE void loadAllSettings();
   [[nodiscard]] QJsonObject toJsonForDjango() const;
   void fromJson(const QJsonObject &obj);
 
