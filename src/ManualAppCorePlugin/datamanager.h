@@ -130,4 +130,7 @@ private:
 
   // Upload queue management
   QQueue<QList<QString>> m_pendingReports;
+
+  // Constants
+  QStringList numbersTO = {"TO-1", "TO-2", "TO-3"};
 };

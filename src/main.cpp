@@ -12,7 +12,6 @@ int main(int argc, char *argv[])
 {   
 
     QApplication app(argc, argv);
-    QString appVersion = "1.0";
     qDebug() << "Qt version: " << qVersion();
 
     // QQuickStyle::setStyle("Material");

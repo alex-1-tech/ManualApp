@@ -20,7 +20,7 @@ DataManager::DataManager(QObject *parent) : QObject(parent) {
       new NetworkService(fileService, nullptr, this);
   m_reportManager = new ReportManager(fileService, networkService, this);
   networkService->setReportManager(m_reportManager);
-  m_appVersion = "1.0.0";
+  m_appVersion = "1.0.4";
 
   DEBUG_COLORED("DataManager", "Constructor", "DataManager initialized",
                 COLOR_CYAN, COLOR_CYAN);
@@ -199,9 +199,10 @@ void DataManager::setCurrentSettings(const QUrl &apiUrl) {
         setLoading(false);
       },
       [this](const QString &error) {
-        DEBUG_ERROR_COLORED("DataManager", "setCurrentSettings",
-                            QString("Failed to download settings: %1").arg(error),
-                            COLOR_CYAN, COLOR_CYAN);
+        DEBUG_ERROR_COLORED(
+            "DataManager", "setCurrentSettings",
+            QString("Failed to download settings: %1").arg(error), COLOR_CYAN,
+            COLOR_CYAN);
         setError(error);
         setLoading(false);
       });
@@ -248,7 +249,7 @@ void DataManager::uploadReportToDjango(const QUrl &apiUrl) {
 }
 
 void DataManager::syncReportsWithServer() {
-  DEBUG_COLORED("DataManager", "syncReportsWithServer", "Starts syns",
+  DEBUG_COLORED("DataManager", "syncReportsWithServer", "Starts sync",
                 COLOR_CYAN, COLOR_CYAN);
   QString serialNumber = m_reportManager->settingsManager()->serialNumber();
   if (serialNumber.isEmpty()) {
@@ -277,7 +278,6 @@ void DataManager::syncReportsWithServer() {
 
 void DataManager::processServerReports(const QJsonObject &serverReports,
                                        const QString &serialNumber) {
-  QStringList numbersTO = {"TO-1", "TO-2", "TO-3"};
   QString basePath = getReportDirPath();
 
   m_pendingReports.clear();
@@ -308,8 +308,26 @@ void DataManager::processServerReports(const QJsonObject &serverReports,
 
     for (const auto &localReport : localReports) {
       QDate reportDate = QDate::fromString(localReport, "yyyy-MM-dd");
+      QString fullReportPath = toPath + localReport;
+      QDir reportDir(fullReportPath);
+      if (reportDir.isEmpty()) {
+        if (reportDir.removeRecursively()) {
+          DEBUG_COLORED("DataManager", "processServerReports",
+                        QString("Deleted empty old report: %1/%2")
+                            .arg(number_to)
+                            .arg(localReport),
+                        COLOR_CYAN, COLOR_CYAN);
+          continue;
+        } else {
+          DEBUG_ERROR_COLORED(
+              "DataManager", "processServerReports",
+              QString("Failed to delete empty old report: %1/%2")
+                  .arg(number_to)
+                  .arg(localReport),
+              COLOR_CYAN, COLOR_CYAN);
+        }
+      }
       if (reportDate.isValid() && reportDate < oneMonthAgo) {
-        QString fullReportPath = toPath + localReport;
         if (QDir(fullReportPath).removeRecursively()) {
           DEBUG_COLORED("DataManager", "processServerReports",
                         QString("Deleted old report: %1/%2")
