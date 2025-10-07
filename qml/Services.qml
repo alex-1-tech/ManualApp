@@ -17,8 +17,8 @@ Item {
     property var stackView
     property var toSelectionScreen
 
-    property int dynamicTopMargin: root.height < 800 ? 70 : root.height * 0.3
-
+    property int dynamicTopMargin: root.height < 800 ? 40 : root.height * 0.15
+    property int fontSize: root.height < 800 ? Theme.fontSubtitle : Theme.fontTitle
     readonly property bool isValidStep: currentStep >= 0 && currentStep < totalSteps
 
     readonly property int notStarted: 0
@@ -40,7 +40,7 @@ Item {
         id: scrollView
         anchors {
             fill: parent
-            topMargin: dynamicTopMargin
+            topMargin: root.dynamicTopMargin
             leftMargin: root.width < 700? 55: root.width*0.15
             rightMargin: root.width < 700? 55: root.width*0.15
             bottomMargin: 30
@@ -53,7 +53,7 @@ Item {
         ColumnLayout {
             id: mainColumn
             width: scrollView.availableWidth
-            spacing: 16
+            spacing: Theme.fontBody
 
             Text {
                 Layout.fillWidth: true
@@ -81,14 +81,14 @@ Item {
                             anchors.centerIn: parent
                             color: Theme.colorTextPrimary
                             text: root.isValidStep ? (root.currentStep + 1).toString() : "0"
-                            font.pixelSize: 18
+                            font.pixelSize: Theme.fontSubtitle
                             font.bold: true
                         }
                     }
 
                     Text {
                         text: qsTr("Step %1").arg(root.isValidStep ? root.currentStep + 1 : 0)
-                        font.pixelSize: 18
+                        font.pixelSize: Theme.fontSubtitle
                         font.bold: true
                         color: Theme.colorTextPrimary
                     }
@@ -100,7 +100,7 @@ Item {
 
                 Text {
                     text: qsTr("%1/%2").arg(root.isValidStep ? root.currentStep + 1 : 0).arg(root.totalSteps)
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.fontBody
                     color: Theme.colorTextMuted
                 }
             }
@@ -130,7 +130,7 @@ Item {
                 Layout.fillWidth: true
                 Layout.topMargin: 10
                 text: root.isValidStep ? root.stepsModel.getData(root.currentStep, StepModel.TitleRole) : ""
-                font.pixelSize: 22
+                font.pixelSize: root.fontSize
                 wrapMode: Text.WordWrap
                 horizontalAlignment: Text.AlignHCenter
                 color: Theme.colorTextPrimary
@@ -176,7 +176,7 @@ Item {
                     onToggled: {
                         if (!root.isValidStep)
                             return;
-                        dynamicTopMargin = 70;
+                        root.dynamicTopMargin = 70;
                         if (checked) {
                             DataManager.setStepStatus(root.currentStep, root.hasDefect);
                         } else {
@@ -194,7 +194,7 @@ Item {
                 Text {
                     Layout.fillWidth: true
                     text: qsTr("Defect description")
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.fontBody
                     color: Theme.colorTextPrimary
                 }
                 RepairMethodEditor {
@@ -214,7 +214,7 @@ Item {
                 Text {
                     Layout.fillWidth: true
                     text: qsTr("Repair method")
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.fontBody
                     color: Theme.colorTextPrimary
                 }
                 RepairMethodEditor {
@@ -234,7 +234,7 @@ Item {
                 Text {
                     Layout.fillWidth: true
                     text: qsTr("Fix status")
-                    font.pixelSize: 16
+                    font.pixelSize: Theme.fontBody
                     color: Theme.colorTextPrimary
                 }
 
