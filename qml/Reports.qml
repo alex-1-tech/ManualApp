@@ -164,6 +164,7 @@ Item {
 
         RowLayout {
             Layout.fillWidth: true
+            Layout.leftMargin: 50
             spacing: 12
 
             Label {

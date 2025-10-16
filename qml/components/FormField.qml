@@ -21,7 +21,7 @@ RowLayout {
 
     Label {
         id: lbl
-        Layout.preferredWidth: 250
+        Layout.preferredWidth: root.width < 700? 280: 450
         elide: Text.ElideRight
         color: Theme.colorTextPrimary
         font.pointSize: Theme.fontSmall

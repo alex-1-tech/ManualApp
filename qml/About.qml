@@ -20,6 +20,7 @@ ScrollView {
 
         // Header
         RowLayout {
+            Layout.leftMargin: 50
             Image {
                 source: "qrc:///media/icons/icon-about.svg"
                 sourceSize.width: 40

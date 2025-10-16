@@ -4,6 +4,49 @@ import "styles"
 Item {
     id: root
 
+    property bool isSidebarVisible: false
+
+    // Фон для затемнения контента при открытой панели
+    Rectangle {
+        id: overlay
+        anchors.fill: parent
+        color: "#80000000"
+        visible: false
+        opacity: 0
+        z: 1
+
+        Behavior on opacity {
+            NumberAnimation { duration: 200 }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                root.hideSidebar()
+            }
+        }
+    }
+
+    function toggleSidebar() {
+        if (isSidebarVisible) {
+            hideSidebar()
+        } else {
+            showSidebar()
+        }
+    }
+
+    function showSidebar() {
+        isSidebarVisible = true
+        overlay.visible = true
+        overlay.opacity = 1
+    }
+
+    function hideSidebar() {
+        isSidebarVisible = false
+        overlay.opacity = 0
+        overlay.visible = false
+    }
+
     Rectangle {
         id: sidebar
         color: Theme.colorSidebar
@@ -11,7 +54,14 @@ Item {
         height: parent.height
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        y: 60
+        
+        // Анимация для плавного появления/исчезновения
+        x: root.isSidebarVisible ? 0 : -width
+        Behavior on x {
+            NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
+        }
+        
+        z: 2
 
         Row {
             x: 5
@@ -70,6 +120,9 @@ Item {
                     reportsLoader.visible = false;
                     settingsLoader.visible = false;
                     aboutLoader.visible = false;
+                    
+                    // Скрываем панель после выбора пункта
+                    root.hideSidebar()
                 }
             }
         }
@@ -109,13 +162,15 @@ Item {
                     navDashboard.color = Theme.colorNavInactive;
                     
                     dashboardLoader.visible = false;
-
                     settingsLoader.visible = false;
                     aboutLoader.visible = false;
                     
                     reportsLoader.active = false;
                     reportsLoader.visible = true;
                     reportsLoader.active = true;
+                    
+                    // Скрываем панель после выбора пункта
+                    root.hideSidebar()
                 }
             }
         }
@@ -158,6 +213,9 @@ Item {
                     reportsLoader.visible = false;
                     settingsLoader.visible = true;
                     aboutLoader.visible = false;
+                    
+                    // Скрываем панель после выбора пункта
+                    root.hideSidebar()
                 }
             }
         }
@@ -200,6 +258,9 @@ Item {
                     reportsLoader.visible = false;
                     settingsLoader.visible = false;
                     aboutLoader.visible = true;
+                    
+                    // Скрываем панель после выбора пункта
+                    root.hideSidebar()
                 }
             }
         }
@@ -208,11 +269,44 @@ Item {
     Rectangle {
         id: content
         color: Theme.colorBgPrimary
-        width: parent.width - 220
+        width: parent.width
         height: parent.height
-        anchors.left: sidebar.right
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
+        anchors.fill: parent
+
+        // Кнопка меню (три точки)
+        Rectangle {
+            id: menuButton
+            width: 40
+            height: 40
+            radius: 20
+            color: Theme.colorSidebar
+            visible: true
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.margins: 10
+            z: 3
+
+            Row {
+                anchors.centerIn: parent
+                spacing: 2
+                Repeater {
+                    model: 3
+                    Rectangle {
+                        width: 4
+                        height: 4
+                        radius: 2
+                        color: Theme.colorTextPrimary
+                    }
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    root.toggleSidebar()
+                }
+            }
+        }
 
         Loader {
             id: dashboardLoader
