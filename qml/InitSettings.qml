@@ -68,94 +68,70 @@ ScrollView {
                 }
             }
             CardSection {
-                title: qsTr("Main components")
+                title: qsTr("PC Tablet Components")
 
                 FormField {
-                    label: qsTr("Probe PA2.25L16 1.1х10-17:")
-                    placeholder: qsTr("S/N of left phased array probe")
-                    settingName: "firstPhasedArrayConverters"
+                    label: qsTr("PC Tablet Dell 7230:")
+                    placeholder: qsTr("PC tablet Latitude Dell 7230")
+                    settingName: "pcTabletDell7230"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Probe PA2.25L16 1.1х10-17:")
-                    placeholder: qsTr("S/N of right phased array probe")
-                    settingName: "secondPhasedArrayConverters"
+                    label: qsTr("AC/DC Power Adapter Dell:")
+                    placeholder: qsTr("AC/DC power adapter for Dell 7230")
+                    settingName: "acDcPowerAdapterDell"
                     Layout.fillWidth: true
                 }
+
                 FormField {
-                    label: qsTr("Battery case:")
-                    placeholder: qsTr("Battery case serial number")
-                    settingName: "batteryCase"
+                    label: qsTr("DC Charger Adapter Battery:")
+                    placeholder: qsTr("DC charger adapter for Dell 7230 from battery")
+                    settingName: "dcChargerAdapterBattery"
                     Layout.fillWidth: true
                 }
             }
 
             CardSection {
-                title: qsTr("Blocks and modules")
+                title: qsTr("Ultrasonic Equipment")
 
                 FormField {
-                    label: qsTr("AOS block:")
-                    placeholder: qsTr("AOS block serial number")
-                    settingName: "aosBlock"
+                    label: qsTr("Ultrasonic Phased Array PULSAR:")
+                    placeholder: qsTr("Ultrasonic phased array PULSAR OEM 16/64")
+                    settingName: "ultrasonicPhasedArrayPulsar"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Flash drive:")
-                    placeholder: qsTr("Flash drive serial number")
-                    settingName: "flashDrive"
+                    label: qsTr("Manual Probe 36°:")
+                    placeholder: qsTr("Manual probe 36° RA2.25L16 0.9x10-17")
+                    settingName: "manualProbs36"
                     Layout.fillWidth: true
                 }
+
                 FormField {
-                    label: qsTr("CO-3R:")
-                    placeholder: qsTr("CO-3R serial number")
-                    settingName: "coThreeRMeasure"
+                    label: qsTr("Straight Probe 0°:")
+                    placeholder: qsTr("Straight probe 0° RA5.0L16 0.6x10-17")
+                    settingName: "straightProbs0"
                     Layout.fillWidth: true
                 }
             }
 
             CardSection {
-                title: qsTr("Certification and checks")
-
-                FormField {
-                    label: qsTr("Calibration certificate:")
-                    placeholder: qsTr("Calibration certificate number")
-                    settingName: "calibrationCertificate"
-                    Layout.fillWidth: true
-                }
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 8
-                    Label {
-                        Layout.preferredWidth: 250
-                        text: qsTr("Calibration date:")
-                        color: Theme.colorTextPrimary
-                        font.pointSize: Theme.fontSmall
-                    }
-
-                    NewDateField {
-                        shipmentDate: SettingsManager.calibrationDate
-                        onShipmentDateChanged: SettingsManager.calibrationDate = shipmentDate
-                    }
-                }
-            }
-
-            CardSection {
-                title: qsTr("Spare parts kit")
+                title: qsTr("Cables and Accessories")
 
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 8
                     Label {
                         Layout.preferredWidth: 250
-                        text: qsTr("Tablet screws:")
+                        text: qsTr("DC Cable from Battery:")
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
 
                     SettingCheckBox {
-                        settingName: "hasTabletScrews"
+                        settingName: "hasDcCableBattery"
                         text: qsTr("Included")
                         Layout.columnSpan: 1
                     }
@@ -166,99 +142,80 @@ ScrollView {
                     spacing: 8
                     Label {
                         Layout.preferredWidth: 250
-                        text: qsTr("Ethernet cable:")
+                        text: qsTr("Ethernet Cables:")
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
 
                     SettingCheckBox {
-                        settingName: "hasEthernetCable"
+                        settingName: "hasEthernetCables"
                         text: qsTr("Included")
                         Layout.columnSpan: 1
                     }
                 }
 
                 FormField {
-                    label: qsTr("Battery charger:")
-                    placeholder: qsTr("Battery charger serial number")
-                    settingName: "batteryCharger"
+                    label: qsTr("DC Battery Box:")
+                    placeholder: qsTr("DC battery box")
+                    settingName: "dcBatteryBox"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Tablet charger:")
-                    placeholder: qsTr("Tablet charger serial number")
-                    settingName: "tabletCharger"
+                    label: qsTr("AC/DC Charger Adapter Battery:")
+                    placeholder: qsTr("AC/DC charger adapter for battery")
+                    settingName: "acDcChargerAdapterBattery"
                     Layout.fillWidth: true
                 }
+            }
+
+            CardSection {
+                title: qsTr("Calibration and Tools")
+
+                FormField {
+                    label: qsTr("Calibration Block SO-3R:")
+                    placeholder: qsTr("Calibration block SO-3R")
+                    settingName: "calibrationBlockSo3r"
+                    Layout.fillWidth: true
+                }
+
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 8
                     Label {
                         Layout.preferredWidth: 250
-                        text: qsTr("Tool kit:")
+                        text: qsTr("Repair Tool Bag:")
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
 
                     SettingCheckBox {
-                        settingName: "hasToolKit"
+                        settingName: "hasRepairToolBag"
                         text: qsTr("Included")
                         Layout.columnSpan: 1
                     }
                 }
-            }
-            CardSection {
-                title: qsTr("Additional components")
 
-                FormField {
-                    label: qsTr("Manual angle beam probe:")
-                    placeholder: qsTr("Manual angle beam probe serial number")
-                    settingName: "manualInclined"
+                RowLayout {
                     Layout.fillWidth: true
-                }
+                    spacing: 8
+                    Label {
+                        Layout.preferredWidth: 250
+                        text: qsTr("Installed Nameplate:")
+                        color: Theme.colorTextPrimary
+                        font.pointSize: Theme.fontSmall
+                    }
 
-                FormField {
-                    label: qsTr("Normal probe:")
-                    placeholder: qsTr("Normal probe serial number")
-                    settingName: "straight"
-                    Layout.fillWidth: true
-                }
-
-                FormField {
-                    label: qsTr("Photo URL:")
-                    placeholder: qsTr("Link to photos")
-                    settingName: "photoUrl"
-                    Layout.fillWidth: true
-                }
-            }
-            CardSection {
-                title: qsTr("Inspection and documentation")
-
-                FormField {
-                    label: qsTr("Software check:")
-                    placeholder: qsTr("Software version and status")
-                    settingName: "softwareCheck"
-                    Layout.fillWidth: true
-                }
-
-                FormField {
-                    label: qsTr("Photo/Video URL:")
-                    placeholder: qsTr("Link to media materials")
-                    settingName: "photoVideoUrl"
-                    Layout.fillWidth: true
-                }
-                FormField {
-                    label: qsTr("Weight (kg):")
-                    placeholder: qsTr("Total equipment weight")
-                    settingName: "weight"
-                    Layout.fillWidth: true
-
-                    validator: DoubleValidator {
-                        bottom: 0
-                        decimals: 2
+                    SettingCheckBox {
+                        settingName: "hasInstalledNameplate"
+                        text: qsTr("Installed")
+                        Layout.columnSpan: 1
                     }
                 }
+            }
+
+            CardSection {
+                title: qsTr("Additional Information")
 
                 FormField {
                     label: qsTr("Notes:")

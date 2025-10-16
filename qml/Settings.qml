@@ -31,85 +31,80 @@ ScrollView {
             }
         }
         CardSection {
-            title: qsTr("Main components")
+            title: qsTr("PC Tablet Components")
 
             FormField {
-                label: qsTr("Probe PA2.25L16 1.1х10-17:")
-                placeholder: qsTr("S/N of left phased array probe")
-                settingName: "firstPhasedArrayConverters"
+                label: qsTr("PC Tablet Dell 7230:")
+                placeholder: qsTr("PC tablet Latitude Dell 7230")
+                settingName: "pcTabletDell7230"
                 Layout.fillWidth: true
             }
 
             FormField {
-                label: qsTr("Probe PA2.25L16 1.1х10-17:")
-                placeholder: qsTr("S/N of right phased array probe")
-                settingName: "secondPhasedArrayConverters"
-                Layout.fillWidth: true
-            }
-            FormField {
-                label: qsTr("Battery case:")
-                placeholder: qsTr("Battery case serial number")
-                settingName: "batteryCase"
-                Layout.fillWidth: true
-            }
-        }
-
-        CardSection {
-            title: qsTr("Blocks and modules")
-
-            FormField {
-                label: qsTr("AOS block:")
-                placeholder: qsTr("AOS block serial number")
-                settingName: "aosBlock"
+                label: qsTr("AC/DC Power Adapter Dell:")
+                placeholder: qsTr("AC/DC power adapter for Dell 7230")
+                settingName: "acDcPowerAdapterDell"
                 Layout.fillWidth: true
             }
 
             FormField {
-                label: qsTr("Flash drive:")
-                placeholder: qsTr("Flash drive serial number")
-                settingName: "flashDrive"
-                Layout.fillWidth: true
-            }
-            FormField {
-                label: qsTr("CO-3R:")
-                placeholder: qsTr("CO-3R serial number")
-                settingName: "coThreeRMeasure"
+                label: qsTr("DC Charger Adapter Battery:")
+                placeholder: qsTr("DC charger adapter for Dell 7230 from battery")
+                settingName: "dcChargerAdapterBattery"
                 Layout.fillWidth: true
             }
         }
 
         CardSection {
-            title: qsTr("Spare parts kit")
+            title: qsTr("Ultrasonic Equipment")
 
             FormField {
-                label: qsTr("Battery charger:")
-                placeholder: qsTr("Battery charger serial number")
-                settingName: "batteryCharger"
+                label: qsTr("Ultrasonic Phased Array PULSAR:")
+                placeholder: qsTr("Ultrasonic phased array PULSAR OEM 16/64")
+                settingName: "ultrasonicPhasedArrayPulsar"
                 Layout.fillWidth: true
             }
 
             FormField {
-                label: qsTr("Tablet charger:")
-                placeholder: qsTr("Tablet charger serial number")
-                settingName: "tabletCharger"
+                label: qsTr("Manual Probe 36°:")
+                placeholder: qsTr("Manual probe 36° RA2.25L16 0.9x10-17")
+                settingName: "manualProbs36"
+                Layout.fillWidth: true
+            }
+
+            FormField {
+                label: qsTr("Straight Probe 0°:")
+                placeholder: qsTr("Straight probe 0° RA5.0L16 0.6x10-17")
+                settingName: "straightProbs0"
                 Layout.fillWidth: true
             }
         }
 
         CardSection {
-            title: qsTr("Additional components")
+            title: qsTr("Cables and Accessories")
 
             FormField {
-                label: qsTr("Manual angle beam probe:")
-                placeholder: qsTr("Manual angle beam probe serial number")
-                settingName: "manualInclined"
+                label: qsTr("DC Battery Box:")
+                placeholder: qsTr("DC battery box")
+                settingName: "dcBatteryBox"
                 Layout.fillWidth: true
             }
 
             FormField {
-                label: qsTr("Normal probe:")
-                placeholder: qsTr("Normal probe serial number")
-                settingName: "straight"
+                label: qsTr("AC/DC Charger Adapter Battery:")
+                placeholder: qsTr("AC/DC charger adapter for battery")
+                settingName: "acDcChargerAdapterBattery"
+                Layout.fillWidth: true
+            }
+        }
+
+        CardSection {
+            title: qsTr("Calibration and Tools")
+
+            FormField {
+                label: qsTr("Calibration Block SO-3R:")
+                placeholder: qsTr("Calibration block SO-3R")
+                settingName: "calibrationBlockSo3r"
                 Layout.fillWidth: true
             }
         }

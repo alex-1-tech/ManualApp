@@ -123,40 +123,62 @@ bool stringToBool(const QString &s) {
           t == QLatin1String("yes") || t == QLatin1String("да") ||
           t == QLatin1String("y"));
 }
-}
+} // namespace
 
 void SettingsManager::fromJson(const QJsonObject &obj) {
   const QMetaObject *meta = this->metaObject();
 
   static const QHash<QString, QString> specialMap = {
-    {QStringLiteral("co3r_measure"), QStringLiteral("coThreeRMeasure")},
-    {QStringLiteral("co_three_r_measure"), QStringLiteral("coThreeRMeasure")},
-    {QStringLiteral("photo_url"), QStringLiteral("photoUrl")},
-    {QStringLiteral("photo_video_url"), QStringLiteral("photoVideoUrl")},
-    {QStringLiteral("flash_drive"), QStringLiteral("flashDrive")},
-    {QStringLiteral("has_ethernet_cable"), QStringLiteral("hasEthernetCable")},
-    {QStringLiteral("has_tablet_screws"), QStringLiteral("hasTabletScrews")},
-    {QStringLiteral("battery_charger"), QStringLiteral("batteryCharger")},
-    {QStringLiteral("tablet_charger"), QStringLiteral("tabletCharger")},
-    {QStringLiteral("calibration_date"), QStringLiteral("calibrationDate")},
-    {QStringLiteral("shipment_date"), QStringLiteral("shipmentDate")},
-    {QStringLiteral("serial_number"), QStringLiteral("serialNumber")},
-    {QStringLiteral("case_number"), QStringLiteral("caseNumber")},
-    {QStringLiteral("manual_inclined"), QStringLiteral("manualInclined")},
-    {QStringLiteral("first_phased_array_converters"), QStringLiteral("firstPhasedArrayConverters")},
-    {QStringLiteral("second_phased_array_converters"), QStringLiteral("secondPhasedArrayConverters")},
-    {QStringLiteral("aos_block"), QStringLiteral("aosBlock")},
-    {QStringLiteral("battery_case"), QStringLiteral("batteryCase")},
-  };
+      // Регистрационные данные
+      {QStringLiteral("serialNumber"), QStringLiteral("serial_number")},
+      {QStringLiteral("shipmentDate"), QStringLiteral("shipment_date")},
+      {QStringLiteral("caseNumber"), QStringLiteral("case_number")},
+
+      // PC tablet компоненты
+      {QStringLiteral("pcTabletDell7230"),
+       QStringLiteral("pc_tablet_dell_7230")},
+      {QStringLiteral("acDcPowerAdapterDell"),
+       QStringLiteral("ac_dc_power_adapter_dell")},
+      {QStringLiteral("dcChargerAdapterBattery"),
+       QStringLiteral("dc_charger_adapter_battery")},
+
+      // Ультразвуковое оборудование
+      {QStringLiteral("ultrasonicPhasedArrayPulsar"),
+       QStringLiteral("ultrasonic_phased_array_pulsar")},
+      {QStringLiteral("manualProbs36"), QStringLiteral("manual_probs_36")},
+      {QStringLiteral("straightProbs0"), QStringLiteral("straight_probs_0")},
+
+      // Кабели и аксессуары
+      {QStringLiteral("hasDcCableBattery"),
+       QStringLiteral("has_dc_cable_battery")},
+      {QStringLiteral("hasEthernetCables"),
+       QStringLiteral("has_ethernet_cables")},
+      {QStringLiteral("dcBatteryBox"), QStringLiteral("dc_battery_box")},
+      {QStringLiteral("acDcChargerAdapterBattery"),
+       QStringLiteral("ac_dc_charger_adapter_battery")},
+
+      // Калибровка и инструменты
+      {QStringLiteral("calibrationBlockSo3r"),
+       QStringLiteral("calibration_block_so_3r")},
+      {QStringLiteral("hasRepairToolBag"),
+       QStringLiteral("has_repair_tool_bag")},
+      {QStringLiteral("hasInstalledNameplate"),
+       QStringLiteral("has_installed_nameplate")},
+
+      // Дополнительные поля
+      {QStringLiteral("notes"), QStringLiteral("notes")}};
 
   auto snakeToCamel = [](const QString &snake) -> QString {
-    if (snake.isEmpty()) return {};
+    if (snake.isEmpty())
+      return {};
     QStringList parts = snake.split('_', Qt::SkipEmptyParts);
-    if (parts.isEmpty()) return {};
+    if (parts.isEmpty())
+      return {};
     QString camel = parts.first();
     for (int i = 1; i < parts.size(); ++i) {
       const QString &p = parts.at(i);
-      if (p.isEmpty()) continue;
+      if (p.isEmpty())
+        continue;
       camel += p.left(1).toUpper() + p.mid(1);
     }
     return camel;
@@ -169,12 +191,12 @@ void SettingsManager::fromJson(const QJsonObject &obj) {
             t == QLatin1String("y"));
   };
 
-
   for (auto it = obj.constBegin(); it != obj.constEnd(); ++it) {
     const QString key = it.key();
     const QJsonValue val = it.value();
 
-    QString propName = specialMap.contains(key) ? specialMap.value(key) : snakeToCamel(key);
+    QString propName =
+        specialMap.contains(key) ? specialMap.value(key) : snakeToCamel(key);
     if (propName.isEmpty()) {
       qDebug() << "SettingsManager::fromJson: empty propName for key" << key;
       continue;
@@ -182,7 +204,8 @@ void SettingsManager::fromJson(const QJsonObject &obj) {
 
     int propIndex = meta->indexOfProperty(propName.toLatin1().constData());
     if (propIndex < 0) {
-      qDebug() << "SettingsManager::fromJson: unknown property for key" << key << "=> tried" << propName;
+      qDebug() << "SettingsManager::fromJson: unknown property for key" << key
+               << "=> tried" << propName;
       continue;
     }
 
@@ -199,34 +222,50 @@ void SettingsManager::fromJson(const QJsonObject &obj) {
           writeVal = QString();
         } else {
           QDate d = QDate::fromString(s, Qt::ISODate);
-          if (d.isValid()) writeVal = d.toString(Qt::ISODate);
-          else writeVal = s;
+          if (d.isValid())
+            writeVal = d.toString(Qt::ISODate);
+          else
+            writeVal = s;
         }
       } else {
         writeVal = QString();
       }
     } else if (prop.userType() == QMetaType::Bool) {
-      if (val.isBool()) writeVal = val.toBool();
-      else if (val.isString()) writeVal = strToBool(val.toString());
-      else if (val.isDouble()) writeVal = (val.toInt() != 0);
-      else writeVal = false;
+      if (val.isBool())
+        writeVal = val.toBool();
+      else if (val.isString())
+        writeVal = strToBool(val.toString());
+      else if (val.isDouble())
+        writeVal = (val.toInt() != 0);
+      else
+        writeVal = false;
     } else if (prop.userType() == QMetaType::Double) {
-      if (val.isDouble()) writeVal = val.toDouble();
+      if (val.isDouble())
+        writeVal = val.toDouble();
       else if (val.isString()) {
         QString s = val.toString().trimmed();
         s.replace(',', '.');
         writeVal = s.isEmpty() ? 0.0 : s.toDouble();
-      } else if (val.isBool()) writeVal = val.toBool() ? 1.0 : 0.0;
-      else writeVal = QVariant(); 
+      } else if (val.isBool())
+        writeVal = val.toBool() ? 1.0 : 0.0;
+      else
+        writeVal = QVariant();
     } else if (prop.userType() == QMetaType::Int) {
-      if (val.isDouble()) writeVal = val.toInt();
-      else if (val.isString()) writeVal = val.toString().toInt();
-      else if (val.isBool()) writeVal = val.toBool() ? 1 : 0;
-      else writeVal = QVariant();
+      if (val.isDouble())
+        writeVal = val.toInt();
+      else if (val.isString())
+        writeVal = val.toString().toInt();
+      else if (val.isBool())
+        writeVal = val.toBool() ? 1 : 0;
+      else
+        writeVal = QVariant();
     } else {
-      if (val.isNull() || val.isUndefined()) writeVal = QString();
-      else if (val.isString()) writeVal = val.toString();
-      else writeVal = val.toVariant();
+      if (val.isNull() || val.isUndefined())
+        writeVal = QString();
+      else if (val.isString())
+        writeVal = val.toString();
+      else
+        writeVal = val.toVariant();
     }
 
     if (writeVal.isValid()) {

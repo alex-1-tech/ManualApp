@@ -81,128 +81,94 @@ ScrollView {
             ]
         }
 
-        // Section: Main components
+        // Section: PC Tablet Components
         SectionView {
-            title: qsTr("Main components")
+            title: qsTr("PC Tablet Components")
             model: [
                 {
-                    label: qsTr("Probe PA2.25L16 1.1х10-17:"),
-                    value: SettingsManager.firstPhasedArrayConverters,
-                    hint: qsTr("Left probe S/N")
+                    label: qsTr("PC Tablet Dell 7230:"),
+                    value: SettingsManager.pcTabletDell7230
                 },
                 {
-                    label: qsTr("Probe PA2.25L16 1.1х10-17:"),
-                    value: SettingsManager.secondPhasedArrayConverters,
-                    hint: qsTr("Right probe S/N")
+                    label: qsTr("AC/DC Power Adapter Dell:"),
+                    value: SettingsManager.acDcPowerAdapterDell
                 },
                 {
-                    label: qsTr("Battery case:"),
-                    value: SettingsManager.batteryCase,
-                    hint: qsTr("Case serial number")
+                    label: qsTr("DC Charger Adapter Battery:"),
+                    value: SettingsManager.dcChargerAdapterBattery
                 }
             ]
         }
 
-        // Section: Blocks and modules
+        // Section: Ultrasonic Equipment
         SectionView {
-            title: qsTr("Blocks and modules")
+            title: qsTr("Ultrasonic Equipment")
             model: [
                 {
-                    label: qsTr("AOS block:"),
-                    value: SettingsManager.aosBlock
+                    label: qsTr("Ultrasonic Phased Array PULSAR:"),
+                    value: SettingsManager.ultrasonicPhasedArrayPulsar
                 },
                 {
-                    label: qsTr("Flash drive:"),
-                    value: SettingsManager.flashDrive
+                    label: qsTr("Manual Probe 36°:"),
+                    value: SettingsManager.manualProbs36
                 },
                 {
-                    label: qsTr("CO-3R:"),
-                    value: SettingsManager.coThreeRMeasure
+                    label: qsTr("Straight Probe 0°:"),
+                    value: SettingsManager.straightProbs0
                 }
             ]
         }
 
-        // Section: Certification and checks
+        // Section: Cables and Accessories
         SectionView {
-            title: qsTr("Certification and checks")
+            title: qsTr("Cables and Accessories")
             model: [
                 {
-                    label: qsTr("Calibration certificate:"),
-                    value: SettingsManager.calibrationCertificate
+                    label: qsTr("DC Cable from Battery:"),
+                    value: mainColumn.getStatusText(SettingsManager.hasDcCableBattery)
                 },
                 {
-                    label: qsTr("Calibration date:"),
-                    value: mainColumn.formatDate(SettingsManager.calibrationDate)
+                    label: qsTr("Ethernet Cables:"),
+                    value: mainColumn.getStatusText(SettingsManager.hasEthernetCables)
+                },
+                {
+                    label: qsTr("DC Battery Box:"),
+                    value: SettingsManager.dcBatteryBox
+                },
+                {
+                    label: qsTr("AC/DC Charger Adapter Battery:"),
+                    value: SettingsManager.acDcChargerAdapterBattery
                 }
             ]
         }
 
-        // Section: Spare parts kit
+        // Section: Calibration and Tools
         SectionView {
-            title: qsTr("Spare parts kit")
+            title: qsTr("Calibration and Tools")
             model: [
                 {
-                    label: qsTr("Tablet screws:"),
-                    value: mainColumn.getStatusText(SettingsManager.hasTabletScrews)
+                    label: qsTr("Calibration Block SO-3R:"),
+                    value: SettingsManager.calibrationBlockSo3r
                 },
                 {
-                    label: qsTr("Ethernet cable:"),
-                    value: mainColumn.getStatusText(SettingsManager.hasEthernetCable)
+                    label: qsTr("Repair Tool Bag:"),
+                    value: mainColumn.getStatusText(SettingsManager.hasRepairToolBag)
                 },
                 {
-                    label: qsTr("Battery charger:"),
-                    value: SettingsManager.batteryCharger
-                },
-                {
-                    label: qsTr("Tablet charger:"),
-                    value: SettingsManager.tabletCharger
-                },
-                {
-                    label: qsTr("Tool kit:"),
-                    value: mainColumn.getStatusText(SettingsManager.hasToolKit)
+                    label: qsTr("Installed Nameplate:"),
+                    value: mainColumn.getStatusText(SettingsManager.hasInstalledNameplate)
                 }
             ]
         }
 
-        // Section: Inspection and documentation
+        // Section: Additional Information
         SectionView {
-            title: qsTr("Inspection and documentation")
+            title: qsTr("Additional Information")
             model: [
-                {
-                    label: qsTr("Software check:"),
-                    value: SettingsManager.softwareCheck
-                },
-                {
-                    label: qsTr("Photo/video URL:"),
-                    value: SettingsManager.photoVideoUrl
-                },
-                {
-                    label: qsTr("Weight (kg):"),
-                    value: SettingsManager.weight != "" ? SettingsManager.weight : "0"
-                },
                 {
                     label: qsTr("Notes:"),
                     value: SettingsManager.notes,
                     isMultiline: true
-                }
-            ]
-        }
-
-        // Section: Additional components
-        SectionView {
-            title: qsTr("Additional components")
-            model: [
-                {
-                    label: qsTr("Manual angle beam probe:"),
-                    value: SettingsManager.manualInclined
-                },
-                {
-                    label: qsTr("Normal probe:"),
-                    value: SettingsManager.straight
-                },
-                {
-                    label: qsTr("Photo URL:"),
-                    value: SettingsManager.photoUrl
                 }
             ]
         }
@@ -287,7 +253,7 @@ ScrollView {
             property var itemData: {}
 
             width: parent.width
-            text: itemData.value || itemData.hint || ""
+            text: itemData.value || ""
             color: Theme.colorTextPrimary
             font.pointSize: Theme.fontSmall
             readOnly: true

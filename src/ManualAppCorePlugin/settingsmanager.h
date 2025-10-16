@@ -43,37 +43,30 @@ class SettingsManager : public QObject {
   DEFINE_DATE_SETTING(shipmentDate)
   DEFINE_SETTING(QString, caseNumber, QString())
 
-  // Main components
-  DEFINE_SETTING(QString, firstPhasedArrayConverters, QString())
-  DEFINE_SETTING(QString, secondPhasedArrayConverters, QString())
-  DEFINE_SETTING(QString, batteryCase, QString())
+  // PC tablet Latitude Dell 7230
+  DEFINE_SETTING(QString, pcTabletDell7230, QString())
+  DEFINE_SETTING(QString, softwareInstallerPath, QString())
+  DEFINE_SETTING(QString, acDcPowerAdapterDell, QString())
+  DEFINE_SETTING(QString, dcChargerAdapterBattery, QString())
 
-  // Blocks and modules
-  DEFINE_SETTING(QString, aosBlock, QString())
-  DEFINE_SETTING(QString, flashDrive, QString())
-  DEFINE_SETTING(QString, coThreeRMeasure, QString())
+  // Ultrasonic equipment
+  DEFINE_SETTING(QString, ultrasonicPhasedArrayPulsar, QString())
+  DEFINE_SETTING(QString, manualProbs36, QString())
+  DEFINE_SETTING(QString, straightProbs0, QString())
 
-  // Certification and checks
-  DEFINE_SETTING(QString, calibrationCertificate, QString())
-  DEFINE_DATE_SETTING(calibrationDate)
+  // Cables and accessories
+  DEFINE_SETTING(bool, hasDcCableBattery, false)
+  DEFINE_SETTING(bool, hasEthernetCables, false)
+  DEFINE_SETTING(QString, dcBatteryBox, QString())
+  DEFINE_SETTING(QString, acDcChargerAdapterBattery, QString())
 
-  // Spare parts kit
-  DEFINE_SETTING(bool, hasTabletScrews, false)
-  DEFINE_SETTING(bool, hasEthernetCable, false)
-  DEFINE_SETTING(QString, batteryCharger, QString())
-  DEFINE_SETTING(QString, tabletCharger, QString())
-  DEFINE_SETTING(bool, hasToolKit, false)
+  // Calibration and tools
+  DEFINE_SETTING(QString, calibrationBlockSo3r, QString())
+  DEFINE_SETTING(bool, hasRepairToolBag, false)
+  DEFINE_SETTING(bool, hasInstalledNameplate, false)
 
-  // Inspection and documentation
-  DEFINE_SETTING(QString, softwareCheck, QString())
-  DEFINE_SETTING(QString, photoVideoUrl, QString())
-  DEFINE_SETTING(double, weight, 0.0)
+  // Дополнительные поля
   DEFINE_SETTING(QString, notes, QString())
-
-  // Additional components
-  DEFINE_SETTING(QString, manualInclined, QString())
-  DEFINE_SETTING(QString, straight, QString())
-  DEFINE_SETTING(QString, photoUrl, QString())
 
   // first run
   DEFINE_SETTING(bool, isFirstRun, true);
