@@ -35,28 +35,30 @@ ScrollView {
                     font.pointSize: 24
                 }
             }
+            
             CardSection {
                 title: qsTr("Registration data")
 
                 FormField {
-                    label: qsTr("Serial number:")
-                    placeholder: qsTr("Unique equipment serial number")
+                    label: qsTr("Serial number")
+                    placeholder: qsTr("serial number of equipment")
                     settingName: "serialNumber"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Case number:")
-                    placeholder: qsTr("Equipment storage case number")
+                    label: qsTr("Case number")
+                    placeholder: qsTr("serial number of equipment storage case")
                     settingName: "caseNumber"
                     Layout.fillWidth: true
                 }
+                
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 8
                     Label {
-                        Layout.preferredWidth: 250
-                        text: qsTr("Shipment date:")
+                        Layout.preferredWidth: root.width < 700? 280: 450
+                        text: qsTr("Shipment date")
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
@@ -67,26 +69,27 @@ ScrollView {
                     }
                 }
             }
+            
             CardSection {
                 title: qsTr("PC Tablet Components")
 
                 FormField {
-                    label: qsTr("PC Tablet Dell 7230:")
-                    placeholder: qsTr("PC tablet Latitude Dell 7230")
+                    label: qsTr("PC tablet Latitude Dell 7230")
+                    placeholder: qsTr("serial number of PC tablet Latitude Dell 7230")
                     settingName: "pcTabletDell7230"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("AC/DC Power Adapter Dell:")
-                    placeholder: qsTr("AC/DC power adapter for Dell 7230")
+                    label: qsTr("AC/DC Power adapter for Dell 7230")
+                    placeholder: qsTr("serial number of AC/DC Power adapter for Dell 7230")
                     settingName: "acDcPowerAdapterDell"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("DC Charger Adapter Battery:")
-                    placeholder: qsTr("DC charger adapter for Dell 7230 from battery")
+                    label: qsTr("DC Charger adapter for Dell 7230 from battery")
+                    placeholder: qsTr("serial number of DC Charger adapter for Dell 7230 from battery")
                     settingName: "dcChargerAdapterBattery"
                     Layout.fillWidth: true
                 }
@@ -96,36 +99,32 @@ ScrollView {
                 title: qsTr("Ultrasonic Equipment")
 
                 FormField {
-                    label: qsTr("Ultrasonic Phased Array PULSAR:")
-                    placeholder: qsTr("Ultrasonic phased array PULSAR OEM 16/64")
+                    label: qsTr("Ultrasonic phased array PULSAR OEM 16/64 established")
+                    placeholder: qsTr("serial number of Ultrasonic phased array PULSAR OEM 16/64 established")
                     settingName: "ultrasonicPhasedArrayPulsar"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Manual Probe 36°:")
-                    placeholder: qsTr("Manual probe 36° RA2.25L16 0.9x10-17")
+                    label: qsTr("Manual probs 36° RA2.25L16 0.9x10-17")
+                    placeholder: qsTr("serial number of Manual probs 36° RA2.25L16 0.9x10-17")
                     settingName: "manualProbs36"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("Straight Probe 0°:")
-                    placeholder: qsTr("Straight probe 0° RA5.0L16 0.6x10-17")
+                    label: qsTr("Straight probs 0° RA5.0L16 0.6x10-17")
+                    placeholder: qsTr("serial number of Straight probs 0° RA5.0L16 0.6x10-17")
                     settingName: "straightProbs0"
                     Layout.fillWidth: true
                 }
-            }
-
-            CardSection {
-                title: qsTr("Cables and Accessories")
 
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 8
                     Label {
-                        Layout.preferredWidth: 250
-                        text: qsTr("DC Cable from Battery:")
+                        Layout.preferredWidth: root.width < 700? 280: 450
+                        text: qsTr("DC Cable from Battery")
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
@@ -141,8 +140,8 @@ ScrollView {
                     Layout.fillWidth: true
                     spacing: 8
                     Label {
-                        Layout.preferredWidth: 250
-                        text: qsTr("Ethernet Cables:")
+                        Layout.preferredWidth: root.width < 700? 280: 450
+                        text: qsTr("Ethernet Cables")
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
@@ -153,28 +152,34 @@ ScrollView {
                         Layout.columnSpan: 1
                     }
                 }
+            }
+
+            CardSection {
+                title: qsTr("Battery and Charging")
 
                 FormField {
-                    label: qsTr("DC Battery Box:")
-                    placeholder: qsTr("DC battery box")
+                    label: qsTr("DC Battery box established")
+                    placeholder: qsTr("serial number of DC Battery box established")
                     settingName: "dcBatteryBox"
                     Layout.fillWidth: true
                 }
 
                 FormField {
-                    label: qsTr("AC/DC Charger Adapter Battery:")
-                    placeholder: qsTr("AC/DC charger adapter for battery")
+                    label: qsTr("AC/DC Charger adapter for battery 2")
+                    placeholder: qsTr("serial number of AC/DC Charger adapter for battery 2")
                     settingName: "acDcChargerAdapterBattery"
                     Layout.fillWidth: true
                 }
+
+                
             }
 
             CardSection {
                 title: qsTr("Calibration and Tools")
 
                 FormField {
-                    label: qsTr("Calibration Block SO-3R:")
-                    placeholder: qsTr("Calibration block SO-3R")
+                    label: qsTr("Calibration bloc SO-3R")
+                    placeholder: qsTr("serial number of Calibration bloc SO-3R")
                     settingName: "calibrationBlockSo3r"
                     Layout.fillWidth: true
                 }
@@ -183,8 +188,8 @@ ScrollView {
                     Layout.fillWidth: true
                     spacing: 8
                     Label {
-                        Layout.preferredWidth: 250
-                        text: qsTr("Repair Tool Bag:")
+                        Layout.preferredWidth: root.width < 700? 280: 450
+                        text: qsTr("Small repair tool witch bag")
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
@@ -200,8 +205,8 @@ ScrollView {
                     Layout.fillWidth: true
                     spacing: 8
                     Label {
-                        Layout.preferredWidth: 250
-                        text: qsTr("Installed Nameplate:")
+                        Layout.preferredWidth: root.width < 700? 280: 450
+                        text: qsTr("Installed nameplate with serial number")
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
@@ -218,7 +223,7 @@ ScrollView {
                 title: qsTr("Additional Information")
 
                 FormField {
-                    label: qsTr("Notes:")
+                    label: qsTr("Notes")
                     placeholder: qsTr("Additional notes and comments")
                     settingName: "notes"
                     Layout.fillWidth: true
@@ -250,11 +255,13 @@ ScrollView {
                     verticalAlignment: Text.AlignVCenter
                 }
             }
+            
             Item {
                 Layout.fillHeight: true
                 Layout.minimumHeight: 400
             }
         }
+        
         Dialog {
             id: confirmDialog
             modal: true
@@ -268,6 +275,7 @@ ScrollView {
                 radius: 5
                 border.color: Theme.colorBorder
             }
+            
             contentItem: ColumnLayout {
                 spacing: 20
 

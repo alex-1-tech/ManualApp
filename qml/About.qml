@@ -68,15 +68,15 @@ ScrollView {
             title: qsTr("Registration data")
             model: [
                 {
-                    label: qsTr("Serial number:"),
+                    label: qsTr("Serial number"),
                     value: SettingsManager.serialNumber
                 },
                 {
-                    label: qsTr("Shipment date:"),
+                    label: qsTr("Shipment date"),
                     value: mainColumn.formatDate(SettingsManager.shipmentDate)
                 },
                 {
-                    label: qsTr("Case number:"),
+                    label: qsTr("Case number"),
                     value: SettingsManager.caseNumber
                 }
             ]
@@ -87,15 +87,15 @@ ScrollView {
             title: qsTr("PC Tablet Components")
             model: [
                 {
-                    label: qsTr("PC Tablet Dell 7230:"),
+                    label: qsTr("PC tablet Latitude Dell 7230"),
                     value: SettingsManager.pcTabletDell7230
                 },
                 {
-                    label: qsTr("AC/DC Power Adapter Dell:"),
+                    label: qsTr("AC/DC Power adapter for Dell 7230"),
                     value: SettingsManager.acDcPowerAdapterDell
                 },
                 {
-                    label: qsTr("DC Charger Adapter Battery:"),
+                    label: qsTr("DC Charger adapter for Dell 7230 from battery"),
                     value: SettingsManager.dcChargerAdapterBattery
                 }
             ]
@@ -106,38 +106,38 @@ ScrollView {
             title: qsTr("Ultrasonic Equipment")
             model: [
                 {
-                    label: qsTr("Ultrasonic Phased Array PULSAR:"),
+                    label: qsTr("Ultrasonic phased array PULSAR OEM 16/64 established"),
                     value: SettingsManager.ultrasonicPhasedArrayPulsar
                 },
                 {
-                    label: qsTr("Manual Probe 36°:"),
+                    label: qsTr("Manual probs 36° RA2.25L16 0.9x10-17"),
                     value: SettingsManager.manualProbs36
                 },
                 {
-                    label: qsTr("Straight Probe 0°:"),
+                    label: qsTr("Straight probs 0° RA5.0L16 0.6x10-17"),
                     value: SettingsManager.straightProbs0
+                },
+                {
+                    label: qsTr("DC Cable from Battery"),
+                    value: mainColumn.getStatusText(SettingsManager.hasDcCableBattery)
+                },
+                {
+                    label: qsTr("Ethernet Cables"),
+                    value: mainColumn.getStatusText(SettingsManager.hasEthernetCables)
                 }
             ]
         }
 
-        // Section: Cables and Accessories
+        // Section: Battery and Charging
         SectionView {
-            title: qsTr("Cables and Accessories")
+            title: qsTr("Battery and Charging")
             model: [
                 {
-                    label: qsTr("DC Cable from Battery:"),
-                    value: mainColumn.getStatusText(SettingsManager.hasDcCableBattery)
-                },
-                {
-                    label: qsTr("Ethernet Cables:"),
-                    value: mainColumn.getStatusText(SettingsManager.hasEthernetCables)
-                },
-                {
-                    label: qsTr("DC Battery Box:"),
+                    label: qsTr("DC Battery box established"),
                     value: SettingsManager.dcBatteryBox
                 },
                 {
-                    label: qsTr("AC/DC Charger Adapter Battery:"),
+                    label: qsTr("AC/DC Charger adapter for battery 2"),
                     value: SettingsManager.acDcChargerAdapterBattery
                 }
             ]
@@ -148,15 +148,15 @@ ScrollView {
             title: qsTr("Calibration and Tools")
             model: [
                 {
-                    label: qsTr("Calibration Block SO-3R:"),
+                    label: qsTr("Calibration bloc SO-3R"),
                     value: SettingsManager.calibrationBlockSo3r
                 },
                 {
-                    label: qsTr("Repair Tool Bag:"),
+                    label: qsTr("Small repair tool witch bag"),
                     value: mainColumn.getStatusText(SettingsManager.hasRepairToolBag)
                 },
                 {
-                    label: qsTr("Installed Nameplate:"),
+                    label: qsTr("Installed nameplate with serial number"),
                     value: mainColumn.getStatusText(SettingsManager.hasInstalledNameplate)
                 }
             ]
@@ -167,7 +167,7 @@ ScrollView {
             title: qsTr("Additional Information")
             model: [
                 {
-                    label: qsTr("Notes:"),
+                    label: qsTr("Notes"),
                     value: SettingsManager.notes,
                     isMultiline: true
                 }
@@ -218,8 +218,8 @@ ScrollView {
                     font.pointSize: Theme.fontSmall
                     font.bold: true
                     Layout.alignment: Qt.AlignTop
-                    Layout.minimumWidth: 320
-                    Layout.maximumWidth: 320
+                    Layout.minimumWidth: 450
+                    Layout.maximumWidth: 450
                 }
 
                 // Use conditional component creation
