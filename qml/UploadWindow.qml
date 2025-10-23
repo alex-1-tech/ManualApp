@@ -89,7 +89,7 @@ Item {
             script: {
                 if (!uploadProcess.hasError) {
                     statusText.text = qsTr("Uploading settings to server...");
-                    DataManager.uploadSettingsToDjango("http://127.0.0.1:8000/api/kalmar32/");
+                    DataManager.uploadSettingsToDjango(DataManager.djangoBaseUrl() + "/api/kalmar32/");
                     uploadProgress.value = 2;
                 }
             }
@@ -102,7 +102,7 @@ Item {
             script: {
                 if (!uploadProcess.hasError) {
                     statusText.text = qsTr("Uploading report to server...");
-                    DataManager.uploadReportToDjango("http://127.0.0.1:8000/api/report/");
+                    DataManager.uploadReportToDjango(DataManager.djangoBaseUrl() + "/api/report/");
                     uploadProgress.value = 3;
                 }
             }

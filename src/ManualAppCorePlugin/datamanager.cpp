@@ -6,12 +6,11 @@
 #include "utils.h"
 
 #include <QCoreApplication>
+#include <QDebug>
 #include <QDir>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QTimer>
-#include <qcoreapplication.h>
-#include <qdebug.h>
-#include <qjsonarray.h>
-#include <qjsonobject.h>
 
 DataManager::DataManager(QObject *parent) : QObject(parent) {
 
@@ -20,7 +19,6 @@ DataManager::DataManager(QObject *parent) : QObject(parent) {
       new NetworkService(fileService, nullptr, this);
   m_reportManager = new ReportManager(fileService, networkService, this);
   networkService->setReportManager(m_reportManager);
-  m_appVersion = "1.0.4";
 
   DEBUG_COLORED("DataManager", "Constructor", "DataManager initialized",
                 COLOR_CYAN, COLOR_CYAN);
@@ -222,7 +220,6 @@ void DataManager::uploadSettingsToDjango(const QUrl &apiUrl) {
     setError("SettingsManager не инициализирован");
     return;
   }
-
   QJsonObject json = m_reportManager->settingsManager()->toJsonForDjango();
   if (json.isEmpty()) {
     setError("Failed to load JSON settings.");
@@ -230,6 +227,7 @@ void DataManager::uploadSettingsToDjango(const QUrl &apiUrl) {
   }
 
   setLoading(true);
+  qDebug() << json;
   m_reportManager->networkService()->uploadJsonToDjango(apiUrl, json);
 }
 QString DataManager::getReportDirPath() const {
@@ -258,7 +256,8 @@ void DataManager::syncReportsWithServer() {
     return;
   }
 
-  QUrl apiUrl(QString("http://127.0.0.1:8000/api/kalmar32/%1/get_reports")
+  QUrl apiUrl(QString(djangoBaseUrl() +
+                      "/api/kalmar32/%1/get_reports")
                   .arg(serialNumber));
 
   setLoading(true);
@@ -386,7 +385,7 @@ void DataManager::startNextUpload() {
   m_isUploading = true;
   QList nextReportList = m_pendingReports.dequeue();
 
-  QString apiUrl = "http://127.0.0.1:8000/api/report/";
+  QString apiUrl = djangoBaseUrl() + "/api/report/";
 
   DEBUG_COLORED("DataManager", "startNextUpload",
                 QString("Starting upload of report: %1, remaining: %2")

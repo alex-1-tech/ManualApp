@@ -42,6 +42,7 @@
 
 .cache/
 .vscode/
+.config.ini
 CMakeLists.txt.user
 build/
 build-win/

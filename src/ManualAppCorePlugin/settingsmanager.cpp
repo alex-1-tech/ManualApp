@@ -2,133 +2,13 @@
 #include "utils.h"
 #include <QDebug>
 #include <QMetaProperty>
-
-SettingsManager::SettingsManager(QObject *parent)
-    : QObject(parent), m_settings("votum", "ManualApp") {
-  loadAllSettings();
-  // m_settings.clear();
-}
-
-void SettingsManager::completeFirstRun() {
-  DEBUG_COLORED("SettingsManager", "completeFirstRun", "first init settings",
-                COLOR_MAGENTA, COLOR_MAGENTA);
-  m_settings.setValue("isFirstRun", false);
-}
-void SettingsManager::saveAllSettings() {
-  const QMetaObject *meta = this->metaObject();
-  for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
-    QMetaProperty prop = meta->property(i);
-    if (!prop.isReadable())
-      continue;
-
-    QVariant value = prop.read(this);
-
-    if (value.canConvert<QDate>()) {
-      m_settings.setValue(prop.name(), value.toDate().toString(Qt::ISODate));
-    } else {
-      m_settings.setValue(prop.name(), value);
-    }
-  }
-}
-
-void SettingsManager::loadAllSettings() {
-  const QMetaObject *meta = this->metaObject();
-  for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
-    QMetaProperty prop = meta->property(i);
-    if (!prop.isWritable())
-      continue;
-
-    if (!m_settings.contains(prop.name()))
-      continue;
-
-    QVariant val = m_settings.value(prop.name());
-
-    if (prop.userType() == QMetaType::QDate) {
-      QDate date = QDate::fromString(val.toString(), Qt::ISODate);
-      prop.write(this, date);
-    } else {
-      prop.write(this, val);
-    }
-  }
-}
-
-void SettingsManager::debugPrint() const {
-  const QMetaObject *meta = this->metaObject();
-  for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
-    QMetaProperty prop = meta->property(i);
-    QVariant value = prop.read(this);
-    qDebug() << prop.name() << "=" << value;
-  }
-}
-QJsonObject SettingsManager::toJsonForDjango() const {
-  QJsonObject obj;
-  const QMetaObject *meta = this->metaObject();
-  for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
-    QMetaProperty prop = meta->property(i);
-    if (!prop.isReadable())
-      continue;
-
-    QVariant value = prop.read(this);
-    const int type = value.userType();
-
-    QString originalName = prop.name();
-    QString snakeCaseName;
-
-    for (int i = 0; i < originalName.length(); ++i) {
-      QChar c = originalName.at(i);
-      if (c.isUpper()) {
-        snakeCaseName += '_' + c.toLower();
-      } else {
-        snakeCaseName += c;
-      }
-    }
-
-    if (snakeCaseName == "co_three_r_measure")
-      snakeCaseName = "co3r_measure";
-    // Обработка QDate → строка (ISO 8601)
-    if (type == QMetaType::QDate) {
-      QDate date = value.toDate();
-      if (date.isValid())
-        obj[snakeCaseName] = date.toString(Qt::ISODate);
-    } else {
-      obj[snakeCaseName] = QJsonValue::fromVariant(value);
-    }
-  }
-
-  return obj;
-}
+#include <QJsonObject>
+#include <QJsonValue>
 
 namespace {
-QString snakeToCamel(const QString &snake) {
-  if (snake.isEmpty())
-    return QString();
 
-  QStringList parts = snake.split('_', Qt::SkipEmptyParts);
-  if (parts.isEmpty())
-    return QString();
-
-  QString camel = parts.first();
-  for (int i = 1; i < parts.size(); ++i) {
-    QString p = parts.at(i);
-    if (p.isEmpty())
-      continue;
-    camel += p.left(1).toUpper() + p.mid(1);
-  }
-  return camel;
-}
-
-bool stringToBool(const QString &s) {
-  QString t = s.trimmed().toLower();
-  return (t == QLatin1String("true") || t == QLatin1String("1") ||
-          t == QLatin1String("yes") || t == QLatin1String("да") ||
-          t == QLatin1String("y"));
-}
-} // namespace
-
-void SettingsManager::fromJson(const QJsonObject &obj) {
-  const QMetaObject *meta = this->metaObject();
-
-  static const QHash<QString, QString> specialMap = {
+const QHash<QString, QString> &specialCamelToSnake() {
+  static const QHash<QString, QString> map = {
       // Регистрационные данные
       {QStringLiteral("serialNumber"), QStringLiteral("serial_number")},
       {QStringLiteral("shipmentDate"), QStringLiteral("shipment_date")},
@@ -166,37 +46,137 @@ void SettingsManager::fromJson(const QJsonObject &obj) {
        QStringLiteral("has_installed_nameplate")},
 
       // Дополнительные поля
-      {QStringLiteral("notes"), QStringLiteral("notes")}};
+      {QStringLiteral("notes"), QStringLiteral("notes")}
+  };
+  return map;
+}
 
-  auto snakeToCamel = [](const QString &snake) -> QString {
-    if (snake.isEmpty())
-      return {};
-    QStringList parts = snake.split('_', Qt::SkipEmptyParts);
-    if (parts.isEmpty())
-      return {};
-    QString camel = parts.first();
-    for (int i = 1; i < parts.size(); ++i) {
-      const QString &p = parts.at(i);
-      if (p.isEmpty())
-        continue;
-      camel += p.left(1).toUpper() + p.mid(1);
+const QHash<QString, QString> &specialSnakeToCamel() {
+  static QHash<QString, QString> rev;
+  if (rev.isEmpty()) {
+    const QHash<QString, QString> &fwd = specialCamelToSnake();
+    for (auto it = fwd.constBegin(); it != fwd.constEnd(); ++it) {
+      rev.insert(it.value(), it.key());
     }
-    return camel;
-  };
+  }
+  return rev;
+}
 
-  auto strToBool = [](const QString &s) -> bool {
-    const QString t = s.trimmed().toLower();
-    return (t == QLatin1String("true") || t == QLatin1String("1") ||
-            t == QLatin1String("yes") || t == QLatin1String("да") ||
-            t == QLatin1String("y"));
-  };
+bool stringToBool(const QString &s) {
+  QString t = s.trimmed().toLower();
+  return (t == QLatin1String("true") || t == QLatin1String("1") ||
+          t == QLatin1String("yes") || t == QLatin1String("да") ||
+          t == QLatin1String("y"));
+}
+
+} // namespace
+
+SettingsManager::SettingsManager(QObject *parent)
+    : QObject(parent), m_settings("votum", "ManualApp") {
+  loadAllSettings();
+  // m_settings.clear();
+}
+
+void SettingsManager::completeFirstRun() {
+  DEBUG_COLORED("SettingsManager", "completeFirstRun", "first init settings",
+                COLOR_MAGENTA, COLOR_MAGENTA);
+  m_settings.setValue("isFirstRun", false);
+}
+
+void SettingsManager::saveAllSettings() {
+  const QMetaObject *meta = this->metaObject();
+  for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
+    QMetaProperty prop = meta->property(i);
+    if (!prop.isReadable())
+      continue;
+
+    QVariant value = prop.read(this);
+
+    // Сохраняем QDate как ISO-строку, остальные типы — как есть
+    if (value.canConvert<QDate>()) {
+      m_settings.setValue(prop.name(), value.toDate().toString(Qt::ISODate));
+    } else {
+      m_settings.setValue(prop.name(), value);
+    }
+  }
+}
+
+void SettingsManager::loadAllSettings() {
+  const QMetaObject *meta = this->metaObject();
+  for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
+    QMetaProperty prop = meta->property(i);
+    if (!prop.isWritable())
+      continue;
+
+    if (!m_settings.contains(prop.name()))
+      continue;
+
+    QVariant val = m_settings.value(prop.name());
+
+    if (prop.userType() == QMetaType::QDate) {
+      QDate date = QDate::fromString(val.toString(), Qt::ISODate);
+      prop.write(this, date);
+    } else {
+      prop.write(this, val);
+    }
+  }
+}
+
+void SettingsManager::debugPrint() const {
+  const QMetaObject *meta = this->metaObject();
+  for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
+    QMetaProperty prop = meta->property(i);
+    QVariant value = prop.read(this);
+    qDebug() << prop.name() << "=" << value;
+  }
+}
+
+QJsonObject SettingsManager::toJsonForDjango() const {
+  QJsonObject obj;
+  const QMetaObject *meta = this->metaObject();
+  const QHash<QString, QString> &special = specialCamelToSnake();
+
+  for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
+    QMetaProperty prop = meta->property(i);
+    if (!prop.isReadable())
+      continue;
+
+    QVariant value = prop.read(this);
+    const int type = value.userType();
+
+    QString originalName = QString::fromLatin1(prop.name());
+    QString outKey;
+    if (special.contains(originalName)) {
+      outKey = special.value(originalName);
+    } else {
+      continue;
+    }
+
+    if (type == QMetaType::QDate) {
+      QDate date = value.toDate();
+      if (date.isValid())
+        obj[outKey] = date.toString(Qt::ISODate);
+      else
+        obj[outKey] = QString();
+    } else {
+      obj[outKey] = QJsonValue::fromVariant(value);
+    }
+  }
+
+  return obj;
+}
+
+void SettingsManager::fromJson(const QJsonObject &obj) {
+  const QMetaObject *meta = this->metaObject();
+  const QHash<QString, QString> &specialRev = specialSnakeToCamel();
 
   for (auto it = obj.constBegin(); it != obj.constEnd(); ++it) {
     const QString key = it.key();
     const QJsonValue val = it.value();
 
     QString propName =
-        specialMap.contains(key) ? specialMap.value(key) : snakeToCamel(key);
+        specialRev.contains(key) ? specialRev.value(key) : key;
+
     if (propName.isEmpty()) {
       qDebug() << "SettingsManager::fromJson: empty propName for key" << key;
       continue;
@@ -210,9 +190,7 @@ void SettingsManager::fromJson(const QJsonObject &obj) {
     }
 
     QMetaProperty prop = meta->property(propIndex);
-
     QString settingsKey = QString::fromLatin1(prop.name());
-
     QVariant writeVal;
 
     if (prop.userType() == QMetaType::QDate) {
@@ -234,7 +212,7 @@ void SettingsManager::fromJson(const QJsonObject &obj) {
       if (val.isBool())
         writeVal = val.toBool();
       else if (val.isString())
-        writeVal = strToBool(val.toString());
+        writeVal = stringToBool(val.toString());
       else if (val.isDouble())
         writeVal = (val.toInt() != 0);
       else

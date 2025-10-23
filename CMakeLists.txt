@@ -164,6 +164,12 @@ if(WIN32)
     deploy_qt_app(ManualApp)
 endif()
 
+configure_file(
+    ${CMAKE_SOURCE_DIR}/.config.ini
+    ${CMAKE_BINARY_DIR}/.config.ini
+    COPYONLY
+)
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     QT_QML_RESOURCE_USE_URI_PATHS
 )

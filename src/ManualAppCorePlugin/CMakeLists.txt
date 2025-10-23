@@ -13,6 +13,7 @@ qt_add_qml_module(ManualAppCorePlugin
         networkservice.cpp networkservice.h
         pdfexporter.cpp pdfexporter.h
         reportmanager.cpp reportmanager.h
+        configmanager.cpp configmanager.h
         step.h
         utils.h
 )

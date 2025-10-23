@@ -20,9 +20,6 @@ Item {
                 DataManager.setStartTime(Qt.formatDateTime(new Date(), "yyyy-MM-dd"));
                 DataManager.setCurrentNumberTO(numberTO);
                 DataManager.save(true);
-                // DataManager.uploadSettingsToDjango("  api/kalmar32/");
-                // DataManager.uploadReportToDjango("http://127.0.0.1:8000/api/report/");
-                DataManager.save(true);
                 if (DataManager.load(":/media/jsons/" + file))
                     if(numberTO == "TO-2"){
                         stackView.push("UploadReport.qml", {

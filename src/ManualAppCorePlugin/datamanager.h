@@ -1,5 +1,6 @@
 #pragma once
 
+#include "configmanager.h"
 #include "reportmanager.h"
 #include "stepmodel.h"
 #include <QObject>
@@ -55,7 +56,13 @@ public:
   Q_INVOKABLE void setDefectDetails(int index, const QString &description,
                                     const QString &repairMethod,
                                     Step::DefectDetails::FixStatus fixStatus);
-
+  // Q_INVOKABLE methods - Config Operations
+  Q_INVOKABLE QString djangoBaseUrl() const {
+    return ConfigManager::instance().djangoBaseUrl();
+  };
+  Q_INVOKABLE QString appVersion() const {
+    return ConfigManager::instance().appVersion();
+  };
   // Q_INVOKABLE methods - TO Operations
   Q_INVOKABLE void setCurrentNumberTO(const QString &numberTO);
   Q_INVOKABLE QString currentNumberTO();
@@ -73,7 +80,6 @@ public:
   Q_INVOKABLE QStringList getFixStatusOptions() const;
   Q_INVOKABLE bool createArchive(const QString &folderPath,
                                  const QString &mode);
-  Q_INVOKABLE QString appVersion() const { return m_appVersion; }
   Q_INVOKABLE QString getReportDirPath() const;
 
   // Property getters
@@ -122,7 +128,6 @@ private:
   // State management
   bool m_loading = false;
   QString m_error;
-  QString m_appVersion;
   bool m_isUploading = false;
 
   // Core components
