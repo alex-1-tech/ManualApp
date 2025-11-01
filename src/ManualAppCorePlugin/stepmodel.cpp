@@ -82,53 +82,54 @@ void StepModel::updateStep(int index, const Step &step) {
 }
 
 void StepModel::setStepStatus(int index, Step::CompletionStatus status) {
-    if (index >= 0 && index < static_cast<int>(m_steps.size())) {
-        m_steps[index].completionStatus = status;
-        if (status != Step::CompletionStatus::HasDefect) {
-            m_steps[index].defectDetails = Step::DefectDetails{};
-        }
-        QVector<int> roles = {StatusRole, HasDefectRole, DefectDescriptionRole, DefectRepairMethodRole, DefectFixStatus};
-        emit dataChanged(this->index(index), this->index(index), roles);
+  if (index >= 0 && index < static_cast<int>(m_steps.size())) {
+    m_steps[index].completionStatus = status;
+    if (status != Step::CompletionStatus::HasDefect) {
+      m_steps[index].defectDetails = Step::DefectDetails{};
     }
+    QVector<int> roles = {StatusRole, HasDefectRole, DefectDescriptionRole,
+                          DefectRepairMethodRole, DefectFixStatus};
+    emit dataChanged(this->index(index), this->index(index), roles);
+  }
 }
 
-void StepModel::setTitle(int index, const QString& title) {
-    if (index >= 0 && index < static_cast<int>(m_steps.size())) {
-        if (m_steps[index].title != title) {
-            m_steps[index].title = title;
-            QVector<int> roles = {TitleRole};
-            emit dataChanged(this->index(index), this->index(index), roles);
-        }
+void StepModel::setTitle(int index, const QString &title) {
+  if (index >= 0 && index < static_cast<int>(m_steps.size())) {
+    if (m_steps[index].title != title) {
+      m_steps[index].title = title;
+      QVector<int> roles = {TitleRole};
+      emit dataChanged(this->index(index), this->index(index), roles);
     }
+  }
 }
 
-void StepModel::setDefectDescription(int index, const QString& description) {
-    if (index >= 0 && index < static_cast<int>(m_steps.size())) {
-        if (m_steps[index].defectDetails.description != description) {
-            m_steps[index].defectDetails.description = description;
-            QVector<int> roles = {DefectDescriptionRole};
-            emit dataChanged(this->index(index), this->index(index), roles);
-        }
+void StepModel::setDefectDescription(int index, const QString &description) {
+  if (index >= 0 && index < static_cast<int>(m_steps.size())) {
+    if (m_steps[index].defectDetails.description != description) {
+      m_steps[index].defectDetails.description = description;
+      QVector<int> roles = {DefectDescriptionRole};
+      emit dataChanged(this->index(index), this->index(index), roles);
     }
+  }
 }
 
-void StepModel::setDefectRepairMethod(int index, const QString& method) {
-    if (index >= 0 && index < static_cast<int>(m_steps.size())) {
-        if (m_steps[index].defectDetails.repairMethod != method) {
-            m_steps[index].defectDetails.repairMethod = method;
-            QVector<int> roles = {DefectRepairMethodRole};
-            emit dataChanged(this->index(index), this->index(index), roles);
-        }
+void StepModel::setDefectRepairMethod(int index, const QString &method) {
+  if (index >= 0 && index < static_cast<int>(m_steps.size())) {
+    if (m_steps[index].defectDetails.repairMethod != method) {
+      m_steps[index].defectDetails.repairMethod = method;
+      QVector<int> roles = {DefectRepairMethodRole};
+      emit dataChanged(this->index(index), this->index(index), roles);
     }
+  }
 }
 
-void StepModel::setDefectFixStatus(int index, Step::DefectDetails::FixStatus status) {
-    if (index >= 0 && index < static_cast<int>(m_steps.size())) {
-        if (m_steps[index].defectDetails.fixStatus != status) {
-            m_steps[index].defectDetails.fixStatus = status;
-            QVector<int> roles = {DefectFixStatus};
-            emit dataChanged(this->index(index), this->index(index), roles);
-        }
+void StepModel::setDefectFixStatus(int index,
+                                   Step::DefectDetails::FixStatus status) {
+  if (index >= 0 && index < static_cast<int>(m_steps.size())) {
+    if (m_steps[index].defectDetails.fixStatus != status) {
+      m_steps[index].defectDetails.fixStatus = status;
+      QVector<int> roles = {DefectFixStatus};
+      emit dataChanged(this->index(index), this->index(index), roles);
     }
+  }
 }
-

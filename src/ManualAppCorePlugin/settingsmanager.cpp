@@ -1,9 +1,10 @@
 ﻿#include "settingsmanager.h"
 #include "utils.h"
 #include <QDebug>
-#include <QMetaProperty>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QMetaProperty>
+
 
 namespace {
 
@@ -13,40 +14,8 @@ const QHash<QString, QString> &specialCamelToSnake() {
       {QStringLiteral("serialNumber"), QStringLiteral("serial_number")},
       {QStringLiteral("shipmentDate"), QStringLiteral("shipment_date")},
       {QStringLiteral("caseNumber"), QStringLiteral("case_number")},
-
-      // PC tablet компоненты
-      {QStringLiteral("pcTabletDell7230"),
-       QStringLiteral("pc_tablet_dell_7230")},
-      {QStringLiteral("acDcPowerAdapterDell"),
-       QStringLiteral("ac_dc_power_adapter_dell")},
-      {QStringLiteral("dcChargerAdapterBattery"),
-       QStringLiteral("dc_charger_adapter_battery")},
-
-      // Ультразвуковое оборудование
-      {QStringLiteral("ultrasonicPhasedArrayPulsar"),
-       QStringLiteral("ultrasonic_phased_array_pulsar")},
-      {QStringLiteral("manualProbs36"), QStringLiteral("manual_probs_36")},
-      {QStringLiteral("straightProbs0"), QStringLiteral("straight_probs_0")},
-
-      // Кабели и аксессуары
-      {QStringLiteral("hasDcCableBattery"),
-       QStringLiteral("has_dc_cable_battery")},
-      {QStringLiteral("hasEthernetCables"),
-       QStringLiteral("has_ethernet_cables")},
-      {QStringLiteral("dcBatteryBox"), QStringLiteral("dc_battery_box")},
-      {QStringLiteral("acDcChargerAdapterBattery"),
-       QStringLiteral("ac_dc_charger_adapter_battery")},
-
-      // Калибровка и инструменты
-      {QStringLiteral("calibrationBlockSo3r"),
-       QStringLiteral("calibration_block_so_3r")},
-      {QStringLiteral("hasRepairToolBag"),
-       QStringLiteral("has_repair_tool_bag")},
-      {QStringLiteral("hasInstalledNameplate"),
-       QStringLiteral("has_installed_nameplate")},
-
-      // Дополнительные поля
-      {QStringLiteral("notes"), QStringLiteral("notes")}
+      {QStringLiteral("notes"), QStringLiteral("notes")},
+      // {QStringLiteral("currentModel"), QStringLiteral("equipment_type")}
   };
   return map;
 }
@@ -72,9 +41,14 @@ bool stringToBool(const QString &s) {
 } // namespace
 
 SettingsManager::SettingsManager(QObject *parent)
-    : QObject(parent), m_settings("votum", "ManualApp") {
+    : QObject(parent), m_settings("votum", "ManualApp"),
+      m_kalmarSettings(new Kalmar32Settings(this)),
+      m_phasarSettings(new Phasar32Settings(this)) {
   loadAllSettings();
-  // m_settings.clear();
+}
+
+SettingsManager::~SettingsManager() {
+  // QObject parent-child relationship handles deletion
 }
 
 void SettingsManager::completeFirstRun() {
@@ -82,8 +56,12 @@ void SettingsManager::completeFirstRun() {
                 COLOR_MAGENTA, COLOR_MAGENTA);
   m_settings.setValue("isFirstRun", false);
 }
-
+void SettingsManager::saveModelSettings() {
+  m_kalmarSettings->saveToSettings(m_settings);
+  m_phasarSettings->saveToSettings(m_settings);
+}
 void SettingsManager::saveAllSettings() {
+  // Save common properties
   const QMetaObject *meta = this->metaObject();
   for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
     QMetaProperty prop = meta->property(i);
@@ -99,9 +77,14 @@ void SettingsManager::saveAllSettings() {
       m_settings.setValue(prop.name(), value);
     }
   }
+
+  // Save model-specific settings
+  m_kalmarSettings->saveToSettings(m_settings);
+  m_phasarSettings->saveToSettings(m_settings);
 }
 
 void SettingsManager::loadAllSettings() {
+  // Load common properties
   const QMetaObject *meta = this->metaObject();
   for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
     QMetaProperty prop = meta->property(i);
@@ -120,9 +103,14 @@ void SettingsManager::loadAllSettings() {
       prop.write(this, val);
     }
   }
+
+  // Load model-specific settings
+  m_kalmarSettings->loadFromSettings(m_settings);
+  m_phasarSettings->loadFromSettings(m_settings);
 }
 
 void SettingsManager::debugPrint() const {
+  qDebug() << "=== Common Settings ===";
   const QMetaObject *meta = this->metaObject();
   for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
     QMetaProperty prop = meta->property(i);
@@ -136,6 +124,7 @@ QJsonObject SettingsManager::toJsonForDjango() const {
   const QMetaObject *meta = this->metaObject();
   const QHash<QString, QString> &special = specialCamelToSnake();
 
+  // Serialize common properties
   for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
     QMetaProperty prop = meta->property(i);
     if (!prop.isReadable())
@@ -149,7 +138,7 @@ QJsonObject SettingsManager::toJsonForDjango() const {
     if (special.contains(originalName)) {
       outKey = special.value(originalName);
     } else {
-      continue;
+      continue; // Skip properties not in special map
     }
 
     if (type == QMetaType::QDate) {
@@ -163,6 +152,19 @@ QJsonObject SettingsManager::toJsonForDjango() const {
     }
   }
 
+  // Serialize model-specific settings based on current model
+  if (currentModel() == "kalmar32") {
+    QJsonObject modelObj = m_kalmarSettings->toJson();
+    for (auto it = modelObj.constBegin(); it != modelObj.constEnd(); ++it) {
+      obj[it.key()] = it.value();
+    }
+  } else if (currentModel() == "phasar32") {
+    QJsonObject modelObj = m_phasarSettings->toJson();
+    for (auto it = modelObj.constBegin(); it != modelObj.constEnd(); ++it) {
+      obj[it.key()] = it.value();
+    }
+  }
+
   return obj;
 }
 
@@ -170,23 +172,20 @@ void SettingsManager::fromJson(const QJsonObject &obj) {
   const QMetaObject *meta = this->metaObject();
   const QHash<QString, QString> &specialRev = specialSnakeToCamel();
 
+  // Deserialize common properties
   for (auto it = obj.constBegin(); it != obj.constEnd(); ++it) {
     const QString key = it.key();
     const QJsonValue val = it.value();
 
-    QString propName =
-        specialRev.contains(key) ? specialRev.value(key) : key;
+    QString propName = specialRev.contains(key) ? specialRev.value(key) : key;
 
     if (propName.isEmpty()) {
-      qDebug() << "SettingsManager::fromJson: empty propName for key" << key;
       continue;
     }
 
     int propIndex = meta->indexOfProperty(propName.toLatin1().constData());
     if (propIndex < 0) {
-      qDebug() << "SettingsManager::fromJson: unknown property for key" << key
-               << "=> tried" << propName;
-      continue;
+      continue; // Skip unknown properties
     }
 
     QMetaProperty prop = meta->property(propIndex);
@@ -251,7 +250,17 @@ void SettingsManager::fromJson(const QJsonObject &obj) {
     }
   }
 
-  m_settings.sync();
+  // Deserialize model-specific settings
+  if (obj.contains("pc_tablet_dell_7230") ||
+      obj.contains("water_tank_with_tap")) {
+    // Try to detect which model this JSON belongs to
+    if (obj.contains("water_tank_with_tap")) {
+      m_phasarSettings->fromJson(obj);
+    } else {
+      m_kalmarSettings->fromJson(obj);
+    }
+  }
 
+  m_settings.sync();
   loadAllSettings();
 }

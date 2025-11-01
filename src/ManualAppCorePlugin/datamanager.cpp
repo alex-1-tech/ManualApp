@@ -11,6 +11,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QTimer>
+#include <qdebug.h>
 
 DataManager::DataManager(QObject *parent) : QObject(parent) {
 
@@ -227,7 +228,6 @@ void DataManager::uploadSettingsToDjango(const QUrl &apiUrl) {
   }
 
   setLoading(true);
-  qDebug() << json;
   m_reportManager->networkService()->uploadJsonToDjango(apiUrl, json);
 }
 QString DataManager::getReportDirPath() const {
@@ -255,9 +255,8 @@ void DataManager::syncReportsWithServer() {
                         "Serial number doesn`t exist", COLOR_CYAN, COLOR_CYAN);
     return;
   }
-
-  QUrl apiUrl(QString(djangoBaseUrl() +
-                      "/api/kalmar32/%1/get_reports")
+  QUrl apiUrl(QString(djangoBaseUrl() + "/api/" +
+                      SettingsManager().currentModel() + "/%1/get_reports")
                   .arg(serialNumber));
 
   setLoading(true);
@@ -312,18 +311,17 @@ void DataManager::processServerReports(const QJsonObject &serverReports,
       if (reportDir.isEmpty()) {
         if (reportDir.removeRecursively()) {
           DEBUG_COLORED("DataManager", "processServerReports",
-                        QString("Deleted empty old report: %1/%2")
+                        QString("Deleted empty report: %1/%2")
                             .arg(number_to)
                             .arg(localReport),
                         COLOR_CYAN, COLOR_CYAN);
           continue;
         } else {
-          DEBUG_ERROR_COLORED(
-              "DataManager", "processServerReports",
-              QString("Failed to delete empty old report: %1/%2")
-                  .arg(number_to)
-                  .arg(localReport),
-              COLOR_CYAN, COLOR_CYAN);
+          DEBUG_ERROR_COLORED("DataManager", "processServerReports",
+                              QString("Failed to delete empty report: %1/%2")
+                                  .arg(number_to)
+                                  .arg(localReport),
+                              COLOR_CYAN, COLOR_CYAN);
         }
       }
       if (reportDate.isValid() && reportDate < oneMonthAgo) {
@@ -348,7 +346,7 @@ void DataManager::processServerReports(const QJsonObject &serverReports,
         bool jsonExists = serverReport["json"].toBool();
         bool pdfExists = serverReport["pdf"].toBool();
 
-        if (!jsonExists || !pdfExists) {
+        if ((!jsonExists || !pdfExists) && number_to == "TO-2") {
           m_pendingReports.enqueue(
               {toPath + localReport + '/', localReport, number_to});
         }

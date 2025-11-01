@@ -18,10 +18,14 @@ Item {
     // ====== State ===========================================================
     property var rawData: ({})
     property var normalized: ([])
-    property string filterMode: "all" // all, year, month, date
     property date filterDate: new Date()
     property int filterYear: new Date().getFullYear()
     property int filterMonth: new Date().getMonth() + 1
+
+    // backing ListModel for dayCombo so we can rebuild when month/year changes
+    ListModel {
+        id: dayModel
+    }
 
     // ====== Helpers =========================================================
     function mapTitle(k) {
@@ -64,24 +68,11 @@ Item {
             });
             const lastDate = dates.length ? dates[0] : null;
 
-            // Filter by selected period
-            var filteredDates = dates, filteredDatesStr = datesStr;
-            if (filterMode === "year") {
-                filteredDates = dates.filter(function (d) {
-                    return d.getFullYear() === filterYear;
-                });
-                filteredDatesStr = filteredDates.map(DateUtils.fmtDate);
-            } else if (filterMode === "month") {
-                filteredDates = dates.filter(function (d) {
-                    return d.getFullYear() === filterYear && d.getMonth() + 1 === filterMonth;
-                });
-                filteredDatesStr = filteredDates.map(DateUtils.fmtDate);
-            } else if (filterMode === "date") {
-                filteredDates = dates.filter(function (d) {
-                    return DateUtils.isSameDate(d, filterDate);
-                });
-                filteredDatesStr = filteredDates.map(DateUtils.fmtDate);
-            }
+            // Filter by selected date
+            var filteredDates = dates.filter(function (d) {
+                return DateUtils.isSameDate(d, filterDate);
+            });
+            var filteredDatesStr = filteredDates.map(DateUtils.fmtDate);
 
             out.push({
                 key: k,
@@ -150,13 +141,55 @@ Item {
         rebuildModelFromNormalized();
     }
 
-    // ====== Data Load =======================================================
+    function rebuildDays() {
+        if (!dayCombo || !monthCombo || !yearSpin)
+            return;
+
+        var y = yearSpin.value;
+        var m = monthCombo.currentIndex;
+        var currentDay = dayCombo.currentIndex + 1;
+
+        var days = new Date(y, m + 1, 0).getDate();
+        dayModel.clear();
+        for (var i = 1; i <= days; ++i) {
+            dayModel.append({
+                text: i.toString().padStart(2, '0')
+            });
+        }
+
+        var newDay = Math.min(currentDay, days);
+        dayCombo.currentIndex = newDay - 1;
+    }
+
+    function updateDateFromControls() {
+        if (!dayCombo || !monthCombo || !yearSpin)
+            return;
+
+        var day = parseInt(dayModel.get(dayCombo.currentIndex).text);
+        var month = monthCombo.currentIndex;
+        var year = yearSpin.value;
+
+        root.filterDate = new Date(year, month, day);
+        root.filterYear = year;
+        root.filterMonth = month + 1;
+
+        root.applyFilter();
+    }
+
     Component.onCompleted: {
+        root.filterDate = new Date();
+        root.filterYear = root.filterDate.getFullYear();
+        root.filterMonth = root.filterDate.getMonth() + 1;
+
+        rebuildDays();
+        monthCombo.currentIndex = root.filterDate.getMonth();
+        yearSpin.value = root.filterDate.getFullYear();
+        dayCombo.currentIndex = root.filterDate.getDate() - 1;
+
         rawData = DataManager.performedTOsNew();
         applyFilter();
     }
 
-    // ====== UI ==============================================================
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 16
@@ -188,101 +221,58 @@ Item {
             }
         }
 
-        // Filters panel
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
 
             ComboBox {
-                id: filterCombo
-                Layout.preferredWidth: 120
+                id: dayCombo
+                Layout.preferredWidth: 80
                 font.pixelSize: Theme.fontBody
-                model: ["All", "Year", "Month", "Date"]
-                currentIndex: 0
+                model: dayModel
+                currentIndex: root.filterDate.getDate() - 1
+                onActivated: root.updateDateFromControls()
+            }
+
+            ComboBox {
+                id: monthCombo
+                Layout.preferredWidth: 140
+                font.pixelSize: Theme.fontBody
+                model: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+                currentIndex: root.filterDate.getMonth()
                 onActivated: {
-                    root.filterMode = ["all", "year", "month", "date"][currentIndex];
-                    root.applyFilter();
+                    root.rebuildDays();
+                    root.updateDateFromControls();
                 }
-                Accessible.name: "Period filter"
             }
 
             SpinBox {
                 id: yearSpin
-                visible: root.filterMode === "year" || root.filterMode === "month"
-                Layout.preferredWidth: 80
-                from: 2000
-                to: 2100
-                value: new Date().getFullYear()
-                onValueChanged: if (root.filterMode === "year" || root.filterMode === "month") {
-                    root.filterYear = value;
-                    root.applyFilter();
-                }
-            }
-
-            SpinBox {
-                id: monthSpin
-                visible: root.filterMode === "month"
-                Layout.preferredWidth: 80
-                from: 1
-                to: 12
-                value: new Date().getMonth() + 1
-                onValueChanged: if (root.filterMode === "month") {
-                    root.filterMonth = value;
-                    root.applyFilter();
-                }
-            }
-
-            SpinBox {
-                id: daySpin
-                visible: root.filterMode === "date"
-                Layout.preferredWidth: 60
-                from: 1
-                to: 31
-                value: root.filterDate.getDate()
-                onValueChanged: if (root.filterMode === "date") {
-                    var d = new Date(root.filterDate);
-                    d.setDate(value);
-                    root.filterDate = d;
-                    root.applyFilter();
-                }
-            }
-
-            SpinBox {
-                id: monthSpinDate
-                visible: root.filterMode === "date"
-                Layout.preferredWidth: 80
-                from: 1
-                to: 12
-                value: root.filterDate.getMonth() + 1
-                onValueChanged: if (root.filterMode === "date") {
-                    var d = new Date(root.filterDate);
-                    d.setMonth(value - 1);
-                    root.filterDate = d;
-                    root.applyFilter();
-                }
-            }
-
-            SpinBox {
-                id: yearSpinDate
-                visible: root.filterMode === "date"
-                Layout.preferredWidth: 80
+                Layout.preferredWidth: 200
+                font.pixelSize: Theme.fontBody
                 from: 2000
                 to: 2100
                 value: root.filterDate.getFullYear()
-                onValueChanged: if (root.filterMode === "date") {
-                    var d = new Date(root.filterDate);
-                    d.setFullYear(value);
-                    root.filterDate = d;
-                    root.applyFilter();
+                onValueChanged: {
+                    if (value !== root.filterYear) {
+                        root.rebuildDays();
+                        root.updateDateFromControls();
+                    }
                 }
             }
 
             Button {
                 text: "Reset"
                 onClicked: {
-                    filterCombo.currentIndex = 0;
-                    root.filterMode = "all";
                     root.filterDate = new Date();
+                    root.filterYear = root.filterDate.getFullYear();
+                    root.filterMonth = root.filterDate.getMonth() + 1;
+
+                    monthCombo.currentIndex = root.filterDate.getMonth();
+                    yearSpin.value = root.filterDate.getFullYear();
+                    root.rebuildDays();
+                    dayCombo.currentIndex = root.filterDate.getDate() - 1;
+
                     root.applyFilter();
                 }
             }

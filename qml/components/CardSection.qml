@@ -15,7 +15,7 @@ Item {
     default property alias content: contentColumn.data
 
     Layout.fillWidth: true
-    Layout.preferredHeight: contentColumn.implicitHeight + pad*2
+    Layout.preferredHeight: contentColumn.implicitHeight + pad * 2
 
     Rectangle {
         id: bg

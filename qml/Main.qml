@@ -54,13 +54,13 @@ Item {
         height: parent.height
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        
+
         // Анимация для плавного появления/исчезновения
         x: root.isSidebarVisible ? 0 : -width
         Behavior on x {
             NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
         }
-        
+
         z: 2
 
         Row {
@@ -68,7 +68,7 @@ Item {
             spacing: 5
             Image {
                 id: logo
-                source: "qrc:///media/icons/app.png"
+                source: "qrc:///media/icons/logo.png"
                 width: 50
                 height: 50
                 y: 5
@@ -114,13 +114,15 @@ Item {
                     navSettings.color = Theme.colorNavInactive;
                     navAbout.color = Theme.colorNavInactive;
                     navReports.color = Theme.colorNavInactive;
+                    navInstallPO.color = Theme.colorNavInactive;
                     navDashboard.color = Theme.colorNavActive;
-                    
+
                     dashboardLoader.visible = true;
                     reportsLoader.visible = false;
                     settingsLoader.visible = false;
                     aboutLoader.visible = false;
-                    
+                    installPoLoader.visible = false;
+
                     // Скрываем панель после выбора пункта
                     root.hideSidebar()
                 }
@@ -160,15 +162,67 @@ Item {
                     navAbout.color = Theme.colorNavInactive;
                     navReports.color = Theme.colorNavActive;
                     navDashboard.color = Theme.colorNavInactive;
-                    
+                    navInstallPO.color = Theme.colorNavInactive;
+
                     dashboardLoader.visible = false;
                     settingsLoader.visible = false;
                     aboutLoader.visible = false;
-                    
+                    installPoLoader.visible = false;
+
                     reportsLoader.active = false;
                     reportsLoader.visible = true;
                     reportsLoader.active = true;
-                    
+
+                    // Скрываем панель после выбора пункта
+                    root.hideSidebar()
+                }
+            }
+        }
+
+        Rectangle {
+            id: navInstallPO
+            color: Theme.colorNavInactive
+            width: parent.width
+            height: 40
+            y: 150
+
+            Image {
+                source: "qrc:///media/icons/icon-servers.svg" // Замените на подходящую иконку
+                height: 20
+                width: 20
+                x: 20
+                y: 10
+            }
+
+            Text {
+                color: Theme.colorTextPrimary
+                text: qsTr("Install PO")
+                font.pointSize: 12
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            MouseArea {
+                id: mouseAreaInstallPO
+                width: parent.width
+                height: parent.height
+
+                onClicked: function () {
+                    navSettings.color = Theme.colorNavInactive;
+                    navAbout.color = Theme.colorNavInactive;
+                    navReports.color = Theme.colorNavInactive;
+                    navDashboard.color = Theme.colorNavInactive;
+                    navInstallPO.color = Theme.colorNavActive;
+
+                    dashboardLoader.visible = false;
+                    reportsLoader.visible = false;
+                    settingsLoader.visible = false;
+                    aboutLoader.visible = false;
+
+                    installPoLoader.active = false;
+                    installPoLoader.visible = true;
+                    installPoLoader.active = true;
+
                     // Скрываем панель после выбора пункта
                     root.hideSidebar()
                 }
@@ -180,7 +234,7 @@ Item {
             color: Theme.colorNavInactive
             width: parent.width
             height: 40
-            y: 150
+            y: 195
 
             Image {
                 source: "qrc:///media/icons/icon-settings.svg"
@@ -208,12 +262,14 @@ Item {
                     navAbout.color = Theme.colorNavInactive;
                     navReports.color = Theme.colorNavInactive;
                     navDashboard.color = Theme.colorNavInactive;
-                    
+                    navInstallPO.color = Theme.colorNavInactive;
+
                     dashboardLoader.visible = false;
                     reportsLoader.visible = false;
+                    installPoLoader.visible = false;
                     settingsLoader.visible = true;
                     aboutLoader.visible = false;
-                    
+
                     // Скрываем панель после выбора пункта
                     root.hideSidebar()
                 }
@@ -225,7 +281,7 @@ Item {
             color: Theme.colorNavInactive
             width: parent.width
             height: 40
-            y: 195
+            y: 240
 
             Image {
                 source: "qrc:///media/icons/icon-about.svg"
@@ -253,12 +309,14 @@ Item {
                     navAbout.color = Theme.colorNavActive;
                     navReports.color = Theme.colorNavInactive;
                     navDashboard.color = Theme.colorNavInactive;
-                    
+                    navInstallPO.color = Theme.colorNavInactive;
+
                     dashboardLoader.visible = false;
                     reportsLoader.visible = false;
                     settingsLoader.visible = false;
+                    installPoLoader.visible = false;
                     aboutLoader.visible = true;
-                    
+
                     // Скрываем панель после выбора пункта
                     root.hideSidebar()
                 }
@@ -320,6 +378,14 @@ Item {
             id: reportsLoader
             anchors.fill: parent
             source: "Reports.qml"
+            active: true
+            visible: false
+        }
+
+        Loader {
+            id: installPoLoader
+            anchors.fill: parent
+            source: "InstallPO.qml"
             active: true
             visible: false
         }

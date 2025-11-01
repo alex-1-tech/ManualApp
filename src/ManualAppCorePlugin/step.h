@@ -51,9 +51,9 @@ struct Step {
   static Step fromJson(const QJsonObject &obj) {
     Step s;
     s.title = obj["title"].toString();
-    s.completionStatus = CompletionStatus :: NotStarted;
-        // static_cast<CompletionStatus>(obj["completionStatus"].toInt(0));
-    
+    s.completionStatus = CompletionStatus ::NotStarted;
+    // static_cast<CompletionStatus>(obj["completionStatus"].toInt(0));
+
     if (s.completionStatus == CompletionStatus::HasDefect) {
       s.defectDetails =
           DefectDetails::fromJson(obj["defectDetails"].toObject());

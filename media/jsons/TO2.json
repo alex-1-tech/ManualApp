@@ -2,25 +2,25 @@
   "title": "TO2",
   "steps": [
     {
-      "title": "Настройка дефектоскопической аппаратуры с применением настроечных (стандартных) образцов\n1. Подготовить стандартный образец СО-3Р (очистить и осмотреть на дефекты).\n2. Подключить преобразователь и установить его на обозначенное место образца.\n3. Войти в меню калибровки/настройки чувствительности на приборе.\n4. Настроить чувствительность по эталону.\n"
+      "title": "Setting up the flaw detection equipment using calibration (standard) blocks\n1. Prepare the standard block СО-3Р (clean and inspect for defects).\n2. Connect the probe and place it on the designated area of the block.\n3. Enter the calibration/sensitivity setting menu on the instrument.\n4. Adjust the sensitivity according to the reference standard."
     },
     {
-      "title": "Очистка оборудования (профилактическая очистка месячная)\n1. Отключить прибор от питания и снять все внешние кабели.\n2. Удалить пыль и грязь с корпуса мягкой кисточкой и сухой салфеткой.\n3. Промыть оптические поверхности преобразователей безворсовой салфеткой; при сильных загрязнениях использовать спирт.\n4. Протереть разъёмы и контакты сухой салфеткой; при сильной окислю повреждении сообщить о необходимости обслуживания.\n5. После очистки собрать оборудование, подключить и проверить работоспособность."
+      "title": "Equipment cleaning (monthly preventive cleaning)\n1. Disconnect the instrument from power and remove all external cables.\n2. Remove dust and dirt from the housing using a soft brush and a dry cloth.\n3. Clean the optical surfaces of the probes with a lint-free cloth; use alcohol for heavy soiling.\n4. Wipe the connectors and contacts with a dry cloth; if severe oxidation or damage is present, report the need for service.\n5. After cleaning, reassemble the equipment, connect it, and check its functionality."
     },
     {
-      "title": "Проверка состояния аккумуляторной батареи, зарядка\n1. Осмотреть батарею на наличие вздутия, трещин или подтёков — при проблемах батарею заменить.\n2. Проверить уровень заряда и напряжение (если есть индикатор или мультиметр).\n3. Полностью зарядить батарею согласно инструкции производителя.\n4. Выполнить проверку времени работы батареи: запустить прибор и замерить, сколько часов он проработал от батареи (если это позволяет регламент)."
+      "title": "Checking the condition of the battery, charging\n1. Inspect the battery for swelling, cracks, or leaks — replace the battery if any issues are found.\n2. Check the charge level and voltage (if an indicator or multimeter is available).\n3. Fully charge the battery according to the manufacturer's instructions.\n4. Perform a battery runtime check: start the instrument and measure how many hours it operates on battery power (if permitted by the regulations)."
     },
     {
-      "title": "Проверка состояния батареи планшета, зарядка\n1. Осмотреть планшет на внешние повреждения и нагрев корпуса.\n2. Проверить уровень заряда и индикатор здоровья батареи в системе планшета.\n3. Полностью зарядить планшет и перезагрузить устройство.\n4. Убедиться, что планшет корректно подключается к дефектоскопу и передаёт данные.\n5. Если батарея быстро садится или планшет зависает — сообщить о проблеме."
+      "title": "Checking the condition of the tablet battery, charging\n1. Inspect the tablet for external damage and case heating.\n2. Check the charge level and battery health indicator in the tablet's system.\n3. Fully charge the tablet and restart the device.\n4. Ensure the tablet connects correctly to the flaw detector and transmits data.\n5. If the battery drains quickly or the tablet freezes, report the problem."
     },
     {
-      "title": "Регулировка натяжения цепей сканера, смазка\n1. Отключить питание и зафиксировать сканер в безопасном положении.\n2. Проверить визуально натяжение цепей и направляющих — цепь не должна провисать.\n3. При необходимости ослабить натяжитель, отрегулировать положение цепи и зафиксировать без провисаний.\n4. Нанести небольшое количество рекомендованной смазки на цепи и движущиеся части.\n5. Проверить ход сканера вручную — движение должно быть плавным, без заеданий.\n6. Удалить излишки смазки и протереть чистой салфеткой."
+      "title": "Adjusting scanner chain tension, lubrication\n1. Disconnect the power and secure the scanner in a safe position.\n2. Visually check the tension of the chains and guides — the chain should not sag.\n3. If necessary, loosen the tensioner, adjust the chain position, and secure it without sagging.\n4. Apply a small amount of recommended lubricant to the chains and moving parts.\n5. Check the scanner movement manually — it should be smooth, without jamming.\n6. Remove excess lubricant and wipe with a clean cloth."
     },
     {
-      "title": "Проверка состояния болтовых соединений, протяжка\n1. Визуально пройтись по всем видимым болтовым соединениям, опорам и кронштейнам.\n2. Проверить болты на люфт ручным усилием; те, которые болтаются — подтянуть.\n3. Не перетягивать болты: подтягивать до плотности, указанной в регламенте, либо до отсутствия люфта."
+      "title": "Checking the condition of bolted connections, tightening\n1. Visually inspect all visible bolted connections, supports, and brackets.\n2. Check bolts for play by hand; tighten those that are loose.\n3. Do not overtighten bolts: tighten to the torque specified in the regulations, or until there is no play."
     },
     {
-      "title": "Проверка состояния опорных колес, подшипников, смазка\n1. Проверить опорные колеса на предмет износа, трещин и деформаций.\n2. Провернуть колёса вручную — слушать посторонние звуки, проверять люфт.\n3. Нанести рекомендованную смазку на подшипники и проверить ход.\n4. При сильном износе или люфте — сообщить об этои.\n5. После смазки убедиться в отсутствии утечек смазочного материала на ходовых частях."
+      "title": "Checking the condition of support wheels, bearings, lubrication\n1. Check the support wheels for wear, cracks, and deformation.\n2. Rotate the wheels by hand — listen for unusual noises, check for play.\n3. Apply the recommended lubricant to the bearings and check their movement.\n4. If significant wear or play is found, report it.\n5. After lubrication, ensure there are no lubricant leaks on the running parts."
     }
   ]
 }

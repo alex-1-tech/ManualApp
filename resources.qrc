@@ -5,8 +5,6 @@
 
         <!-- first start -->
         <file>qml/Start.qml</file>
-        <file>qml/InitSettings.qml</file>
-        <file>qml/InitSerial.qml</file>
 
         <!-- main -->
         <file>qml/Main.qml</file>
@@ -14,6 +12,7 @@
         <file>qml/Dashboard.qml</file>
         <file>qml/Reports.qml</file>
         <file>qml/Settings.qml</file>
+        <file>qml/InstallPO.qml</file>
 
         <!-- dasboard -->
         <file>qml/SelectTO.qml</file>
@@ -21,17 +20,19 @@
         <file>qml/UploadReport.qml</file>
         <file>qml/UploadWindow.qml</file>
         <file>qml/Summary.qml</file>
-        
+        <file>qml/ModelSelectionPage.qml</file>
+        <file>qml/ModelSelectionCard.qml</file>
+        <file>qml/SettingsForm.qml</file>
+    
         <!-- components -->
         <file>qml/components/RepairMethodEditor.qml</file>
         <file>qml/components/FormField.qml</file>
         <file>qml/components/CardDelegate.qml</file>
         <file>qml/components/CardSection.qml</file>
-        <file>qml/components/NewTextField.qml</file>
-        <file>qml/components/NewDateField.qml</file>
-        <file>qml/components/NotesTextArea.qml</file>
         <file>qml/components/SettingCheckBox.qml</file>
         <file>qml/components/Constants.qml</file>
+        <file>qml/components/ModelSettingCheckBox.qml</file>
+        <file>qml/components/ModelSettingDate.qml</file>
 
         <!-- styles -->
         <file>qml/styles/qmldir</file>
@@ -49,7 +50,9 @@
         <file>media/icons/icon-about.svg</file>
         <file>media/icons/icon-rules.svg</file>
         <file>media/icons/icon-reports.svg</file>
+        <file>media/icons/icon-checkmark.svg</file>
         <file>media/icons/app.png</file>
+        <file>media/icons/logo.png</file>
 
         <!-- js -->
         <file>qml/utils/Utils.js</file>

@@ -7,87 +7,87 @@ import "../styles"
 
 RowLayout {
     id: root
-    property alias label: lbl.text
-    property string settingName: ""
-    property string placeholder: ""
-    property bool isDate: false
-    property bool multiline: false
-    property var validator: null
 
-    signal valueChanged(string newValue)
+    property string label: ""
+    property string placeholder: ""
+    property string settingName: ""
+    property bool multiline: false
+    property var modelSettings: SettingsManager
 
     Layout.fillWidth: true
     spacing: 8
 
     Label {
-        id: lbl
-        Layout.preferredWidth: root.width < 700? 280: 450
-        elide: Text.ElideRight
+        Layout.preferredWidth: parent.width < 700 ? 280 : 450
+        text: root.label
         color: Theme.colorTextPrimary
         font.pointSize: Theme.fontSmall
+        wrapMode: Text.WordWrap
     }
 
     Loader {
-        id: loader
-        sourceComponent: root.multiline ? textAreaComp : textFieldComp
         Layout.fillWidth: true
+        sourceComponent: root.multiline ? textAreaComponent : textFieldComponent
     }
 
     Component {
-        id: textFieldComp
+        id: textFieldComponent
+
         TextField {
-            id: input
-            Layout.fillWidth: true
-            color: Theme.colorTextPrimary
-            font.pointSize: Theme.fontSmall
-
-            text: (root.settingName && SettingsManager.hasOwnProperty(root.settingName)) ? SettingsManager[root.settingName] : ""
-
+            id: textField
             placeholderText: root.placeholder
-            placeholderTextColor: Theme.colorTextPlaceholder
-            padding: 7
-            validator: root.validator
+            text: root.modelSettings ? (root.modelSettings[root.settingName] || "") : ""
 
             onTextChanged: {
-                if (root.settingName && SettingsManager.hasOwnProperty(root.settingName)) {
-                    SettingsManager[root.settingName] = text;
-                }
-                root.valueChanged(text);
+                if (root.modelSettings && root.settingName && textField.activeFocus)
+                        root.modelSettings[root.settingName] = text;
             }
 
+
+            color: Theme.colorTextPrimary
+            placeholderTextColor: Theme.colorTextPlaceholder
+            selectionColor: Theme.colorAccent
+            selectedTextColor: Theme.colorTextPrimary
+            font.pointSize: Theme.fontSmall
+
             background: Rectangle {
-                color: Qt.rgba(255, 255, 255, .1)
-                border.color: Qt.rgba(120, 130, 140, .2)
-                radius: 6
+                implicitWidth: 200
+                implicitHeight: 30
+                color: Theme.colorBgPrimary
+                border.color: textField.activeFocus ? Theme.colorButtonPrimary : Theme.colorBorder
+                border.width: 1
+                radius: 4
             }
         }
     }
 
     Component {
-        id: textAreaComp
-        TextArea {
-            id: ta
-            Layout.fillWidth: true
-            wrapMode: Text.WordWrap
-            implicitHeight: 100
-            placeholderText: root.placeholder
-            font.pointSize: Theme.fontSmall
+        id: textAreaComponent
 
-            text: (root.settingName && SettingsManager.hasOwnProperty(root.settingName)) ? SettingsManager[root.settingName] : ""
+        TextArea {
+            id: textArea
+            placeholderText: root.placeholder
+            text: root.modelSettings ? (root.modelSettings[root.settingName] || "") : ""
 
             onTextChanged: {
-                if (root.settingName && SettingsManager.hasOwnProperty(root.settingName)) {
-                    SettingsManager[root.settingName] = text;
-                }
-                root.valueChanged(text);
+                if (root.modelSettings && root.settingName && textArea.activeFocus)
+                        root.modelSettings[root.settingName] = text;
             }
+            color: Theme.colorTextPrimary
+            placeholderTextColor: Theme.colorTextPlaceholder
+            selectionColor: Theme.colorAccent
+            selectedTextColor: Theme.colorTextPrimary
+            font.pointSize: Theme.fontSmall
+            wrapMode: Text.WordWrap
 
             background: Rectangle {
-            color: Qt.rgba(255, 255, 255, .1)
-            border.color: Qt.rgba(120, 130, 140, .2)
-        }
+                implicitWidth: 200
+                implicitHeight: 120
+                color: Theme.colorBgPrimary
+                border.color: textArea.activeFocus ? Theme.colorButtonPrimary : Theme.colorBorder
+                border.width: 1
+                radius: 4
+            }
         }
     }
-
-
 }

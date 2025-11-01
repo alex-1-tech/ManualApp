@@ -5,7 +5,7 @@
 #include <QQmlEngine>
 
 class StepModel : public QAbstractListModel {
-  Q_OBJECT  
+  Q_OBJECT
   QML_ELEMENT
 public:
   enum StepRoles {

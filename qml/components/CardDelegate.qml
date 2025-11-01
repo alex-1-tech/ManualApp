@@ -129,7 +129,7 @@ Frame {
                     id: control
                     required property int index
                     required property var modelData
-    
+
                     text: modelData
                     font.pixelSize: Theme.fontBody
                     padding: 8

@@ -305,7 +305,7 @@ Item {
                 Material.background: Theme.colorNavActive
                 Material.foreground: Theme.colorTextPrimary
                 onClicked: {
-                    if (DataManager.currentNumberTO() == "TO-2") {
+                    if (DataManager.currentNumberTO() === "TO-2") {
                         root.stackView.pop(StackView.Immediate);
                     } else {
                         DataManager.revoke();

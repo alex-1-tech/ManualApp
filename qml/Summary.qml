@@ -209,7 +209,7 @@ Item {
                 Layout.preferredHeight: 40
                 text: qsTr("SAVE")
                 onClicked: {
-                    if (DataManager.currentNumberTO() == "TO-2") {
+                    if (DataManager.currentNumberTO() === "TO-2") {
                         root.stackView.push("UploadReport.qml", {
                             mode: "after",
                             stackView: root.stackView

@@ -91,9 +91,8 @@ QVariantMap ReportManager::performedTOsNew() const {
   if (!dir.exists())
     return result;
 
-  QRegularExpression fileRe(
-      R"(^(\d{4}-\d{2}-\d{2})-(TO-\d+)\.pdf$)",
-      QRegularExpression::CaseInsensitiveOption);
+  QRegularExpression fileRe(R"(^(\d{4}-\d{2}-\d{2})-(TO-\d+)\.pdf$)",
+                            QRegularExpression::CaseInsensitiveOption);
 
   QFileInfoList pdfFiles =
       dir.entryInfoList({"*.pdf"}, QDir::Files, QDir::Name);
@@ -137,7 +136,6 @@ QString ReportManager::findReportPdf(const QString &categoryKey,
 
   return QString();
 }
-
 
 bool ReportManager::loadReport(const QString &filePath) {
   auto handleError = [this](const QString &msg) {
@@ -321,9 +319,9 @@ void ReportManager::exportReportToPdf(const QString &path) {
       return;
     }
   }
-  
-  QString stableSavePath = tosDirPath + startTime() + "-" +
-                           currentNumberTO() + ".pdf";
+
+  QString stableSavePath =
+      tosDirPath + startTime() + "-" + currentNumberTO() + ".pdf";
   if (!PdfExporter::exportToPdf(html, path, stableSavePath)) {
     setError(tr("PDF export error: %1 and %2").arg(path, stableSavePath));
     return;

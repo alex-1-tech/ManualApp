@@ -1,4 +1,5 @@
 pragma ComponentBehavior: Bound
+
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
@@ -34,22 +35,20 @@ ScrollView {
                 font.pointSize: 24
             }
         }
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: 10
-
-            Text {
-                text: qsTr("App version: ")
-                color: Theme.colorTextMuted
-                font.pointSize: 12
-            }
-
-            Text {
-                text: DataManager.appVersion()
-                color: Theme.colorTextPrimary
-                font.pointSize: 12
-            }
+        SectionView {
+            title: qsTr("")
+            model: [
+                {
+                    "label": qsTr("App version: "),
+                    "value": DataManager.appVersion()
+                },
+                {
+                    "label": qsTr("Current model: "),
+                    "value": SettingsManager.currentModel === "kalmar32" ? qsTr("KALMAR-32") : qsTr("PHAZAR-32")
+                }
+            ]
         }
+
         // Helper function for date formatting
         function formatDate(date) {
             if (!date || isNaN(date))
@@ -63,113 +62,211 @@ ScrollView {
             return value ? qsTr("+") : qsTr("-");
         }
 
-        // Section: Registration data
+        // Section: Registration data (общие для всех моделей)
         SectionView {
             title: qsTr("Registration data")
             model: [
                 {
-                    label: qsTr("Serial number"),
-                    value: SettingsManager.serialNumber
+                    "label": qsTr("Serial number"),
+                    "value": SettingsManager.serialNumber
                 },
                 {
-                    label: qsTr("Shipment date"),
-                    value: mainColumn.formatDate(SettingsManager.shipmentDate)
+                    "label": qsTr("Shipment date"),
+                    "value": mainColumn.formatDate(SettingsManager.shipmentDate)
                 },
                 {
-                    label: qsTr("Case number"),
-                    value: SettingsManager.caseNumber
+                    "label": qsTr("Case number"),
+                    "value": SettingsManager.caseNumber
                 }
             ]
         }
 
-        // Section: PC Tablet Components
-        SectionView {
-            title: qsTr("PC Tablet Components")
-            model: [
-                {
-                    label: qsTr("PC tablet Latitude Dell 7230"),
-                    value: SettingsManager.pcTabletDell7230
-                },
-                {
-                    label: qsTr("AC/DC Power adapter for Dell 7230"),
-                    value: SettingsManager.acDcPowerAdapterDell
-                },
-                {
-                    label: qsTr("DC Charger adapter for Dell 7230 from battery"),
-                    value: SettingsManager.dcChargerAdapterBattery
-                }
-            ]
+        // СЕКЦИИ ДЛЯ KALMAR-32
+        ColumnLayout {
+            visible: SettingsManager.isKalmar32()
+            spacing: 20
+            Layout.fillWidth: true
+
+            // Section: PC Tablet Components для Kalmar
+            SectionView {
+                title: qsTr("PC Tablet Components")
+                model: [
+                    {
+                        "label": qsTr("PC tablet Latitude Dell 7230"),
+                        "value": SettingsManager.kalmarSettings.pcTabletDell7230
+                    },
+                    {
+                        "label": qsTr("AC/DC Power adapter for Dell 7230"),
+                        "value": SettingsManager.kalmarSettings.acDcPowerAdapterDell
+                    },
+                    {
+                        "label": qsTr("DC Charger adapter for Dell 7230 from battery"),
+                        "value": SettingsManager.kalmarSettings.dcChargerAdapterBattery
+                    }
+                ]
+            }
+
+            // Section: Ultrasonic Equipment для Kalmar
+            SectionView {
+                title: qsTr("Ultrasonic Equipment")
+                model: [
+                    {
+                        "label": qsTr("Ultrasonic phased array PULSAR OEM 16/64 established"),
+                        "value": SettingsManager.kalmarSettings.ultrasonicPhasedArrayPulsar
+                    },
+                    {
+                        "label": qsTr("Manual probs 36° RA2.25L16 0.9x10-17"),
+                        "value": SettingsManager.kalmarSettings.manualProbs36
+                    },
+                    {
+                        "label": qsTr("Straight probs 0° RA5.0L16 0.6x10-17"),
+                        "value": SettingsManager.kalmarSettings.straightProbs0
+                    },
+                    {
+                        "label": qsTr("DC Cable from Battery"),
+                        "value": mainColumn.getStatusText(SettingsManager.kalmarSettings.hasDcCableBattery)
+                    },
+                    {
+                        "label": qsTr("Ethernet Cables"),
+                        "value": mainColumn.getStatusText(SettingsManager.kalmarSettings.hasEthernetCables)
+                    }
+                ]
+            }
+
+            // Section: Battery and Charging для Kalmar
+            SectionView {
+                title: qsTr("Battery and Charging")
+                model: [
+                    {
+                        "label": qsTr("DC Battery box established"),
+                        "value": SettingsManager.kalmarSettings.dcBatteryBox
+                    },
+                    {
+                        "label": qsTr("AC/DC Charger adapter for battery 2"),
+                        "value": SettingsManager.kalmarSettings.acDcChargerAdapterBattery
+                    }
+                ]
+            }
+
+            // Section: Calibration and Tools для Kalmar
+            SectionView {
+                title: qsTr("Calibration and Tools")
+                model: [
+                    {
+                        "label": qsTr("Calibration bloc SO-3R"),
+                        "value": SettingsManager.kalmarSettings.calibrationBlockSo3r
+                    },
+                    {
+                        "label": qsTr("Small repair tool witch bag"),
+                        "value": mainColumn.getStatusText(SettingsManager.kalmarSettings.hasRepairToolBag)
+                    },
+                    {
+                        "label": qsTr("Installed nameplate with serial number"),
+                        "value": mainColumn.getStatusText(SettingsManager.kalmarSettings.hasInstalledNameplate)
+                    }
+                ]
+            }
         }
 
-        // Section: Ultrasonic Equipment
-        SectionView {
-            title: qsTr("Ultrasonic Equipment")
-            model: [
-                {
-                    label: qsTr("Ultrasonic phased array PULSAR OEM 16/64 established"),
-                    value: SettingsManager.ultrasonicPhasedArrayPulsar
-                },
-                {
-                    label: qsTr("Manual probs 36° RA2.25L16 0.9x10-17"),
-                    value: SettingsManager.manualProbs36
-                },
-                {
-                    label: qsTr("Straight probs 0° RA5.0L16 0.6x10-17"),
-                    value: SettingsManager.straightProbs0
-                },
-                {
-                    label: qsTr("DC Cable from Battery"),
-                    value: mainColumn.getStatusText(SettingsManager.hasDcCableBattery)
-                },
-                {
-                    label: qsTr("Ethernet Cables"),
-                    value: mainColumn.getStatusText(SettingsManager.hasEthernetCables)
-                }
-            ]
+        // СЕКЦИИ ДЛЯ PHASAR-32
+        ColumnLayout {
+            visible: SettingsManager.isPhasar32()
+            spacing: 20
+            Layout.fillWidth: true
+
+            // Section: PC Tablet Components для Phasar
+            SectionView {
+                title: qsTr("PC Tablet Components")
+                model: [
+                    {
+                        "label": qsTr("PC tablet Latitude Dell 7230"),
+                        "value": SettingsManager.phasarSettings.pcTabletDell7230
+                    },
+                    {
+                        "label": qsTr("Personalised name tag"),
+                        "value": SettingsManager.phasarSettings.personalisedNameTag
+                    },
+                    {
+                        "label": qsTr("AC/DC Power adapter for Dell 7230"),
+                        "value": SettingsManager.phasarSettings.acDcPowerAdapterDell
+                    },
+                    {
+                        "label": qsTr("DC Charger adapter for Dell 7230 from battery"),
+                        "value": SettingsManager.phasarSettings.dcChargerAdapterBattery
+                    }
+                ]
+            }
+
+            // Section: Ultrasonic Equipment для Phasar
+            SectionView {
+                title: qsTr("Ultrasonic Equipment")
+                model: [
+                    {
+                        "label": qsTr("Ultrasonic phased array PULSAR OEM 16/128 established"),
+                        "value": SettingsManager.phasarSettings.ultrasonicPhasedArrayPulsar
+                    },
+                    {
+                        "label": qsTr("Manual probs 36° RA2.25L16 0.9x10-17"),
+                        "value": SettingsManager.phasarSettings.manualProbs36
+                    },
+                    {
+                        "label": qsTr("DC Cable from battery box"),
+                        "value": mainColumn.getStatusText(SettingsManager.phasarSettings.hasDcCableBattery)
+                    },
+                    {
+                        "label": qsTr("Ethernet cable"),
+                        "value": mainColumn.getStatusText(SettingsManager.phasarSettings.hasEthernetCables)
+                    }
+                ]
+            }
+
+            // Section: Additional Equipment для Phasar
+            SectionView {
+                title: qsTr("Additional Equipment")
+                model: [
+                    {
+                        "label": qsTr("Water tank with a tap"),
+                        "value": SettingsManager.phasarSettings.waterTankWithTap
+                    },
+                    {
+                        "label": qsTr("DC Battery box established"),
+                        "value": SettingsManager.phasarSettings.dcBatteryBox
+                    },
+                    {
+                        "label": qsTr("AC/DC Charger adapter for battery"),
+                        "value": SettingsManager.phasarSettings.acDcChargerAdapterBattery
+                    }
+                ]
+            }
+
+            // Section: Calibration and Tools для Phasar
+            SectionView {
+                title: qsTr("Calibration and Tools")
+                model: [
+                    {
+                        "label": qsTr("Calibration bloc SO-3R"),
+                        "value": SettingsManager.phasarSettings.calibrationBlockSo3r
+                    },
+                    {
+                        "label": qsTr("Small repair tool with bag"),
+                        "value": mainColumn.getStatusText(SettingsManager.phasarSettings.hasRepairToolBag)
+                    },
+                    {
+                        "label": qsTr("Installed nameplate with serial number"),
+                        "value": mainColumn.getStatusText(SettingsManager.phasarSettings.hasInstalledNameplate)
+                    }
+                ]
+            }
         }
 
-        // Section: Battery and Charging
-        SectionView {
-            title: qsTr("Battery and Charging")
-            model: [
-                {
-                    label: qsTr("DC Battery box established"),
-                    value: SettingsManager.dcBatteryBox
-                },
-                {
-                    label: qsTr("AC/DC Charger adapter for battery 2"),
-                    value: SettingsManager.acDcChargerAdapterBattery
-                }
-            ]
-        }
-
-        // Section: Calibration and Tools
-        SectionView {
-            title: qsTr("Calibration and Tools")
-            model: [
-                {
-                    label: qsTr("Calibration bloc SO-3R"),
-                    value: SettingsManager.calibrationBlockSo3r
-                },
-                {
-                    label: qsTr("Small repair tool witch bag"),
-                    value: mainColumn.getStatusText(SettingsManager.hasRepairToolBag)
-                },
-                {
-                    label: qsTr("Installed nameplate with serial number"),
-                    value: mainColumn.getStatusText(SettingsManager.hasInstalledNameplate)
-                }
-            ]
-        }
-
-        // Section: Additional Information
+        // Section: Additional Information (общие для всех моделей)
         SectionView {
             title: qsTr("Additional Information")
             model: [
                 {
-                    label: qsTr("Notes"),
-                    value: SettingsManager.notes,
-                    isMultiline: true
+                    "label": qsTr("Notes"),
+                    "value": SettingsManager.notes,
+                    "isMultiline": true
                 }
             ]
         }
@@ -182,8 +279,7 @@ ScrollView {
     }
 
     // Component for sections
-    component SectionView: ColumnLayout 
-    {
+    component SectionView: ColumnLayout {
         id: section_view
 
         property string title
@@ -237,8 +333,8 @@ ScrollView {
 
                     property var itemData: grid_layout.modelData
                     onLoaded: {
-                        if (item){
-                            item.itemData = loader.itemData
+                        if (item) {
+                            item.itemData = loader.itemData;
                         }
                     }
                 }
@@ -251,7 +347,7 @@ ScrollView {
         id: singlelineTextComponent
 
         TextInput {
-            property var itemData: {}
+            property var itemData: ({})
 
             width: parent.width
             text: itemData.value || ""
@@ -267,8 +363,8 @@ ScrollView {
         id: multilineTextComponent
 
         TextArea {
-            property var itemData: {}
-    
+            property var itemData: ({})
+
             text: itemData.value || ""
             color: Theme.colorTextPrimary
             font.pointSize: Theme.fontSmall

@@ -13,7 +13,7 @@ ApplicationWindow {
     minimumHeight: 600
 
     visible: true
-    title: qsTr("Техническое обслуживание")
+    title: qsTr("ManualApp")
     color: Theme.colorBgPrimary
     property bool firstRun: true
 
@@ -22,15 +22,17 @@ ApplicationWindow {
 
         firstRun = SettingsManager.isFirstRun
         if (firstRun) {
-            contentLoader.sourceComponent = settingsComponent
+            // При первом запуске показываем выбор модели
+            contentLoader.sourceComponent = modelSelectionComponent
         } else {
             DataManager.syncReportsWithServer();
             contentLoader.sourceComponent = mainComponent
         }
     }
+
     onClosing: function () {
         // if(DataManager.startTime != "" && DataManager.startTime != null)
-        //     DataManager.save(    false);
+        //     DataManager.save(false);
         DataManager.setStartTime(null);
     }
 
@@ -39,16 +41,39 @@ ApplicationWindow {
         anchors.fill: parent
     }
 
-     Component {
-        id: settingsComponent
-        InitSettings {
-            onSettingsCompleted: {
-                SettingsManager.completeFirstRun();
-                contentLoader.sourceComponent = mainComponent
+    // Компонент выбора модели
+    Component {
+        id: modelSelectionComponent
+        ModelSelectionPage {
+            onModelSelected: function(modelType) {
+                // Сохраняем выбранную модель
+                SettingsManager.currentModel = modelType
+                // Переходим к настройкам оборудования
+                contentLoader.sourceComponent = settingsComponent
             }
         }
     }
-    
+
+    // Компонент начальных настроек оборудования
+    Component {
+        id: settingsComponent
+        SettingsForm {
+            onSettingsCompleted: {
+                SettingsManager.completeFirstRun();
+                if(SettingsManager.currentModel == "kalmar32")
+                    DataManager.uploadSettingsToDjango(DataManager.djangoBaseUrl() + "/api/kalmar32/");
+                else
+                    DataManager.uploadSettingsToDjango(DataManager.djangoBaseUrl() + "/api/phasar32/");
+                contentLoader.sourceComponent = mainComponent
+            }
+            // onBackRequested: {
+            //     // Возврат к выбору модели
+            //     contentLoader.sourceComponent = modelSelectionComponent
+            // }
+        }
+    }
+
+    // Основной компонент приложения
     Component {
         id: mainComponent
         Main {

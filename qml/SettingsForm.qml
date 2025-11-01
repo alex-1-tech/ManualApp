@@ -3,14 +3,15 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import ManualAppCorePlugin 1.0
-import "components"
 import "styles"
+import "components"
 
 ScrollView {
     id: root
 
     clip: true
-    anchors.fill: parent
+
+    signal settingsCompleted
 
     contentItem: Flickable {
         id: flick
@@ -27,22 +28,76 @@ ScrollView {
             anchors.topMargin: 10
             spacing: 20
 
-            // Заголовок
+            // Заголовок с информацией о выбранной модели
             RowLayout {
-                Layout.leftMargin: 50
-                Image {
-                    source: "qrc:///media/icons/icon-settings.svg"
-                    sourceSize.width: 40
-                    sourceSize.height: 40
+                Layout.fillWidth: true
+                spacing: 15
+
+                Rectangle {
+                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: 40
+                    radius: 20
+                    color: Theme.colorButtonPrimary
+
+                    Text {
+                        text: SettingsManager.currentModel === "kalmar32" ? "K" : "F"
+                        color: "white"
+                        font.pointSize: 16
+                        font.bold: true
+                        anchors.centerIn: parent
+                    }
                 }
 
-                Text {
-                    text: qsTr("Settings")
-                    color: Theme.colorTextPrimary
-                    font.pointSize: 24
+                ColumnLayout {
+                    spacing: 2
+                    Layout.fillWidth: true
+
+                    Text {
+                        text: SettingsManager.currentModel === "kalmar32" ?
+                              qsTr("KALMAR-32 Configuration") :
+                              qsTr("PHASAR-32 Configuration")
+                        color: Theme.colorTextPrimary
+                        font.pointSize: 24
+                        font.bold: true
+                    }
+
+                    Text {
+                        text: qsTr("Current model: %1").arg(SettingsManager.currentModel)
+                        color: Theme.colorTextSecondary
+                        font.pointSize: Theme.fontSmall
+                    }
                 }
             }
 
+            // ОБЩИЕ ПОЛЯ ДЛЯ ВСЕХ МОДЕЛЕЙ
+            CardSection {
+                title: qsTr("Registration data")
+
+                FormField {
+                    label: qsTr("Serial number")
+                    placeholder: qsTr("serial number of equipment")
+                    settingName: "serialNumber"
+                    Layout.fillWidth: true
+                }
+
+                FormField {
+                    label: qsTr("Case number")
+                    placeholder: qsTr("serial number of equipment storage case")
+                    settingName: "caseNumber"
+                    Layout.fillWidth: true
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+
+                    ModelSettingDate {
+                        label: "Shipment date"
+                        settingName: "shipmentDate"
+                        modelSettings: SettingsManager
+                    }
+                }
+            }
 
             // ПОЛЯ ДЛЯ KALMAR-32
             ColumnLayout {
@@ -104,6 +159,42 @@ ScrollView {
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
                     }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Label {
+                            Layout.preferredWidth: root.width < 700? 280: 450
+                            text: qsTr("DC Cable from Battery")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        ModelSettingCheckBox {
+                            settingName: "hasDcCableBattery"
+                            modelSettings: SettingsManager.kalmarSettings
+                            text: qsTr("Included")
+                            Layout.columnSpan: 1
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Label {
+                            Layout.preferredWidth: root.width < 700? 280: 450
+                            text: qsTr("Ethernet Cables")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        ModelSettingCheckBox {
+                            settingName: "hasEthernetCables"
+                            modelSettings: SettingsManager.kalmarSettings
+                            text: qsTr("Included")
+                            Layout.columnSpan: 1
+                        }
+                    }
                 }
 
                 CardSection {
@@ -136,6 +227,42 @@ ScrollView {
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
                     }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Label {
+                            Layout.preferredWidth: root.width < 700? 280: 450
+                            text: qsTr("Small repair tool witch bag")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        ModelSettingCheckBox {
+                            settingName: "hasRepairToolBag"
+                            modelSettings: SettingsManager.kalmarSettings
+                            text: qsTr("Included")
+                            Layout.columnSpan: 1
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Label {
+                            Layout.preferredWidth: root.width < 700? 280: 450
+                            text: qsTr("Installed nameplate with serial number")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        ModelSettingCheckBox {
+                            settingName: "hasInstalledNameplate"
+                            modelSettings: SettingsManager.kalmarSettings
+                            text: qsTr("Installed")
+                            Layout.columnSpan: 1
+                        }
+                    }
                 }
             }
 
@@ -155,6 +282,7 @@ ScrollView {
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
+
 
 
                     FormField {
@@ -200,6 +328,42 @@ ScrollView {
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Label {
+                            Layout.preferredWidth: root.width < 700? 280: 450
+                            text: qsTr("DC Cable from Battery")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        ModelSettingCheckBox {
+                            settingName: "hasDcCableBattery"
+                            modelSettings: SettingsManager.phasarSettings
+                            text: qsTr("Included")
+                            Layout.columnSpan: 1
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Label {
+                            Layout.preferredWidth: root.width < 700? 280: 450
+                            text: qsTr("Ethernet Cables")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        ModelSettingCheckBox {
+                            settingName: "hasEthernetCables"
+                            modelSettings: SettingsManager.phasarSettings
+                            text: qsTr("Included")
+                            Layout.columnSpan: 1
+                        }
+                    }
                 }
 
                 CardSection {
@@ -240,6 +404,55 @@ ScrollView {
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Label {
+                            Layout.preferredWidth: root.width < 700? 280: 450
+                            text: qsTr("Small repair tool with bag")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        ModelSettingCheckBox {
+                            settingName: "hasRepairToolBag"
+                            modelSettings: SettingsManager.phasarSettings
+                            text: qsTr("Included")
+                            Layout.columnSpan: 1
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Label {
+                            Layout.preferredWidth: root.width < 700? 280: 450
+                            text: qsTr("Installed nameplate with serial number")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        ModelSettingCheckBox {
+                            settingName: "hasInstalledNameplate"
+                            modelSettings: SettingsManager.phasarSettings
+                            text: qsTr("Installed")
+                            Layout.columnSpan: 1
+                        }
+                    }
+                }
+            }
+
+            // ОБЩИЕ ПОЛЯ (для всех моделей)
+            CardSection {
+                title: qsTr("Additional Information")
+
+                FormField {
+                    label: qsTr("Notes")
+                    placeholder: qsTr("Additional notes and comments")
+                    settingName: "notes"
+                    Layout.fillWidth: true
+                    multiline: true
                 }
             }
 
@@ -354,11 +567,9 @@ ScrollView {
                         }
 
                         onClicked: {
+                            // SettingsManager.saveAllSettings();
                             SettingsManager.saveModelSettings()
-                            if(SettingsManager.currentModel == "kalmar32")
-                                DataManager.uploadSettingsToDjango(DataManager.djangoBaseUrl() + "/api/kalmar32/");
-                            else
-                                DataManager.uploadSettingsToDjango(DataManager.djangoBaseUrl() + "/api/phasar32/");
+                            root.settingsCompleted();
                             confirmDialog.close();
                         }
                     }

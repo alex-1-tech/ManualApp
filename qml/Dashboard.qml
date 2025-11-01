@@ -21,7 +21,7 @@ Item {
                 DataManager.setCurrentNumberTO(numberTO);
                 DataManager.save(true);
                 if (DataManager.load(":/media/jsons/" + file))
-                    if(numberTO == "TO-2"){
+                    if(numberTO === "TO-2"){
                         stackView.push("UploadReport.qml", {
                             mode: "before",
                             stackView: stackView,

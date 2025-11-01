@@ -2,20 +2,20 @@
   "title": "TO1",
   "steps": [
     {
-      "title": "Проверка целостности корпусов составных частей дефектоскопической аппаратуры\n1. Убедиться, что устройство отключено от сети.\n2. Если вынимали аккамулятор, удостовериться в его целостности, подключить обратно к дефектоскопу.\n3. Проверить, нет ли трещин, вмятин, отломанных частей.\n4. Осмотреть корпус со всех сторон."
-    },
-
-    {
-      "title": "Проверка целостности изоляции, соединительных кабелей, призм преобразователей и надёжности соединения кабелей\n1. Визуально осмотреть все кабели на предмет порезов, потертостей и оголённых жил.\n2. Проверить разъёмы: контакты должны быть чистыми, без следов окисления.\n3. Осмотреть призмы и оптические поверхности преобразователей на наличие трещин, сколов и сильных царапин.\n4. Очистка колеса encoder.\n5. Аккуратно протереть призмы безворсовой салфеткой, при необходимости — слегка смоченной спиртом (не заливать).\n6. При выявлении повреждений — заменить кабель или разъём."
+      "title": "Inspection of the housing integrity of the components of the flaw detection equipment\n1. Ensure that the device is disconnected from the power supply.\n2. If the battery was removed, verify its integrity and reconnect it to the flaw detector.\n3. Check for cracks, dents, or broken parts.\n4. Inspect the housing from all sides."
     },
     {
-      "title": "Проверка исправности контрольно-измерительных приборов, переключателей, сенсоров, световых и звуковых индикаторов\n1. Включить дефектоскоп и дождаться полной загрузки.\n2. Последовательно проверить все переключатели  — они должны щёлкать и менять показания."
+      "title": "Inspection of the insulation integrity, connecting cables, probe prisms, and reliability of cable connections\n1. Visually inspect all cables for cuts, abrasions, and exposed wires.\n2. Check the connectors: contacts must be clean, without signs of oxidation.\n3. Inspect the prisms and optical surfaces of the probes for cracks, chips, and deep scratches.\n4. Clean the encoder wheel.\n5. Gently wipe the prisms with a lint-free cloth, if necessary, lightly moistened with alcohol (do not flood).\n6. If damage is found, replace the cable or connector."
     },
     {
-      "title": "Внешний осмотр настроечного (стандартного) образца СО-3Р\n1. Осмотреть образец на наличие грязи, ржавчины, вмятин.\n2. При необходимости очистить мягкой тканью."
+      "title": "Checking the serviceability of control and measuring instruments, switches, sensors, light and sound indicators\n1. Turn on the flaw detector and wait for it to fully boot.\n2. Sequentially check all switches - they should click and change readings."
     },
     {
-      "title": "Настройка дефектоскопической аппаратуры с применением настроечных (стандартных) образцов\n1. Убедиться, что образец СО-3Р чист и не повреждён.\n2. Подключить преобразователь к дефектоскопу.\n3. Включить прибор и открыть меню настройки чувствительности.\n4. Установить преобразователь на эталонный участок образца.\n5. Настроить чувствительность до стабильного сигнала. 6. Повторить для второго преобразователя."
+      "title": "External inspection of the calibration (standard) block СО-3Р\n1. Inspect the block for dirt, rust, and dents.\n2. If necessary, clean it with a soft cloth."
+    },
+    {
+      "title": "Setting up the flaw detection equipment using calibration (standard) blocks\n1. Ensure that the СО-3Р block is clean and undamaged.\n2. Connect the probe to the flaw detector.\n3. Turn on the instrument and open the sensitivity setting menu.\n4. Place the probe on the reference area of the block.\n5. Adjust the sensitivity until a stable signal is achieved.\n6. Repeat for the second probe."
     }
   ]
 }
+

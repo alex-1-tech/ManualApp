@@ -44,7 +44,7 @@ Item {
                 required property var modelData
 
                 width: 240
-                height: 40
+                height: 55
                 anchors.horizontalCenter: parent.horizontalCenter
                 Button {
                     id: button 

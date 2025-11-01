@@ -1,14 +1,15 @@
 #include "networkservice.h"
-#include "settingsmanager.h"
 #include "fileservice.h"
 #include "reportmanager.h"
+#include "settingsmanager.h"
 #include "utils.h"
 #include <QCoreApplication>
 #include <QHttpMultiPart>
 #include <QJsonDocument>
 #include <QNetworkRequest>
 #include <QUrlQuery>
-
+#include <QNetworkProxyQuery>
+#include <qdir.h>
 NetworkService::NetworkService(FileService *fileService,
                                ReportManager *reportManager, QObject *parent)
     : QObject(parent), m_manager(new QNetworkAccessManager(this)),
@@ -16,6 +17,7 @@ NetworkService::NetworkService(FileService *fileService,
       m_reportManager(reportManager) {
   DEBUG_COLORED("NetworkService", "Constructor", "Initialized", COLOR_BLUE,
                 COLOR_BLUE);
+  m_manager->setProxy(QNetworkProxy::NoProxy);
 }
 
 NetworkService::~NetworkService() {
@@ -35,7 +37,7 @@ void NetworkService::getJsonFromDjango(
     const QUrl &url, std::function<void(const QJsonObject &)> onSuccess,
     std::function<void(const QString &)> onError) {
   DEBUG_COLORED("NetworkService", "getJsonFromDjango",
-                "Uploading jsons with reports", COLOR_BLUE, COLOR_BLUE);
+                QString("Uploading jsons with reports: %1").arg(url.toString()), COLOR_BLUE, COLOR_BLUE);
   QNetworkRequest request(url);
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
@@ -135,19 +137,62 @@ void NetworkService::uploadJsonToDjango(const QUrl &apiUrl,
 
   QNetworkRequest request(apiUrl);
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+  request.setRawHeader("Accept", "application/json");
+
+  qint64 contentLength = static_cast<qint64>(jsonData.size());
+  request.setHeader(QNetworkRequest::ContentLengthHeader,
+                    QVariant(contentLength));
+
+  request.setRawHeader("User-Agent", "Qt/5.15"); // или "curl/7.85.0" для теста
+  request.setRawHeader("Connection", "keep-alive");
   m_currentReply = m_manager->post(request, jsonData);
 
   connect(m_currentReply, &QNetworkReply::uploadProgress, this,
           &NetworkService::handleUploadProgress);
-  connect(m_currentReply, &QNetworkReply::finished, this, [=]() {
-    int status =
-        m_currentReply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
-            .toInt();
-    QByteArray serverResponse = m_currentReply->readAll();
-    handleUploadFinished();
-  });
+  connect(m_currentReply, &QNetworkReply::finished, this,
+          [=]() { handleUploadFinishedWithResponse(); });
 }
+void NetworkService::handleUploadFinishedWithResponse() {
+  if (!m_currentReply) {
+    emit errorOccurred("No reply available");
+    return;
+  }
 
+  int statusCode =
+      m_currentReply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
+          .toInt();
+  QByteArray responseData = m_currentReply->readAll();
+  QString responseString = QString::fromUtf8(responseData);
+
+  if (m_currentReply->error() != QNetworkReply::NoError) {
+    QString errorMsg =
+        QString("Network error: %1 (HTTP %2)\nServer response: %3")
+            .arg(m_currentReply->errorString())
+            .arg(statusCode)
+            .arg(responseString);
+
+    DEBUG_ERROR_COLORED("NetworkService", "handleUploadFinished", errorMsg,
+                        COLOR_BLUE, COLOR_BLUE);
+    emit errorOccurred(errorMsg);
+  } else {
+    if (statusCode >= 200 && statusCode < 300) {
+      DEBUG_COLORED("NetworkService", "handleUploadFinished",
+                    QString("Upload successful (HTTP %1)").arg(statusCode),
+                    COLOR_GREEN, COLOR_GREEN);
+      emit uploadFinished(statusCode, responseString);
+    } else {
+      QString errorMsg = QString("Server error: HTTP %1\nResponse: %2")
+                             .arg(statusCode)
+                             .arg(responseString);
+      DEBUG_ERROR_COLORED("NetworkService", "handleUploadFinished", errorMsg,
+                          COLOR_BLUE, COLOR_BLUE);
+      emit errorOccurred(errorMsg);
+    }
+  }
+
+  m_currentReply->deleteLater();
+  m_currentReply = nullptr;
+}
 void NetworkService::uploadReport(const QUrl &apiBaseUrl,
                                   const QString &reportPath, QString uploadTime,
                                   QString numberTO) {
@@ -199,11 +244,11 @@ void NetworkService::uploadReport(const QUrl &apiBaseUrl,
   m_currentNumberTO =
       numberTO.isEmpty() ? m_reportManager->currentNumberTO() : numberTO;
   m_currentSerialNumber = SettingsManager().serialNumber();
+  m_currentModel = SettingsManager().currentModel();
   m_currentUploadStep = 0;
   m_isUploadingReport = true;
 
   uploadReportJsonData();
-
 }
 
 void NetworkService::uploadReportJsonData() {
@@ -235,7 +280,7 @@ void NetworkService::uploadReportJsonData() {
   metadata["serial_number"] = m_currentSerialNumber;
   metadata["upload_time"] = m_currentUploadTime;
   metadata["number_to"] = m_currentNumberTO;
-
+  metadata["equipment_type"] = m_currentModel;
   if (reportData.contains("metadata")) {
     QJsonObject existingMetadata = reportData["metadata"].toObject();
     for (auto it = metadata.begin(); it != metadata.end(); ++it) {
@@ -255,212 +300,224 @@ void NetworkService::uploadReportJsonData() {
   QUrl jsonUrl = m_currentApiUrl;
   jsonUrl.setPath(path);
 
-  disconnect(this, &NetworkService::uploadFinished, this, &NetworkService::handleJsonDataUploadFinished);
+  disconnect(this, &NetworkService::uploadFinished, this,
+             &NetworkService::handleJsonDataUploadFinished);
 
   connect(this, &NetworkService::uploadFinished, this,
-        &NetworkService::handleJsonDataUploadFinished, Qt::UniqueConnection);
+          &NetworkService::handleJsonDataUploadFinished, Qt::UniqueConnection);
 
   uploadJsonToDjango(jsonUrl, reportData);
 }
-void NetworkService::handleJsonDataUploadFinished(bool success, const QString &error) {
-    disconnect(this, &NetworkService::uploadFinished, this, 
-               &NetworkService::handleJsonDataUploadFinished);
+void NetworkService::handleJsonDataUploadFinished(bool success,
+                                                  const QString &error) {
+  disconnect(this, &NetworkService::uploadFinished, this,
+             &NetworkService::handleJsonDataUploadFinished);
 
-    if (!success) {
-        handleUploadError(error);
-        return;
-    }
+  if (!success) {
+    handleUploadError(error);
+    return;
+  }
 
-    uploadReportJsonFile();
+  uploadReportJsonFile();
 }
 void NetworkService::uploadReportJsonFile() {
-    m_currentUploadStep = 2;
-    DEBUG_COLORED("NetworkService", "uploadReportJsonFile", 
-                 "Step 2: Uploading JSON file", COLOR_BLUE, COLOR_BLUE);
+  m_currentUploadStep = 2;
+  DEBUG_COLORED("NetworkService", "uploadReportJsonFile",
+                "Step 2: Uploading JSON file", COLOR_BLUE, COLOR_BLUE);
 
-    QDir reportDir(m_currentReportPath);
-    QString jsonPath = reportDir.filePath("report.json");
-    
-    if (!QFile::exists(jsonPath)) {
-        uploadReportPdfFile();
-        return;
-    }
+  QDir reportDir(m_currentReportPath);
+  QString jsonPath = reportDir.filePath("report.json");
 
-    QUrlQuery query;
-    query.addQueryItem("serial_number", m_currentSerialNumber);
-    query.addQueryItem("upload_time", m_currentUploadTime);
-    query.addQueryItem("number_to", m_currentNumberTO);
-
-    QString path = m_currentApiUrl.path();
-    if (!path.endsWith('/')) path += '/';
-    
-    QUrl jsonUrl = m_currentApiUrl;
-    jsonUrl.setPath(path + m_currentSerialNumber + "/json/");
-    jsonUrl.setQuery(query);
-
-    connect(this, &NetworkService::uploadFinished, this, 
-            &NetworkService::handleJsonFileUploadFinished);
-
-    uploadFile(jsonUrl, jsonPath);
-}
-void NetworkService::handleJsonFileUploadFinished(bool success, const QString &error) {
-    disconnect(this, &NetworkService::uploadFinished, this, 
-               &NetworkService::handleJsonFileUploadFinished);
-
-    if (!success) {
-        handleUploadError(error);
-        return;
-    }
-
+  if (!QFile::exists(jsonPath)) {
     uploadReportPdfFile();
+    return;
+  }
+
+  QUrlQuery query;
+  query.addQueryItem("serial_number", m_currentSerialNumber);
+  query.addQueryItem("upload_time", m_currentUploadTime);
+  query.addQueryItem("number_to", m_currentNumberTO);
+
+  QString path = m_currentApiUrl.path();
+  if (!path.endsWith('/'))
+    path += '/';
+
+  QUrl jsonUrl = m_currentApiUrl;
+  jsonUrl.setPath(path + m_currentSerialNumber + "/json/");
+  jsonUrl.setQuery(query);
+
+  connect(this, &NetworkService::uploadFinished, this,
+          &NetworkService::handleJsonFileUploadFinished);
+
+  uploadFile(jsonUrl, jsonPath);
+}
+void NetworkService::handleJsonFileUploadFinished(bool success,
+                                                  const QString &error) {
+  disconnect(this, &NetworkService::uploadFinished, this,
+             &NetworkService::handleJsonFileUploadFinished);
+
+  if (!success) {
+    handleUploadError(error);
+    return;
+  }
+
+  uploadReportPdfFile();
 }
 void NetworkService::uploadReportPdfFile() {
-    m_currentUploadStep = 3;
-    DEBUG_COLORED("NetworkService", "uploadReportPdfFile", 
-                 "Step 3: Uploading PDF file", COLOR_BLUE, COLOR_BLUE);
+  m_currentUploadStep = 3;
+  DEBUG_COLORED("NetworkService", "uploadReportPdfFile",
+                "Step 3: Uploading PDF file", COLOR_BLUE, COLOR_BLUE);
 
-    QDir reportDir(m_currentReportPath);
-    QString pdfPath = reportDir.filePath("report.pdf");
-    
-    if (!QFile::exists(pdfPath)) {
-        uploadReportBeforeFiles();
-        return;
-    }
+  QDir reportDir(m_currentReportPath);
+  QString pdfPath = reportDir.filePath("report.pdf");
 
-    QUrlQuery query;
-    query.addQueryItem("serial_number", m_currentSerialNumber);
-    query.addQueryItem("upload_time", m_currentUploadTime);
-    query.addQueryItem("number_to", m_currentNumberTO);
-
-    QString path = m_currentApiUrl.path();
-    if (!path.endsWith('/')) path += '/';
-    
-    QUrl pdfUrl = m_currentApiUrl;
-    pdfUrl.setPath(path + m_currentSerialNumber + "/pdf/");
-    pdfUrl.setQuery(query);
-
-    connect(this, &NetworkService::uploadFinished, this, 
-            &NetworkService::handlePdfFileUploadFinished);
-
-    uploadFile(pdfUrl, pdfPath);
-}
-void NetworkService::handlePdfFileUploadFinished(bool success, const QString &error) {
-    disconnect(this, &NetworkService::uploadFinished, this, 
-               &NetworkService::handlePdfFileUploadFinished);
-
-    if (!success) {
-        handleUploadError(error);
-        return;
-    }
-
+  if (!QFile::exists(pdfPath)) {
     uploadReportBeforeFiles();
+    return;
+  }
+
+  QUrlQuery query;
+  query.addQueryItem("serial_number", m_currentSerialNumber);
+  query.addQueryItem("upload_time", m_currentUploadTime);
+  query.addQueryItem("number_to", m_currentNumberTO);
+
+  QString path = m_currentApiUrl.path();
+  if (!path.endsWith('/'))
+    path += '/';
+
+  QUrl pdfUrl = m_currentApiUrl;
+  pdfUrl.setPath(path + m_currentSerialNumber + "/pdf/");
+  pdfUrl.setQuery(query);
+
+  connect(this, &NetworkService::uploadFinished, this,
+          &NetworkService::handlePdfFileUploadFinished);
+
+  uploadFile(pdfUrl, pdfPath);
+}
+void NetworkService::handlePdfFileUploadFinished(bool success,
+                                                 const QString &error) {
+  disconnect(this, &NetworkService::uploadFinished, this,
+             &NetworkService::handlePdfFileUploadFinished);
+
+  if (!success) {
+    handleUploadError(error);
+    return;
+  }
+
+  uploadReportBeforeFiles();
 }
 
 void NetworkService::uploadReportBeforeFiles() {
-    m_currentUploadStep = 4;
-    DEBUG_COLORED("NetworkService", "uploadReportBeforeFiles", 
-                 "Step 4: Uploading before files", COLOR_BLUE, COLOR_BLUE);
+  m_currentUploadStep = 4;
+  DEBUG_COLORED("NetworkService", "uploadReportBeforeFiles",
+                "Step 4: Uploading before files", COLOR_BLUE, COLOR_BLUE);
 
-    QDir reportDir(m_currentReportPath);
-    QDir beforeDir(reportDir.filePath("before_to"));
-    QString beforePath = beforeDir.filePath("rail_record.zip");
-    
-    if (!QFile::exists(beforePath)) {
-        uploadReportAfterFiles();
-        return;
-    }
+  QDir reportDir(m_currentReportPath);
+  QDir beforeDir(reportDir.filePath("before_to"));
+  QString beforePath = beforeDir.filePath("rail_record.zip");
 
-    QUrlQuery query;
-    query.addQueryItem("serial_number", m_currentSerialNumber);
-    query.addQueryItem("upload_time", m_currentUploadTime);
-    query.addQueryItem("number_to", m_currentNumberTO);
+  if (!QFile::exists(beforePath)) {
+    uploadReportAfterFiles();
+    return;
+  }
 
-    QString path = m_currentApiUrl.path();
-    if (!path.endsWith('/')) path += '/';
-    
-    QUrl railUrl = m_currentApiUrl;
-    railUrl.setPath(path + m_currentSerialNumber + "/before/");
-    railUrl.setQuery(query);
+  QUrlQuery query;
+  query.addQueryItem("serial_number", m_currentSerialNumber);
+  query.addQueryItem("upload_time", m_currentUploadTime);
+  query.addQueryItem("number_to", m_currentNumberTO);
 
-    connect(this, &NetworkService::uploadFinished, this, 
-            &NetworkService::handleBeforeFilesUploadFinished);
+  QString path = m_currentApiUrl.path();
+  if (!path.endsWith('/'))
+    path += '/';
 
-    uploadFile(railUrl, beforePath);
+  QUrl railUrl = m_currentApiUrl;
+  railUrl.setPath(path + m_currentSerialNumber + "/before/");
+  railUrl.setQuery(query);
+
+  connect(this, &NetworkService::uploadFinished, this,
+          &NetworkService::handleBeforeFilesUploadFinished);
+
+  uploadFile(railUrl, beforePath);
 }
 
-void NetworkService::handleBeforeFilesUploadFinished(bool success, const QString &error) {
-    disconnect(this, &NetworkService::uploadFinished, this, 
-               &NetworkService::handleBeforeFilesUploadFinished);
+void NetworkService::handleBeforeFilesUploadFinished(bool success,
+                                                     const QString &error) {
+  disconnect(this, &NetworkService::uploadFinished, this,
+             &NetworkService::handleBeforeFilesUploadFinished);
 
-    if (!success) {
-        handleUploadError(error);
-        return;
-    }
+  if (!success) {
+    handleUploadError(error);
+    return;
+  }
 
-    uploadReportAfterFiles();
+  uploadReportAfterFiles();
 }
 void NetworkService::uploadReportAfterFiles() {
-    m_currentUploadStep = 5;
-    DEBUG_COLORED("NetworkService", "uploadReportAfterFiles", 
-                 "Step 5: Uploading after files", COLOR_BLUE, COLOR_BLUE);
+  m_currentUploadStep = 5;
+  DEBUG_COLORED("NetworkService", "uploadReportAfterFiles",
+                "Step 5: Uploading after files", COLOR_BLUE, COLOR_BLUE);
 
-    QDir reportDir(m_currentReportPath);
-    QDir afterDir(reportDir.filePath("after_to"));
-    QString afterPath = afterDir.filePath("rail_record.zip");
-    
-    if (!QFile::exists(afterPath)) {
-        completeUpload();
-        return;
-    }
+  QDir reportDir(m_currentReportPath);
+  QDir afterDir(reportDir.filePath("after_to"));
+  QString afterPath = afterDir.filePath("rail_record.zip");
 
-    QUrlQuery query;
-    query.addQueryItem("serial_number", m_currentSerialNumber);
-    query.addQueryItem("upload_time", m_currentUploadTime);
-    query.addQueryItem("number_to", m_currentNumberTO);
-
-    QString path = m_currentApiUrl.path();
-    if (!path.endsWith('/')) path += '/';
-    
-    QUrl railUrl = m_currentApiUrl;
-    railUrl.setPath(path + m_currentSerialNumber + "/after/");
-    railUrl.setQuery(query);
-
-    connect(this, &NetworkService::uploadFinished, this, 
-            &NetworkService::handleAfterFilesUploadFinished);
-
-    uploadFile(railUrl, afterPath);
-}
-void NetworkService::handleAfterFilesUploadFinished(bool success, const QString &error) {
-    disconnect(this, &NetworkService::uploadFinished, this, 
-               &NetworkService::handleAfterFilesUploadFinished);
-
-    if (!success) {
-        handleUploadError(error);
-        return;
-    }
-
+  if (!QFile::exists(afterPath)) {
     completeUpload();
+    return;
+  }
+
+  QUrlQuery query;
+  query.addQueryItem("serial_number", m_currentSerialNumber);
+  query.addQueryItem("upload_time", m_currentUploadTime);
+  query.addQueryItem("number_to", m_currentNumberTO);
+
+  QString path = m_currentApiUrl.path();
+  if (!path.endsWith('/'))
+    path += '/';
+
+  QUrl railUrl = m_currentApiUrl;
+  railUrl.setPath(path + m_currentSerialNumber + "/after/");
+  railUrl.setQuery(query);
+
+  connect(this, &NetworkService::uploadFinished, this,
+          &NetworkService::handleAfterFilesUploadFinished);
+
+  uploadFile(railUrl, afterPath);
+}
+void NetworkService::handleAfterFilesUploadFinished(bool success,
+                                                    const QString &error) {
+  disconnect(this, &NetworkService::uploadFinished, this,
+             &NetworkService::handleAfterFilesUploadFinished);
+
+  if (!success) {
+    handleUploadError(error);
+    return;
+  }
+
+  completeUpload();
 }
 void NetworkService::completeUpload() {
-    DEBUG_COLORED("NetworkService", "completeUpload", 
-                 "Upload completed successfully", COLOR_BLUE, COLOR_BLUE);
-    
-    m_isUploadingReport = false;
-    m_currentUploadStep = 0;
-    
-    emit uploadFinished(true, "");
+  DEBUG_COLORED("NetworkService", "completeUpload",
+                "Upload completed successfully", COLOR_BLUE, COLOR_BLUE);
+
+  m_isUploadingReport = false;
+  m_currentUploadStep = 0;
+
+  emit uploadFinished(true, "");
 }
 
 void NetworkService::handleUploadError(const QString &error) {
-    DEBUG_ERROR_COLORED("NetworkService", "handleUploadError", 
-                       QString("Upload error at step %1: %2").arg(m_currentUploadStep).arg(error), 
-                       COLOR_BLUE, COLOR_BLUE);
-    
-    m_isUploadingReport = false;
-    m_currentUploadStep = 0;
-    
-    emit errorOccurred(error);
-    emit uploadFinished(false, error);
+  DEBUG_ERROR_COLORED("NetworkService", "handleUploadError",
+                      QString("Upload error at step %1: %2")
+                          .arg(m_currentUploadStep)
+                          .arg(error),
+                      COLOR_BLUE, COLOR_BLUE);
+
+  m_isUploadingReport = false;
+  m_currentUploadStep = 0;
+
+  emit errorOccurred(error);
+  emit uploadFinished(false, error);
 }
 
 void NetworkService::handleUploadProgress(qint64 bytesSent, qint64 bytesTotal) {

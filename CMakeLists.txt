@@ -8,6 +8,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(WIN32)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        WIN32_EXECUTABLE TRUE
+    )
+endif()
+
+if(WIN32)
     set(ZLIB_ROOT "C:/libs/zlib")
     set(ZLIB_INCLUDE_DIR "C:/libs/zlib/include")
     set(ZLIB_LIBRARY "C:/libs/zlib/lib/zlib.lib")

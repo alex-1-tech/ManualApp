@@ -5,8 +5,9 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQuickStyle>
-#include <qdebug.h>
-#include <qurl.h>
+#include <QDebug>
+#include <QUrl>
+#include <QIcon>
 
 int main(int argc, char *argv[]) {
 
@@ -14,6 +15,8 @@ int main(int argc, char *argv[]) {
   qDebug() << "Qt version: " << qVersion();
   // QQuickStyle::setStyle("Material");
   QQmlApplicationEngine engine;
+  QQuickStyle::setStyle("Material");
+  app.setWindowIcon(QIcon(":/media/icons/logo.png"));
 
   engine.addImportPath("qrc:/qml");
   engine.addImportPath(QDir::currentPath() + "/src");
