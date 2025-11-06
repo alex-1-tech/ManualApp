@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QQmlEngine>
 #include <QQueue>
+#include <QCoreApplication>
 #include <qcontainerfwd.h>
 #include <qtmetamacros.h>
 
@@ -102,16 +103,17 @@ public:
   // Internal upload management
   void startNextUpload();
   void startNextUpload(const QUrl &apiUrl);
-  void handleSingleReportUploadFinished(bool success, const QString &error);
   void processServerReports(const QJsonObject &serverReports,
-                            const QString &serialNumber);
-
+                           const QString &serialNumber);
+  
+  // Dir getters
+  Q_INVOKABLE QString applicationDirPath() { return QCoreApplication::applicationDirPath();}
 signals:
   // Property change signals
   void titleChanged();
   void settingsManagerChanged();
   void loadingChanged();
-  void errorOccurred(const QString &error);
+  void errorOccurred(const  QString &error);
   void startTimeChanged();
 
   // Operation signals
@@ -123,6 +125,11 @@ private:
   // Private setters
   void setLoading(bool loading);
   void setError(const QString &error);
+
+  // Synchronous upload methods
+  bool uploadReportSynchronous(const QString &reportPath, 
+                              const QString &uploadTime, 
+                              const QString &numberTO);
 
 private:
   // State management

@@ -259,6 +259,21 @@ ScrollView {
             }
         }
 
+        // Section: Network settings(общие для всех моделей)
+        SectionView {
+            title: qsTr("Network settings")
+            model: [
+                {
+                    "label": qsTr("Wifi router address"),
+                    "value": SettingsManager.wifiRouterAddress,
+                },
+                {
+                    "label": qsTr("Windows password"),
+                    "value": SettingsManager.windowsPassword,
+                }
+            ]
+        }
+
         // Section: Additional Information (общие для всех моделей)
         SectionView {
             title: qsTr("Additional Information")

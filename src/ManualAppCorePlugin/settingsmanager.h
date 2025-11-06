@@ -49,6 +49,8 @@ class SettingsManager : public QObject {
   DEFINE_DATE_SETTING(shipmentDate)
   DEFINE_SETTING(QString, caseNumber, QString())
   DEFINE_SETTING(QString, currentModel, QString("kalmar32"))
+  DEFINE_SETTING(QString, wifiRouterAddress, QString())
+  DEFINE_SETTING(QString, windowsPassword, QString())
   DEFINE_SETTING(QString, notes, QString())
   DEFINE_SETTING(bool, isFirstRun, true)
 

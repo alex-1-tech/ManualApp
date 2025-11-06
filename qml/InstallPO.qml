@@ -10,35 +10,6 @@ Item {
 
     // ====== State ===========================================================
     property string currentModel: SettingsManager.currentModel
-    property string downloadUrl: currentModel === "kalmar32" ?
-        "https://www.dropbox.com/scl/fo/v1lkl7tcgj0hhreob6lf6/AINWP749-a0tC_y7wa2K4s8?rlkey=qr2z0ylejuoiku8ido0ac61mq&e=1&st=knaxnyu6&dl=0" :
-        "https://www.dropbox.com/scl/fo/v1lkl7tcgj0hhreob6lf6/AINWP749-a0tC_y7wa2K4s8?rlkey=qr2z0ylejuoiku8ido0ac61mq&e=1&st=knaxnyu6&dl=0"
-
-    property string statusMessage: "Ready to download"
-    property bool isDownloading: false
-
-    // ====== Functions =======================================================
-    function downloadAndInstall() {
-        if (isDownloading) return;
-
-        isDownloading = true;
-        statusMessage = "Opening download link in browser...";
-
-        // Просто открываем ссылку в браузере - пользователь скачает и запустит вручную
-        Qt.openUrlExternally(downloadUrl);
-
-        // Имитируем процесс установки
-        timer.start();
-    }
-
-    Timer {
-        id: timer
-        interval: 3000
-        onTriggered: {
-            root.isDownloading = false;
-            root.statusMessage = "Download completed! Please run the installer manually.";
-        }
-    }
 
     // ====== UI ==============================================================
     ColumnLayout {
@@ -84,23 +55,25 @@ Item {
                     font.bold: true
                 }
 
-                Item { Layout.fillWidth: true }
+                Item {
+                    Layout.fillWidth: true
+                }
 
                 Text {
-                    text: "Ready"
-                    color: Theme.colorSuccess
+                    text: InstallManager.installerExists(root.currentModel) ? "Ready" : "Installer not found"
+                    color: InstallManager.installerExists(root.currentModel) ? Theme.colorSuccess : Theme.colorError
                     font.pointSize: Theme.fontBody
                 }
             }
         }
 
-        // Download Section
+        // Installation Section
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 15
 
             Text {
-                text: "Download Software"
+                text: "Install Software"
                 color: Theme.colorTextPrimary
                 font.pointSize: Theme.fontSubtitle
                 font.bold: true
@@ -120,14 +93,21 @@ Item {
                     spacing: 5
 
                     Text {
-                        text: root.statusMessage
+                        text: InstallManager.statusMessage
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontBody
                         Layout.fillWidth: true
                     }
 
                     Text {
-                        text: "File: " + (root.currentModel === "kalmar32" ? "kalmar_software_setup.exe" : "Phazar-Installer-version.exe")
+                        text: "Installer: " + (root.currentModel === "kalmar32" ? "kalmar.exe" : "phasar.exe")
+                        color: Theme.colorTextMuted
+                        font.pointSize: Theme.fontSmall
+                        Layout.fillWidth: true
+                    }
+
+                    Text {
+                        text: "Path: " + InstallManager.installerPath
                         color: Theme.colorTextMuted
                         font.pointSize: Theme.fontSmall
                         Layout.fillWidth: true
@@ -135,26 +115,28 @@ Item {
                 }
             }
 
-            // Download Button
+            // Install Button
             Button {
-                id: download_button
+                id: install_button
                 Layout.alignment: Qt.AlignHCenter
                 Layout.preferredWidth: 200
                 Layout.preferredHeight: 50
-                text: root.isDownloading ? "Downloading..." : "Download Software"
-                enabled: !root.isDownloading
+                text: InstallManager.isInstalling ? "Installing..." : "Run Installer"
+                enabled: !InstallManager.isInstalling && InstallManager.installerExists(root.currentModel)
 
                 background: Rectangle {
                     color: parent.enabled ? Theme.colorButtonPrimary : Theme.colorButtonDisabled
                     radius: Theme.radiusButton
 
                     Behavior on color {
-                        ColorAnimation { duration: 200 }
+                        ColorAnimation {
+                            duration: 200
+                        }
                     }
                 }
 
                 contentItem: Text {
-                    text: download_button.text
+                    text: install_button.text
                     color: Theme.colorTextPrimary
                     font.pointSize: Theme.fontBody
                     font.bold: true
@@ -163,7 +145,7 @@ Item {
                 }
 
                 onClicked: {
-                    root.downloadAndInstall();
+                    InstallManager.runInstaller(root.currentModel);
                 }
             }
         }
@@ -193,19 +175,19 @@ Item {
                     spacing: 8
 
                     Text {
-                        text: "• Click 'Download Software' to get the installer"
+                        text: "• Click 'Run Installer' to start installation"
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
 
                     Text {
-                        text: "• Run the downloaded .exe file"
+                        text: "• Follow the installation steps in the opened window"
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
 
                     Text {
-                        text: "• Follow the installation steps"
+                        text: "• Wait for the installation to complete"
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSmall
                     }
@@ -217,14 +199,31 @@ Item {
                     }
 
                     Text {
-                        text: ""
-                        color: Theme.colorTextPrimary
+                        text: "• If installer doesn't start, run it manually from /media/apps/"
+                        color: Theme.colorWarning
                         font.pointSize: Theme.fontSmall
                     }
                 }
             }
         }
 
-        Item { Layout.fillHeight: true }
+        Item {
+            Layout.fillHeight: true
+        }
+    }
+
+    Connections {
+        target: InstallManager
+        function onInstallationStarted() {
+            console.log("Installation started successfully");
+        }
+        
+        function onInstallationFinished(success) {
+            console.log("Installation finished, success:", success);
+        }
+        
+        function onErrorOccurred(error) {
+            console.error("Installation error:", error);
+        }
     }
 }

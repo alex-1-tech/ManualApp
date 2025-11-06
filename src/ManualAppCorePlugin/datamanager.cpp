@@ -11,7 +11,6 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QTimer>
-#include <qdebug.h>
 
 DataManager::DataManager(QObject *parent) : QObject(parent) {
 
@@ -37,14 +36,6 @@ DataManager::DataManager(QObject *parent) : QObject(parent) {
           &DataManager::dataLoaded);
   connect(m_reportManager, &ReportManager::errorOccurred, this,
           [this](const QString &error) { setError(error); });
-
-  connect(m_reportManager->networkService(), &NetworkService::uploadFinished,
-          this, [this](bool success, const QString &error) {
-            setLoading(false);
-            if (!success) {
-              setError(error);
-            }
-          });
 }
 
 QString DataManager::title() const { return m_reportManager->title(); }
@@ -303,7 +294,6 @@ void DataManager::processServerReports(const QJsonObject &serverReports,
         onlineReportMap[date] = reportObj;
       }
     }
-
     for (const auto &localReport : localReports) {
       QDate reportDate = QDate::fromString(localReport, "yyyy-MM-dd");
       QString fullReportPath = toPath + localReport;
@@ -346,7 +336,7 @@ void DataManager::processServerReports(const QJsonObject &serverReports,
         bool jsonExists = serverReport["json"].toBool();
         bool pdfExists = serverReport["pdf"].toBool();
 
-        if ((!jsonExists || !pdfExists) && number_to == "TO-2") {
+        if (!jsonExists || !pdfExists) {
           m_pendingReports.enqueue(
               {toPath + localReport + '/', localReport, number_to});
         }
@@ -380,53 +370,62 @@ void DataManager::startNextUpload() {
     return;
   }
 
-  m_isUploading = true;
-  QList nextReportList = m_pendingReports.dequeue();
+  try {
+    m_isUploading = true;
+    QList nextReportList = m_pendingReports.dequeue();
 
-  QString apiUrl = djangoBaseUrl() + "/api/report/";
+    DEBUG_COLORED("DataManager", "startNextUpload",
+                  QString("Starting upload of report: %1, remaining: %2")
+                      .arg(nextReportList[0])
+                      .arg(m_pendingReports.size()),
+                  COLOR_CYAN, COLOR_CYAN);
 
-  DEBUG_COLORED("DataManager", "startNextUpload",
-                QString("Starting upload of report: %1, remaining: %2")
-                    .arg(nextReportList[0])
-                    .arg(m_pendingReports.size()),
-                COLOR_CYAN, COLOR_CYAN);
+    // Синхронная загрузка отчета
+    bool success = uploadReportSynchronous(nextReportList[0], 
+                                          nextReportList[1], 
+                                          nextReportList[2]);
 
-  disconnect(m_reportManager->networkService(), &NetworkService::uploadFinished,
-             this, &DataManager::handleSingleReportUploadFinished);
+    if (!success) {
+      DEBUG_ERROR_COLORED("DataManager", "startNextUpload",
+                          QString("Failed to upload report: %1").arg(nextReportList[0]),
+                          COLOR_CYAN, COLOR_CYAN);
+    }
 
-  connect(m_reportManager->networkService(), &NetworkService::uploadFinished,
-          this, &DataManager::handleSingleReportUploadFinished,
-          Qt::UniqueConnection);
-
-  m_reportManager->networkService()->uploadReport(
-      QUrl(apiUrl), nextReportList[0], nextReportList[1], nextReportList[2]);
+    // Немедленно начинаем следующую загрузку
+    QCoreApplication::processEvents(); // Обрабатываем события перед следующей загрузкой
+    startNextUpload();
+            
+  } catch (const std::exception &e) {
+    DEBUG_ERROR_COLORED("DataManager", "startNextUpload",
+                        QString("Exception: %1").arg(e.what()),
+                        COLOR_CYAN, COLOR_CYAN);
+    QCoreApplication::processEvents();
+    startNextUpload();
+  }
 }
 
-void DataManager::handleSingleReportUploadFinished(bool success,
-                                                   const QString &error) {
-  DEBUG_COLORED("DataManager", "handleSingleReportUploadFinished",
-                QString("Report upload finished: success=%1, error=%2")
-                    .arg(success)
-                    .arg(error),
+bool DataManager::uploadReportSynchronous(const QString &reportPath, 
+                                         const QString &uploadTime, 
+                                         const QString &numberTO) {
+  DEBUG_COLORED("DataManager", "uploadReportSynchronous",
+                QString("Synchronous upload: %1").arg(reportPath),
                 COLOR_CYAN, COLOR_CYAN);
 
-  if (!success) {
-    DEBUG_ERROR_COLORED("DataManager", "handleSingleReportUploadFinished",
-                        "Upload error: " + error, COLOR_CYAN, COLOR_CYAN);
+  QString apiUrl = djangoBaseUrl() + "/api/report/";
+  auto *networkService = m_reportManager->networkService();
+  
+  // Проверяем существование директории отчета
+  QDir reportDir(reportPath);
+  if (!reportDir.exists()) {
+    DEBUG_ERROR_COLORED("DataManager", "uploadReportSynchronous",
+                        QString("Report directory doesn't exist: %1").arg(reportPath),
+                        COLOR_CYAN, COLOR_CYAN);
+    return false;
   }
 
-  if (m_reportManager->networkService()->isUploadingReport()) {
-    DEBUG_COLORED("DataManager", "handleSingleReportUploadFinished",
-                  "Report still uploading, ignoring intermediate step",
-                  COLOR_CYAN, COLOR_CYAN);
-    return;
-  }
-
-  QTimer::singleShot(400, this, [this]() {
-    DEBUG_COLORED("DataManager", "handleSingleReportUploadFinished",
-                  "Starting next upload after delay", COLOR_CYAN, COLOR_CYAN);
-    startNextUpload();
-  });
+  // Выполняем синхронную загрузку
+  return networkService->uploadReportSynchronous(
+      QUrl(apiUrl), reportPath, uploadTime, numberTO);
 }
 
 QStringList DataManager::getFixStatusOptions() const {

@@ -19,6 +19,7 @@ qt_add_qml_module(ManualAppCorePlugin
         settingsbase.h
         kalmar32settings.h kalmar32settings.cpp
         phasar32settings.h phasar32settings.cpp
+        installmanager.h installmanager.cpp
 )
 
 target_link_libraries(ManualAppCorePlugin PRIVATE

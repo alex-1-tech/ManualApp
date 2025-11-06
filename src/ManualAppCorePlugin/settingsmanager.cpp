@@ -14,6 +14,8 @@ const QHash<QString, QString> &specialCamelToSnake() {
       {QStringLiteral("serialNumber"), QStringLiteral("serial_number")},
       {QStringLiteral("shipmentDate"), QStringLiteral("shipment_date")},
       {QStringLiteral("caseNumber"), QStringLiteral("case_number")},
+      {QStringLiteral("wifiRouterAddress"), QStringLiteral("wifi_router_address")},
+      {QStringLiteral("windowsPassword"), QStringLiteral("windows_password")},
       {QStringLiteral("notes"), QStringLiteral("notes")},
       // {QStringLiteral("currentModel"), QStringLiteral("equipment_type")}
   };
@@ -41,7 +43,7 @@ bool stringToBool(const QString &s) {
 } // namespace
 
 SettingsManager::SettingsManager(QObject *parent)
-    : QObject(parent), m_settings("votum", "ManualApp"),
+    : QObject(parent), m_settings("technovotum", "ManualApp"),
       m_kalmarSettings(new Kalmar32Settings(this)),
       m_phasarSettings(new Phasar32Settings(this)) {
   loadAllSettings();

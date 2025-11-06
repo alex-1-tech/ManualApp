@@ -53,9 +53,7 @@ ScrollView {
                     Layout.fillWidth: true
 
                     Text {
-                        text: SettingsManager.currentModel === "kalmar32" ?
-                              qsTr("KALMAR-32 Configuration") :
-                              qsTr("PHASAR-32 Configuration")
+                        text: SettingsManager.currentModel === "kalmar32" ? qsTr("KALMAR-32 Configuration") : qsTr("PHASAR-32 Configuration")
                         color: Theme.colorTextPrimary
                         font.pointSize: 24
                         font.bold: true
@@ -164,7 +162,7 @@ ScrollView {
                         Layout.fillWidth: true
                         spacing: 8
                         Label {
-                            Layout.preferredWidth: root.width < 700? 280: 450
+                            Layout.preferredWidth: root.width < 700 ? 280 : 450
                             text: qsTr("DC Cable from Battery")
                             color: Theme.colorTextPrimary
                             font.pointSize: Theme.fontSmall
@@ -182,7 +180,7 @@ ScrollView {
                         Layout.fillWidth: true
                         spacing: 8
                         Label {
-                            Layout.preferredWidth: root.width < 700? 280: 450
+                            Layout.preferredWidth: root.width < 700 ? 280 : 450
                             text: qsTr("Ethernet Cables")
                             color: Theme.colorTextPrimary
                             font.pointSize: Theme.fontSmall
@@ -232,7 +230,7 @@ ScrollView {
                         Layout.fillWidth: true
                         spacing: 8
                         Label {
-                            Layout.preferredWidth: root.width < 700? 280: 450
+                            Layout.preferredWidth: root.width < 700 ? 280 : 450
                             text: qsTr("Small repair tool witch bag")
                             color: Theme.colorTextPrimary
                             font.pointSize: Theme.fontSmall
@@ -250,7 +248,7 @@ ScrollView {
                         Layout.fillWidth: true
                         spacing: 8
                         Label {
-                            Layout.preferredWidth: root.width < 700? 280: 450
+                            Layout.preferredWidth: root.width < 700 ? 280 : 450
                             text: qsTr("Installed nameplate with serial number")
                             color: Theme.colorTextPrimary
                             font.pointSize: Theme.fontSmall
@@ -282,8 +280,6 @@ ScrollView {
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
-
-
 
                     FormField {
                         label: qsTr("Personalised name tag")
@@ -333,7 +329,7 @@ ScrollView {
                         Layout.fillWidth: true
                         spacing: 8
                         Label {
-                            Layout.preferredWidth: root.width < 700? 280: 450
+                            Layout.preferredWidth: root.width < 700 ? 280 : 450
                             text: qsTr("DC Cable from Battery")
                             color: Theme.colorTextPrimary
                             font.pointSize: Theme.fontSmall
@@ -351,7 +347,7 @@ ScrollView {
                         Layout.fillWidth: true
                         spacing: 8
                         Label {
-                            Layout.preferredWidth: root.width < 700? 280: 450
+                            Layout.preferredWidth: root.width < 700 ? 280 : 450
                             text: qsTr("Ethernet Cables")
                             color: Theme.colorTextPrimary
                             font.pointSize: Theme.fontSmall
@@ -409,7 +405,7 @@ ScrollView {
                         Layout.fillWidth: true
                         spacing: 8
                         Label {
-                            Layout.preferredWidth: root.width < 700? 280: 450
+                            Layout.preferredWidth: root.width < 700 ? 280 : 450
                             text: qsTr("Small repair tool with bag")
                             color: Theme.colorTextPrimary
                             font.pointSize: Theme.fontSmall
@@ -427,7 +423,7 @@ ScrollView {
                         Layout.fillWidth: true
                         spacing: 8
                         Label {
-                            Layout.preferredWidth: root.width < 700? 280: 450
+                            Layout.preferredWidth: root.width < 700 ? 280 : 450
                             text: qsTr("Installed nameplate with serial number")
                             color: Theme.colorTextPrimary
                             font.pointSize: Theme.fontSmall
@@ -440,6 +436,24 @@ ScrollView {
                             Layout.columnSpan: 1
                         }
                     }
+                }
+            }
+            // Network settings
+            CardSection {
+                title: qsTr("Network settings")
+
+                FormField {
+                    label: qsTr("Wifi router address")
+                    placeholder: qsTr("IP or hostname of the router")
+                    settingName: "wifiRouterAddress"
+                    Layout.fillWidth: true
+                }
+
+                FormField {
+                    label: qsTr("Windows password")
+                    placeholder: qsTr("Enter Windows user password")
+                    settingName: "windowsPassword"
+                    Layout.fillWidth: true
                 }
             }
 
@@ -568,7 +582,7 @@ ScrollView {
 
                         onClicked: {
                             // SettingsManager.saveAllSettings();
-                            SettingsManager.saveModelSettings()
+                            SettingsManager.saveModelSettings();
                             root.settingsCompleted();
                             confirmDialog.close();
                         }

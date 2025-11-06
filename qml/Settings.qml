@@ -137,6 +137,25 @@ ScrollView {
                         Layout.fillWidth: true
                     }
                 }
+
+                // Network settings
+                CardSection {
+                    title: qsTr("Network settings")
+
+                    FormField {
+                        label: qsTr("Wifi router address")
+                        placeholder: qsTr("IP or hostname of the router")
+                        settingName: "wifiRouterAddress"
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Windows password")
+                        placeholder: qsTr("Enter Windows user password")
+                        settingName: "windowsPassword"
+                        Layout.fillWidth: true
+                    }
+                }
             }
 
             // ПОЛЯ ДЛЯ PHASAR-32
@@ -238,6 +257,25 @@ ScrollView {
                         placeholder: qsTr("serial number of Calibration bloc SO-3R")
                         settingName: "calibrationBlockSo3r"
                         modelSettings: SettingsManager.phasarSettings
+                        Layout.fillWidth: true
+                    }
+                }
+
+                // Network settings
+                CardSection {
+                    title: qsTr("Network settings")
+
+                    FormField {
+                        label: qsTr("Wifi router address")
+                        placeholder: qsTr("IP or hostname of the router")
+                        settingName: "wifiRouterAddress"
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Windows password")
+                        placeholder: qsTr("Enter Windows user password")
+                        settingName: "windowsPassword"
                         Layout.fillWidth: true
                     }
                 }
