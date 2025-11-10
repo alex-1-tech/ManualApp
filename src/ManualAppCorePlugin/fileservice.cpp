@@ -160,3 +160,37 @@ void FileService::logFileOperation(const QString &operation,
     DEBUG_ERROR_COLORED("FileService", operation, logMessage, COLOR_MAGENTA,
                         COLOR_MAGENTA);
 }
+
+QString FileService::ensureAppDataDirectory() {
+  QString path = getAppDataPath();
+  QDir dir(path);
+  
+  if (!dir.exists()) {
+    DEBUG_COLORED("FileService", "ensureAppDataDirectory",
+                  QString("Creating app data directory: %1").arg(path),
+                  COLOR_MAGENTA, COLOR_MAGENTA);
+    
+    if (dir.mkpath(".")) {
+      DEBUG_COLORED("FileService", "ensureAppDataDirectory",
+                    "App data directory created successfully",
+                    COLOR_MAGENTA, COLOR_MAGENTA);
+    } else {
+      DEBUG_ERROR_COLORED("FileService", "ensureAppDataDirectory",
+                          "Failed to create app data directory",
+                          COLOR_MAGENTA, COLOR_MAGENTA);
+    }
+  }
+  
+  return path;
+}
+
+QString FileService::getFullFilePath(const QString &fileName) {
+  QString dirPath = ensureAppDataDirectory();
+  QString filePath = dirPath + "/" + fileName;
+  
+  DEBUG_COLORED("FileService", "getFullFilePath",
+                QString("Full file path: %1").arg(filePath),
+                COLOR_MAGENTA, COLOR_MAGENTA);
+  
+  return filePath;
+}

@@ -12,16 +12,16 @@
 int main(int argc, char *argv[]) {
 
   QApplication app(argc, argv);
-  qDebug() << "Qt version: " << qVersion();
-  // QQuickStyle::setStyle("Material");
   QQmlApplicationEngine engine;
   QQuickStyle::setStyle("Material");
   app.setWindowIcon(QIcon(":/media/icons/logo.png"));
 
+  app.setOrganizationName("technovotum");
+  app.setOrganizationDomain("votum.asuscomm.com");
+  app.setApplicationName("ManualApp");
+
   engine.addImportPath("qrc:/qml");
   engine.addImportPath(QDir::currentPath() + "/src");
-  qDebug() << "QML import paths:" << engine.importPathList();
-  qDebug() << "App dir:" << QCoreApplication::applicationDirPath();
   engine.load(QUrl("qrc:/qml/Start.qml"));
 
   if (engine.rootObjects().isEmpty()) {

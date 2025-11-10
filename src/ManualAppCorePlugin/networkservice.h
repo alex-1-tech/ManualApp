@@ -41,6 +41,7 @@ public:
     void uploadJsonToDjango(const QUrl &apiUrl, const QJsonObject &jsonObject);
     void uploadReport(const QUrl &apiBaseUrl, const QString &reportPath,
                      QString uploadTime = "", QString numberTO = "");
+    void downloadFile(const QUrl &url, const QString &filePath);
 
     // Control methods
     void cancelUpload();

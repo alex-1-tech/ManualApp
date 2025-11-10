@@ -544,3 +544,51 @@ void NetworkService::handleUploadFinishedWithResponse() {
     m_currentReply->deleteLater();
     m_currentReply = nullptr;
 }
+
+void NetworkService::downloadFile(const QUrl &url, const QString &filePath) {
+    DEBUG_COLORED("NetworkService", "downloadFile",
+                 QString("Downloading from %1 to %2").arg(url.toString()).arg(filePath),
+                 COLOR_BLUE, COLOR_BLUE);
+
+    QNetworkRequest request(url);
+    QNetworkReply *reply = m_manager->get(request);
+    m_currentReply = reply;
+
+    // Create file to save download
+    QFile *file = new QFile(filePath);
+    if (!file->open(QIODevice::WriteOnly)) {
+        DEBUG_ERROR_COLORED("NetworkService", "downloadFile",
+                          QString("Failed to open file for writing: %1").arg(file->errorString()),
+                          COLOR_BLUE, COLOR_BLUE);
+        file->deleteLater();
+        emit uploadFinished(false, QString("Failed to create file: %1").arg(file->errorString()));
+        return;
+    }
+
+    // Connect signals
+    connect(reply, &QNetworkReply::downloadProgress, this, &NetworkService::handleUploadProgress);
+    connect(reply, &QNetworkReply::readyRead, [this, reply, file]() {
+        if (file && file->isOpen()) {
+            file->write(reply->readAll());
+        }
+    });
+    connect(reply, &QNetworkReply::finished, [this, reply, file]() {
+        file->close();
+        file->deleteLater();
+
+        if (reply->error() == QNetworkReply::NoError) {
+            DEBUG_COLORED("NetworkService", "downloadFile", "Download completed successfully", COLOR_BLUE, COLOR_BLUE);
+            emit uploadFinished(true, "");
+        } else {
+            DEBUG_ERROR_COLORED("NetworkService", "downloadFile",
+                              QString("Download failed: %1").arg(reply->errorString()),
+                              COLOR_BLUE, COLOR_BLUE);
+            // Delete partially downloaded file
+            QFile::remove(file->fileName());
+            emit uploadFinished(false, reply->errorString());
+        }
+        
+        reply->deleteLater();
+        m_currentReply = nullptr;
+    });
+}

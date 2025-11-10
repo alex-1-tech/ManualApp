@@ -34,7 +34,7 @@ ReportManager::ReportManager(FileService *fileService,
           });
 }
 QString ReportManager::getReportDirPath() const {
-  return QCoreApplication::applicationDirPath() + "/media/reports/";
+  return m_fileService->ensureAppDataDirectory() + "/reports/";
 }
 QVariantMap ReportManager::performedTOs() const {
   QVariantMap result;

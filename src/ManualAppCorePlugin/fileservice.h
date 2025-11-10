@@ -5,6 +5,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QObject>
+#include <QStandardPaths>
 #include <qtmetamacros.h>
 
 class FileService : public QObject {
@@ -13,12 +14,24 @@ public:
   explicit FileService(QObject *parent = nullptr);
   ~FileService();
 
-  Q_INVOKABLE bool saveJsonToFile(const QString &filePath,
+  bool saveJsonToFile(const QString &filePath,
                                   const QJsonObject &jsonObject);
-  Q_INVOKABLE QJsonObject loadJsonFromFile(const QString &filePath);
-  Q_INVOKABLE bool deleteFile(const QString &filePath);
-  Q_INVOKABLE bool fileExists(const QString &filePath);
-  Q_INVOKABLE QString getFileSize(const QString &filePath);
+  QJsonObject loadJsonFromFile(const QString &filePath);
+  bool deleteFile(const QString &filePath);
+  bool fileExists(const QString &filePath);
+  QString getFileSize(const QString &filePath);
+
+  QString getAppDataPath() const {
+    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+  };
+  QString getDocumentsPath() const {
+    return QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+  };
+  QString getTempPath() {
+    return QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+  };
+  QString ensureAppDataDirectory();
+  QString getFullFilePath(const QString &fileName);
 
 private:
   void logFileOperation(const QString &operation, const QString &filePath,

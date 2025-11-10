@@ -10,7 +10,9 @@ Item {
 
     // ====== State ===========================================================
     property string currentModel: SettingsManager.currentModel
-
+    property bool isDownloading: InstallManager.isDownloading
+    property bool isInstallerReady: InstallManager.installerExists
+    
     // ====== UI ==============================================================
     ColumnLayout {
         anchors.fill: parent
@@ -60,20 +62,28 @@ Item {
                 }
 
                 Text {
-                    text: InstallManager.installerExists(root.currentModel) ? "Ready" : "Installer not found"
-                    color: InstallManager.installerExists(root.currentModel) ? Theme.colorSuccess : Theme.colorError
+                    text: {
+                        if (root.isDownloading) "Downloading..."
+                        else if (root.isInstallerReady) "Ready"
+                        else "Not downloaded"
+                    }
+                    color: {
+                        if (root.isDownloading) Theme.colorWarning
+                        else if (root.isInstallerReady) Theme.colorSuccess
+                        else Theme.colorError
+                    }
                     font.pointSize: Theme.fontBody
                 }
             }
         }
 
-        // Installation Section
+        // Download & Installation Section
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 15
 
             Text {
-                text: "Install Software"
+                text: "Download & Install Software"
                 color: Theme.colorTextPrimary
                 font.pointSize: Theme.fontSubtitle
                 font.bold: true
@@ -82,7 +92,7 @@ Item {
             // Status Card
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 80
+                Layout.preferredHeight: 140
                 color: Theme.colorBgMuted
                 radius: Theme.radiusCard
                 border.color: Theme.colorBorder
@@ -97,6 +107,15 @@ Item {
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontBody
                         Layout.fillWidth: true
+                    }
+
+                    ProgressBar {
+                        id: downloadProgress
+                        Layout.fillWidth: true
+                        visible: root.isDownloading
+                        value: InstallManager.downloadProgress
+                        from: 0
+                        to: 100
                     }
 
                     Text {
@@ -115,37 +134,65 @@ Item {
                 }
             }
 
-            // Install Button
-            Button {
-                id: install_button
+            // Download & Install Buttons
+            RowLayout {
                 Layout.alignment: Qt.AlignHCenter
-                Layout.preferredWidth: 200
-                Layout.preferredHeight: 50
-                text: InstallManager.isInstalling ? "Installing..." : "Run Installer"
-                enabled: !InstallManager.isInstalling && InstallManager.installerExists(root.currentModel)
+                spacing: 15
 
-                background: Rectangle {
-                    color: parent.enabled ? Theme.colorButtonPrimary : Theme.colorButtonDisabled
-                    radius: Theme.radiusButton
+                Button {
+                    id: downloadButton
+                    Layout.preferredWidth: 200
+                    Layout.preferredHeight: 50
+                    text: {
+                        if (root.isDownloading) "Downloading..."
+                        else if (root.isInstallerReady) "Redownload"
+                        else "Download Installer"
+                    }
+                    enabled: !root.isDownloading && !InstallManager.isInstalling
 
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 200
-                        }
+                    background: Rectangle {
+                        color: parent.enabled ? Theme.colorButtonSecondary : Theme.colorButtonDisabled
+                        radius: Theme.radiusButton
+                    }
+
+                    contentItem: Text {
+                        text: downloadButton.text
+                        color: Theme.colorTextPrimary
+                        font.pointSize: Theme.fontBody
+                        font.bold: true
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    onClicked: {
+                        InstallManager.downloadInstaller(root.currentModel);
                     }
                 }
 
-                contentItem: Text {
-                    text: install_button.text
-                    color: Theme.colorTextPrimary
-                    font.pointSize: Theme.fontBody
-                    font.bold: true
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
+                Button {
+                    id: installButton
+                    Layout.preferredWidth: 200
+                    Layout.preferredHeight: 50
+                    text: InstallManager.isInstalling ? "Installing..." : "Run Installer"
+                    enabled: !InstallManager.isInstalling && !root.isDownloading && root.isInstallerReady
 
-                onClicked: {
-                    InstallManager.runInstaller(root.currentModel);
+                    background: Rectangle {
+                        color: parent.enabled ? Theme.colorButtonPrimary : Theme.colorButtonDisabled
+                        radius: Theme.radiusButton
+                    }
+
+                    contentItem: Text {
+                        text: installButton.text
+                        color: Theme.colorTextPrimary
+                        font.pointSize: Theme.fontBody
+                        font.bold: true
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    onClicked: {
+                        InstallManager.runInstaller(root.currentModel);
+                    }
                 }
             }
         }
@@ -164,7 +211,7 @@ Item {
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 140
+                Layout.preferredHeight: 190
                 color: Theme.colorBgMuted
                 radius: Theme.radiusCard
                 border.color: Theme.colorBorder
@@ -173,6 +220,18 @@ Item {
                     anchors.fill: parent
                     anchors.margins: 15
                     spacing: 8
+
+                    Text {
+                        text: "• Click 'Download Installer' to download the software"
+                        color: Theme.colorTextPrimary
+                        font.pointSize: Theme.fontSmall
+                    }
+
+                    Text {
+                        text: "• Wait for download to complete (progress bar will show)"
+                        color: Theme.colorTextPrimary
+                        font.pointSize: Theme.fontSmall
+                    }
 
                     Text {
                         text: "• Click 'Run Installer' to start installation"
@@ -187,20 +246,8 @@ Item {
                     }
 
                     Text {
-                        text: "• Wait for the installation to complete"
-                        color: Theme.colorTextPrimary
-                        font.pointSize: Theme.fontSmall
-                    }
-
-                    Text {
                         text: "• Restart this application after installation"
                         color: Theme.colorTextPrimary
-                        font.pointSize: Theme.fontSmall
-                    }
-
-                    Text {
-                        text: "• If installer doesn't start, run it manually from /media/apps/"
-                        color: Theme.colorWarning
                         font.pointSize: Theme.fontSmall
                     }
                 }
@@ -209,21 +256,6 @@ Item {
 
         Item {
             Layout.fillHeight: true
-        }
-    }
-
-    Connections {
-        target: InstallManager
-        function onInstallationStarted() {
-            console.log("Installation started successfully");
-        }
-        
-        function onInstallationFinished(success) {
-            console.log("Installation finished, success:", success);
-        }
-        
-        function onErrorOccurred(error) {
-            console.error("Installation error:", error);
         }
     }
 }

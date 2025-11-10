@@ -18,14 +18,9 @@ Item {
     // ====== State ===========================================================
     property var rawData: ({})
     property var normalized: ([])
-    property date filterDate: new Date()
+    property int filterType: 0        // 0 = no filter, 1 = month, 2 = year, 3 = month+year
     property int filterYear: new Date().getFullYear()
     property int filterMonth: new Date().getMonth() + 1
-
-    // backing ListModel for dayCombo so we can rebuild when month/year changes
-    ListModel {
-        id: dayModel
-    }
 
     // ====== Helpers =========================================================
     function mapTitle(k) {
@@ -63,16 +58,23 @@ Item {
             }).sort(function (a, b) {
                 return b - a;
             });
-            const datesStr = dates.map(function (d) {
-                return DateUtils.fmtDate(d);
-            });
+
             const lastDate = dates.length ? dates[0] : null;
 
-            // Filter by selected date
+            // Фильтрация
             var filteredDates = dates.filter(function (d) {
-                return DateUtils.isSameDate(d, filterDate);
+                if (root.filterType === 0)
+                    return true;
+                if (root.filterType === 1)
+                    return d.getMonth() + 1 === root.filterMonth;
+                if (root.filterType === 2)
+                    return d.getFullYear() === root.filterYear;
+                if (root.filterType === 3)
+                    return d.getMonth() + 1 === root.filterMonth && d.getFullYear() === root.filterYear;
+                return true;
             });
-            var filteredDatesStr = filteredDates.map(DateUtils.fmtDate);
+
+            const filteredDatesStr = filteredDates.map(DateUtils.fmtDate);
 
             out.push({
                 key: k,
@@ -90,9 +92,7 @@ Item {
         out.sort(function (a, b) {
             var ao = constants.categoryOrder[a.key] || 0;
             var bo = constants.categoryOrder[b.key] || 0;
-            if (ao !== bo) {
-                return ao - bo;
-            }
+            if (ao !== bo) return ao - bo;
             var at = a.lastDate ? a.lastDate.getTime() : 0;
             var bt = b.lastDate ? b.lastDate.getTime() : 0;
             return bt - at;
@@ -133,63 +133,39 @@ Item {
             console.warn("Report PDF not found:", categoryKey, dateIso);
         }
     }
+
     function totalCount() {
         return normalized.reduce((s, rec) => s + rec.count, 0);
     }
+
     function applyFilter() {
         normalized = normalizeData(rawData);
         rebuildModelFromNormalized();
     }
 
-    function rebuildDays() {
-        if (!dayCombo || !monthCombo || !yearSpin)
-            return;
-
-        var y = yearSpin.value;
-        var m = monthCombo.currentIndex;
-        var currentDay = dayCombo.currentIndex + 1;
-
-        var days = new Date(y, m + 1, 0).getDate();
-        dayModel.clear();
-        for (var i = 1; i <= days; ++i) {
-            dayModel.append({
-                text: i.toString().padStart(2, '0')
-            });
-        }
-
-        var newDay = Math.min(currentDay, days);
-        dayCombo.currentIndex = newDay - 1;
-    }
-
-    function updateDateFromControls() {
-        if (!dayCombo || !monthCombo || !yearSpin)
-            return;
-
-        var day = parseInt(dayModel.get(dayCombo.currentIndex).text);
-        var month = monthCombo.currentIndex;
-        var year = yearSpin.value;
-
-        root.filterDate = new Date(year, month, day);
-        root.filterYear = year;
-        root.filterMonth = month + 1;
-
-        root.applyFilter();
+    function resetFilterToNone() {
+        root.filterType = 0;
+        root.filterMonth = new Date().getMonth() + 1;
+        root.filterYear = new Date().getFullYear();
+        filterTypeCombo.currentIndex = 0;
+        monthCombo.currentIndex = root.filterMonth - 1;
+        yearSpin.value = root.filterYear;
+        applyFilter();
     }
 
     Component.onCompleted: {
-        root.filterDate = new Date();
-        root.filterYear = root.filterDate.getFullYear();
-        root.filterMonth = root.filterDate.getMonth() + 1;
+        root.filterType = 0;
+        root.filterMonth = new Date().getMonth() + 1;
+        root.filterYear = new Date().getFullYear();
 
-        rebuildDays();
-        monthCombo.currentIndex = root.filterDate.getMonth();
-        yearSpin.value = root.filterDate.getFullYear();
-        dayCombo.currentIndex = root.filterDate.getDate() - 1;
+        monthCombo.currentIndex = root.filterMonth - 1;
+        yearSpin.value = root.filterYear;
 
         rawData = DataManager.performedTOsNew();
         applyFilter();
     }
 
+    // ===============================================================
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: 16
@@ -205,79 +181,81 @@ Item {
                 font.pixelSize: Theme.fontTitle
                 font.bold: true
                 color: Theme.colorTextPrimary
-                Layout.alignment: Qt.AlignVCenter
             }
 
-            Item {
-                Layout.fillWidth: true
-            }
+            Item { Layout.fillWidth: true }
 
             Label {
-                id: totalLabel
                 text: "Total records: " + root.totalCount()
                 font.pixelSize: Theme.fontBody
                 color: Theme.colorTextPrimary
-                Accessible.role: Accessible.StaticText
             }
         }
 
+        // ====== Фильтры =====================================================
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
 
             ComboBox {
-                id: dayCombo
-                Layout.preferredWidth: 80
+                id: filterTypeCombo
+                Layout.preferredWidth: 180
                 font.pixelSize: Theme.fontBody
-                model: dayModel
-                currentIndex: root.filterDate.getDate() - 1
-                onActivated: root.updateDateFromControls()
+                model: [
+                    "No filter",
+                    "By month",
+                    "By year",
+                    "By month + year"
+                ]
+                currentIndex: root.filterType
+                onActivated: {
+                    root.filterType = currentIndex;
+                    root.applyFilter();
+                }
             }
 
             ComboBox {
                 id: monthCombo
-                Layout.preferredWidth: 140
+                Layout.preferredWidth: 180
                 font.pixelSize: Theme.fontBody
-                model: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                currentIndex: root.filterDate.getMonth()
+                visible: root.filterType === 1 || root.filterType === 3
+                model: [
+                    "January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"
+                ]
+                currentIndex: root.filterMonth - 1
                 onActivated: {
-                    root.rebuildDays();
-                    root.updateDateFromControls();
+                    root.filterMonth = currentIndex + 1;
+                    root.applyFilter();
                 }
             }
 
             SpinBox {
                 id: yearSpin
-                Layout.preferredWidth: 200
+                Layout.preferredWidth: 180
                 font.pixelSize: Theme.fontBody
                 from: 2000
                 to: 2100
-                value: root.filterDate.getFullYear()
+                visible: root.filterType === 2 || root.filterType === 3
+                value: root.filterYear
                 onValueChanged: {
-                    if (value !== root.filterYear) {
-                        root.rebuildDays();
-                        root.updateDateFromControls();
-                    }
+                    root.filterYear = value;
+                    root.applyFilter();
                 }
             }
 
             Button {
+                text: "Apply"
+                onClicked: root.applyFilter()
+            }
+
+            Button {
                 text: "Reset"
-                onClicked: {
-                    root.filterDate = new Date();
-                    root.filterYear = root.filterDate.getFullYear();
-                    root.filterMonth = root.filterDate.getMonth() + 1;
-
-                    monthCombo.currentIndex = root.filterDate.getMonth();
-                    yearSpin.value = root.filterDate.getFullYear();
-                    root.rebuildDays();
-                    dayCombo.currentIndex = root.filterDate.getDate() - 1;
-
-                    root.applyFilter();
-                }
+                onClicked: root.resetFilterToNone()
             }
         }
 
+        // ====== Содержимое ==================================================
         Loader {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -296,9 +274,8 @@ Item {
             Layout.fillHeight: true
         }
     }
-    ListModel {
-        id: performedTOModel
-    }
+
+    ListModel { id: performedTOModel }
 
     Component {
         id: contentComp
@@ -307,7 +284,6 @@ Item {
             ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
             ListView {
-                id: list
                 width: parent.width
                 height: parent.height
                 spacing: 12
@@ -316,12 +292,10 @@ Item {
                 boundsBehavior: Flickable.StopAtBounds
                 reuseItems: true
                 interactive: contentHeight > height
-                keyNavigationEnabled: true
 
                 delegate: Item {
                     id: delegateItem
                     required property var modelData
-
                     width: ListView.view.width
                     height: cardDelegate.height
 
@@ -338,7 +312,8 @@ Item {
                         nextTO: delegateItem.modelData.nextTO
                         interval: delegateItem.modelData.interval
 
-                        onReportRequested: (categoryKey, dateIso) => root.openReport(categoryKey, dateIso)
+                        onReportRequested: (categoryKey, dateIso) =>
+                            root.openReport(categoryKey, dateIso)
                     }
                 }
             }

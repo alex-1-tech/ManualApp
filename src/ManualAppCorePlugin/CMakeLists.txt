@@ -26,6 +26,7 @@ target_link_libraries(ManualAppCorePlugin PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Network
+    Qt6::Concurrent
     Qt6::PrintSupport
     quazip
 )

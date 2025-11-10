@@ -39,6 +39,7 @@ find_package(Qt6 REQUIRED COMPONENTS
     QuickLayouts
     PrintSupport
     Network
+    Concurrent
 )
 
 qt_standard_project_setup(REQUIRES 6.8)
@@ -191,6 +192,7 @@ target_link_libraries(ManualApp PRIVATE
     Qt6::QuickLayouts
     Qt6::PrintSupport
     Qt6::Network
+    Qt6::Concurrent
     quazip
     ManualAppCorePlugin
 )

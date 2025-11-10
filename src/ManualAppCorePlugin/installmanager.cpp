@@ -1,49 +1,138 @@
 #include "installmanager.h"
 #include "utils.h"
 #include <QCoreApplication>
+#include <QDir>
+#include <QNetworkRequest>
 
 InstallManager::InstallManager(QObject *parent) 
     : QObject(parent)
-    , m_statusMessage("Ready to install")
+    , m_statusMessage("Ready to download and install")
     , m_isInstalling(false)
+    , m_isDownloading(false)
+    , m_downloadProgress(0.0)
     , m_process(nullptr)
     , m_timeoutTimer(nullptr)
+    , m_networkService(nullptr)
+    , m_fileService(nullptr)
+    , m_reportManager(nullptr)
 {
     DEBUG_COLORED("InstallManager", "Constructor", "InstallManager initialized", COLOR_CYAN, COLOR_CYAN);
+    initializeNetworkService();
 }
 
 InstallManager::~InstallManager() {
     cleanupProcess();
 }
 
+void InstallManager::initializeNetworkService() {
+    m_fileService = new FileService(this);
+    m_networkService = new NetworkService(m_fileService, nullptr, this);
+    m_reportManager = new ReportManager(m_fileService, m_networkService, this);
+    m_networkService->setReportManager(m_reportManager);
+    
+    // Connect download progress and completion signals
+    connect(m_networkService, &NetworkService::progressChanged, 
+            this, &InstallManager::onDownloadProgress);
+    connect(m_networkService, &NetworkService::uploadFinished, 
+            this, [this](bool success, const QString &error) {
+                if (success) {
+                    DEBUG_COLORED("InstallManager", "downloadFinished", "Download completed", COLOR_CYAN, COLOR_CYAN);
+                    setStatusMessage("Download completed successfully!");
+                } else {
+                    DEBUG_ERROR_COLORED("InstallManager", "downloadFinished", 
+                                       QString("Download failed: %1").arg(error), COLOR_CYAN, COLOR_CYAN);
+                    setStatusMessage(QString("Download failed: %1").arg(error));
+                }
+                setIsDownloading(false);
+                emit downloadFinished(success);
+            });
+}
+
 QString InstallManager::buildInstallerPath(const QString &model) const {
-    QString basePath = QCoreApplication::applicationDirPath();
+    // Use application data directory instead of temp
+    QString appDataDir = m_fileService->getAppDataPath();
     QString installerName;
     
     if (model.toLower() == "kalmar32") {
-        installerName = "/media/apps/Kalmar.exe";
+        installerName = "/Kalmar.exe";
     } else if (model.toLower() == "phasar32") {
-        installerName = "/media/apps/Phasar.exe";
+        installerName = "/Phasar.exe";
     } else {
         DEBUG_ERROR_COLORED("InstallManager", "buildInstallerPath", 
                            QString("Unknown model: %1").arg(model), COLOR_CYAN, COLOR_CYAN);
         return QString();
     }
     
-    return basePath + installerName;
+    return appDataDir + installerName;
+}
+
+QString InstallManager::buildDownloadUrl(const QString &model) const {
+    if (model.toLower() == "kalmar32") {
+        return "http://votum.asuscomm.com:32222/api/apps/download/kalmar32/";
+    } else if (model.toLower() == "phasar32") {
+        return "http://votum.asuscomm.com:32222/api/apps/download/phasar32/";
+    } else {
+        DEBUG_ERROR_COLORED("InstallManager", "buildDownloadUrl", 
+                           QString("Unknown model: %1").arg(model), COLOR_CYAN, COLOR_CYAN);
+        return QString();
+    }
 }
 
 bool InstallManager::installerExists(const QString &model) const {
     QString path = buildInstallerPath(model);
+    
     if (path.isEmpty()) {
         return false;
     }
     
     bool exists = QFile::exists(path);
     DEBUG_COLORED("InstallManager", "installerExists", 
-                 QString("Installer %1 exists: %2").arg(path).arg(exists), COLOR_CYAN, COLOR_CYAN);
-    
+                 QString("Installer %1 exists: %2").arg(path).arg(exists ? "true" : "false"), COLOR_CYAN, COLOR_CYAN);
     return exists;
+}
+
+void InstallManager::downloadInstaller(const QString &model) {
+    DEBUG_COLORED("InstallManager", "downloadInstaller", 
+                 QString("Starting download for model: %1").arg(model), COLOR_CYAN, COLOR_CYAN);
+    
+    if (m_isDownloading) {
+        DEBUG_COLORED("InstallManager", "downloadInstaller", "Download already in progress", COLOR_CYAN, COLOR_CYAN);
+        return;
+    }
+    
+    // Build download URL and local path
+    QString url = buildDownloadUrl(model);
+    QString path = buildInstallerPath(model);
+    
+    if (url.isEmpty() || path.isEmpty()) {
+        setStatusMessage("Error: Unknown device model");
+        return;
+    }
+    
+    // Ensure application data directory exists
+    QDir appDataDir(m_fileService->getAppDataPath());
+    if (!appDataDir.exists()) {
+        appDataDir.mkpath(".");
+    }
+    
+    setIsDownloading(true);
+    setDownloadProgress(0.0);
+    setStatusMessage("Starting download...");
+    
+    // Use NetworkService's asynchronous download (but simpler approach)
+    // NetworkService should handle GET request for download, not upload
+    m_networkService->downloadFile(QUrl(url), path);
+}
+
+void InstallManager::onDownloadProgress(qint64 bytesSent, qint64 bytesTotal) {
+    if (bytesTotal > 0) {
+        double progress = (static_cast<double>(bytesSent) / bytesTotal) * 100.0;
+        setDownloadProgress(progress);
+        setStatusMessage(QString("Downloading: %1% (%2/%3 KB)")
+                        .arg(static_cast<int>(progress))
+                        .arg(bytesSent / 1024)
+                        .arg(bytesTotal / 1024));
+    }
 }
 
 void InstallManager::runInstaller(const QString &model) {
@@ -55,7 +144,7 @@ void InstallManager::runInstaller(const QString &model) {
         return;
     }
     
-    // Build installer path
+    // Use downloaded installer path
     QString path = buildInstallerPath(model);
     if (path.isEmpty()) {
         setStatusMessage("Error: Unknown device model");
@@ -66,7 +155,7 @@ void InstallManager::runInstaller(const QString &model) {
     if (!QFile::exists(path)) {
         DEBUG_ERROR_COLORED("InstallManager", "runInstaller", 
                            QString("Installer not found: %1").arg(path), COLOR_CYAN, COLOR_CYAN);
-        setStatusMessage(QString("Installer not found: %1").arg(path));
+        setStatusMessage("Installer not found. Please download first.");
         emit errorOccurred(QString("Installer not found: %1").arg(path));
         return;
     }
@@ -81,7 +170,7 @@ void InstallManager::runInstaller(const QString &model) {
         m_process = new QProcess(this);
         m_timeoutTimer = new QTimer(this);
         
-        // Подключаем сигналы
+        // Connect signals
         connect(m_process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
                 this, &InstallManager::onProcessFinished);
         connect(m_process, &QProcess::errorOccurred,
@@ -94,18 +183,16 @@ void InstallManager::runInstaller(const QString &model) {
         
         setStatusMessage("Running installer...");
         
-        // ЗАМЕНИТЕ ЭТУ СТРОКУ:
-        // bool started = QProcess::startDetached(path, QStringList(), fileInfo.path());
-        
-        // НА ЭТО:
+        // Simply start the installer
         m_process->start(path, QStringList());
-        bool started = m_process->waitForStarted(5000); // ждем 5 секунд для запуска
+        bool started = m_process->waitForStarted(5000);
         
         if (started) {
             DEBUG_COLORED("InstallManager", "runInstaller", "Installer started successfully", COLOR_CYAN, COLOR_CYAN);
             setStatusMessage("Installer started! Please follow the installation steps.");
             emit installationStarted();
             
+            // Start timeout timer
             m_timeoutTimer->start(30000);
         } else {
             DEBUG_ERROR_COLORED("InstallManager", "runInstaller", 
@@ -244,5 +331,19 @@ void InstallManager::setInstallerPath(const QString &path) {
     if (m_installerPath != path) {
         m_installerPath = path;
         emit installerPathChanged();
+    }
+}
+
+void InstallManager::setIsDownloading(bool downloading) {
+    if (m_isDownloading != downloading) {
+        m_isDownloading = downloading;
+        emit isDownloadingChanged();
+    }
+}
+
+void InstallManager::setDownloadProgress(double progress) {
+    if (!qFuzzyCompare(m_downloadProgress, progress)) {
+        m_downloadProgress = progress;
+        emit downloadProgressChanged();
     }
 }
