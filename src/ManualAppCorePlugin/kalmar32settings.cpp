@@ -3,7 +3,6 @@
 #include <QJsonObject>
 #include <QSettings>
 
-
 Kalmar32Settings::Kalmar32Settings(QObject *parent) : SettingsBase(parent) {}
 
 void Kalmar32Settings::loadFromSettings(QSettings &settings,
@@ -18,8 +17,10 @@ void Kalmar32Settings::loadFromSettings(QSettings &settings,
 
   setultrasonicPhasedArrayPulsar(
       settings.value(pre + "ultrasonicPhasedArrayPulsar", "").toString());
-  setmanualProbs36(settings.value(pre + "manualProbs36", "").toString());
-  setstraightProbs0(settings.value(pre + "straightProbs0", "").toString());
+  setleftProbs(settings.value(pre + "leftProbs", "").toString());
+  setrightProbs(settings.value(pre + "rightProbs", "").toString());
+  setmanualProbs(settings.value(pre + "manualProbs", "").toString());
+  setstraightProbs(settings.value(pre + "straightProbs", "").toString());
 
   sethasDcCableBattery(
       settings.value(pre + "hasDcCableBattery", false).toBool());
@@ -46,8 +47,10 @@ void Kalmar32Settings::saveToSettings(QSettings &settings,
 
   settings.setValue(pre + "ultrasonicPhasedArrayPulsar",
                     ultrasonicPhasedArrayPulsar());
-  settings.setValue(pre + "manualProbs36", manualProbs36());
-  settings.setValue(pre + "straightProbs0", straightProbs0());
+  settings.setValue(pre + "leftProbs", leftProbs());
+  settings.setValue(pre + "rightProbs", rightProbs());
+  settings.setValue(pre + "manualProbs", manualProbs());
+  settings.setValue(pre + "straightProbs", straightProbs());
 
   settings.setValue(pre + "hasDcCableBattery", hasDcCableBattery());
   settings.setValue(pre + "hasEthernetCables", hasEthernetCables());
@@ -68,8 +71,10 @@ QJsonObject Kalmar32Settings::toJson() const {
   obj["dc_charger_adapter_battery"] = dcChargerAdapterBattery();
 
   obj["ultrasonic_phased_array_pulsar"] = ultrasonicPhasedArrayPulsar();
-  obj["manual_probs_36"] = manualProbs36();
-  obj["straight_probs_0"] = straightProbs0();
+  obj["left_probs"] = leftProbs();
+  obj["right_probs"] = rightProbs();
+  obj["manual_probs"] = manualProbs();
+  obj["straight_probs"] = straightProbs();
 
   obj["has_dc_cable_battery"] = hasDcCableBattery();
   obj["has_ethernet_cables"] = hasEthernetCables();
@@ -94,10 +99,14 @@ void Kalmar32Settings::fromJson(const QJsonObject &obj) {
   if (obj.contains("ultrasonic_phased_array_pulsar"))
     setultrasonicPhasedArrayPulsar(
         obj["ultrasonic_phased_array_pulsar"].toString());
-  if (obj.contains("manual_probs_36"))
-    setmanualProbs36(obj["manual_probs_36"].toString());
-  if (obj.contains("straight_probs_0"))
-    setstraightProbs0(obj["straight_probs_0"].toString());
+  if (obj.contains("left_probs"))
+    setmanualProbs(obj["left_probs"].toString());
+  if (obj.contains("right_probs"))
+    setmanualProbs(obj["right_probs"].toString());
+  if (obj.contains("manual_probs"))
+    setmanualProbs(obj["manual_probs"].toString());
+  if (obj.contains("straight_probs"))
+    setstraightProbs(obj["straight_probs"].toString());
 
   if (obj.contains("has_dc_cable_battery"))
     sethasDcCableBattery(obj["has_dc_cable_battery"].toBool());

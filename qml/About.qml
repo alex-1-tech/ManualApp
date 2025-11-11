@@ -115,12 +115,20 @@ ScrollView {
                         "value": SettingsManager.kalmarSettings.ultrasonicPhasedArrayPulsar
                     },
                     {
-                        "label": qsTr("Manual probs 36° RA2.25L16 0.9x10-17"),
-                        "value": SettingsManager.kalmarSettings.manualProbs36
+                        "label": qsTr("Left probs RA2.25L16 1.1x10-17"),
+                        "value": SettingsManager.kalmarSettings.leftProbs
                     },
                     {
-                        "label": qsTr("Straight probs 0° RA5.0L16 0.6x10-17"),
-                        "value": SettingsManager.kalmarSettings.straightProbs0
+                        "label": qsTr("Right probs RA2.25L16 1.1x10-17"),
+                        "value": SettingsManager.kalmarSettings.rightProbs
+                    },
+                    {
+                        "label": qsTr("Manual probs RA2.25L16 0.9x10-17"),
+                        "value": SettingsManager.kalmarSettings.manualProbs
+                    },
+                    {
+                        "label": qsTr("Straight probs RA5.0L16 0.6x10-12"),
+                        "value": SettingsManager.kalmarSettings.straightProbs
                     },
                     {
                         "label": qsTr("DC Cable from Battery"),

@@ -143,17 +143,33 @@ ScrollView {
                     }
 
                     FormField {
-                        label: qsTr("Manual probs 36° RA2.25L16 0.9x10-17")
-                        placeholder: qsTr("serial number of Manual probs 36° RA2.25L16 0.9x10-17")
-                        settingName: "manualProbs36"
+                        label: qsTr("Left probs RA2.25L16 1.1x10-17")
+                        placeholder: qsTr("serial number of Left probs RA2.25L16 1.1x10-17")
+                        settingName: "leftProbs"
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
                     }
 
                     FormField {
-                        label: qsTr("Straight probs 0° RA5.0L16 0.6x10-17")
-                        placeholder: qsTr("serial number of Straight probs 0° RA5.0L16 0.6x10-17")
-                        settingName: "straightProbs0"
+                        label: qsTr("Right probs RA2.25L16 1.1x10-17")
+                        placeholder: qsTr("serial number of Right probs RA2.25L16 1.1x10-17")
+                        settingName: "rightProbs"
+                        modelSettings: SettingsManager.kalmarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Manual probs RA2.25L16 0.9x10-17")
+                        placeholder: qsTr("serial number of Manual probs RA2.25L16 0.9x10-17")
+                        settingName: "manualProbs"
+                        modelSettings: SettingsManager.kalmarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Straight probs RA5.0L16 0.6x10-12")
+                        placeholder: qsTr("serial number of Straight probs RA5.0L16 0.6x10-12")
+                        settingName: "straightProbs"
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
                     }

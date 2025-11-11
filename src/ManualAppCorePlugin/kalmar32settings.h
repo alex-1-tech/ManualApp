@@ -28,8 +28,10 @@ class Kalmar32Settings : public SettingsBase {
 
   // Ultrasonic equipment
   DEFINE_MODULE_SETTING(QString, ultrasonicPhasedArrayPulsar, QString())
-  DEFINE_MODULE_SETTING(QString, manualProbs36, QString())
-  DEFINE_MODULE_SETTING(QString, straightProbs0, QString())
+  DEFINE_MODULE_SETTING(QString, leftProbs, QString())
+  DEFINE_MODULE_SETTING(QString, rightProbs, QString())
+  DEFINE_MODULE_SETTING(QString, manualProbs, QString())
+  DEFINE_MODULE_SETTING(QString, straightProbs, QString())
 
   // Cables and accessories
   DEFINE_MODULE_SETTING(bool, hasDcCableBattery, false)
