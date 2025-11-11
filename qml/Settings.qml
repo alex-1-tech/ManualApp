@@ -98,9 +98,25 @@ ScrollView {
                     }
 
                     FormField {
+                        label: qsTr("Production date Left probs RA2.25L16 1.1x10-17")
+                        placeholder: qsTr("Production date of left probs RA2.25L16 1.1x10-17")
+                        settingName: "leftProbsDate"
+                        modelSettings: SettingsManager.kalmarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
                         label: qsTr("Right probs RA2.25L16 1.1x10-17")
                         placeholder: qsTr("serial number of Right probs RA2.25L16 1.1x10-17")
                         settingName: "rightProbs"
+                        modelSettings: SettingsManager.kalmarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Production date right probs RA2.25L16 1.1x10-17")
+                        placeholder: qsTr("Production date of right probs RA2.25L16 1.1x10-17")
+                        settingName: "rightProbsDate"
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
                     }
@@ -114,9 +130,25 @@ ScrollView {
                     }
 
                     FormField {
+                        label: qsTr("Production date Manual probs RA2.25L16 0.9x10-17")
+                        placeholder: qsTr("Production date of manual probs RA2.25L16 0.9x10-17")
+                        settingName: "manualProbsDate"
+                        modelSettings: SettingsManager.kalmarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
                         label: qsTr("Straight probs RA5.0L16 0.6x10-12")
                         placeholder: qsTr("serial number of Straight probs RA5.0L16 0.6x10-12")
                         settingName: "straightProbs"
+                        modelSettings: SettingsManager.kalmarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Production date Straight probs RA5.0L16 0.6x10-12")
+                        placeholder: qsTr("Production date of straight probs RA5.0L16 0.6x10-12")
+                        settingName: "straightProbsDate"
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
                     }

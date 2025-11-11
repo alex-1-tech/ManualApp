@@ -119,7 +119,15 @@ ScrollView {
                         "value": SettingsManager.kalmarSettings.leftProbs
                     },
                     {
+                        "label": qsTr("Production date left probs RA2.25L16 1.1x10-17"),
+                        "value": SettingsManager.kalmarSettings.leftProbs
+                    },
+                    {
                         "label": qsTr("Right probs RA2.25L16 1.1x10-17"),
+                        "value": SettingsManager.kalmarSettings.rightProbs
+                    },
+                    {
+                        "label": qsTr("Production date right probs RA2.25L16 1.1x10-17"),
                         "value": SettingsManager.kalmarSettings.rightProbs
                     },
                     {
@@ -127,7 +135,15 @@ ScrollView {
                         "value": SettingsManager.kalmarSettings.manualProbs
                     },
                     {
+                        "label": qsTr("Production date manual probs RA2.25L16 0.9x10-17"),
+                        "value": SettingsManager.kalmarSettings.manualProbs
+                    },
+                    {
                         "label": qsTr("Straight probs RA5.0L16 0.6x10-12"),
+                        "value": SettingsManager.kalmarSettings.straightProbs
+                    },
+                    {
+                        "label": qsTr("Production date straight probs RA5.0L16 0.6x10-12"),
                         "value": SettingsManager.kalmarSettings.straightProbs
                     },
                     {
