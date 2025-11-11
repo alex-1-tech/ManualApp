@@ -7,11 +7,6 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(WIN32)
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        WIN32_EXECUTABLE TRUE
-    )
-endif()
 
 if(WIN32)
     set(ZLIB_ROOT "C:/libs/zlib")
@@ -170,6 +165,39 @@ if(WIN32)
 
     deploy_qt_app(ManualApp)
 endif()
+
+if(WIN32)
+    function(read_config_ini key default_value output_var)
+        if(EXISTS "${CMAKE_SOURCE_DIR}/.config.ini")
+            file(READ "${CMAKE_SOURCE_DIR}/.config.ini" CONFIG_CONTENT)
+
+            # Ищем ключ в формате key=value
+            string(REGEX MATCH "${key}=[^\r\n]*" MATCHED_LINE "${CONFIG_CONTENT}")
+            if(MATCHED_LINE)
+                string(REGEX REPLACE "^${key}= *" "" VALUE "${MATCHED_LINE}")
+                string(STRIP "${VALUE}" VALUE)
+                set(${output_var} "${VALUE}" PARENT_SCOPE)
+            else()
+                set(${output_var} "${default_value}" PARENT_SCOPE)
+            endif()
+        else()
+            set(${output_var} "${default_value}" PARENT_SCOPE)
+        endif()
+    endfunction()
+
+    read_config_ini("app_version" "1.0.0" PACKAGE_VERSION)
+    read_config_ini("name" ${PROJECT_NAME} PACKAGE_NAME)
+    read_config_ini("vendor" "votum" PACKAGE_VENDOR)
+
+    set(CPACK_PACKAGE_NAME "${PACKAGE_NAME}")
+    set(CPACK_PACKAGE_VENDOR "${PACKAGE_VENDOR}")
+    set(CPACK_PACKAGE_VERSION "${PACKAGE_VERSION}")
+    set(CPACK_NSIS_DISPLAY_NAME "${PACKAGE_NAME}")
+    set(CPACK_NSIS_PACKAGE_NAME "${PACKAGE_NAME}")
+
+    include(CPack)
+endif()
+
 
 configure_file(
     ${CMAKE_SOURCE_DIR}/.config.ini
