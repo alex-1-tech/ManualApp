@@ -35,7 +35,15 @@ void Phasar32Settings::loadFromSettings(QSettings &settings,
   sethasInstalledNameplate(
       settings.value(pre + "hasInstalledNameplate", false).toBool());
 }
-
+void Phasar32Settings::debugPrint() const {
+  qDebug() << "=== Phasar32 Settings ===";
+  const QMetaObject *meta = this->metaObject();
+  for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
+    QMetaProperty prop = meta->property(i);
+    QVariant value = prop.read(this);
+    qDebug() << prop.name() << "=" << value;
+  }
+}
 void Phasar32Settings::saveToSettings(QSettings &settings,
                                      const QString &prefix) const {
   QString pre = prefix.isEmpty() ? "phasar32/" : prefix;

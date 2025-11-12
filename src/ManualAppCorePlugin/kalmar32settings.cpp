@@ -100,7 +100,15 @@ QJsonObject Kalmar32Settings::toJson() const {
 
   return obj;
 }
-
+void Kalmar32Settings::debugPrint() const {
+  qDebug() << "=== Kalmar32 Settings ===";
+  const QMetaObject *meta = this->metaObject();
+  for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
+    QMetaProperty prop = meta->property(i);
+    QVariant value = prop.read(this);
+    qDebug() << prop.name() << "=" << value;
+  }
+}
 void Kalmar32Settings::fromJson(const QJsonObject &obj) {
   if (obj.contains("pc_tablet_dell_7230"))
     setpcTabletDell7230(obj["pc_tablet_dell_7230"].toString());

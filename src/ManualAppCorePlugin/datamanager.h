@@ -45,7 +45,7 @@ public:
   Q_INVOKABLE bool uploadReport(const QString &sourceFolderPath, bool after);
   Q_INVOKABLE void uploadReportToDjango(const QUrl &apiUrl);
   Q_INVOKABLE void syncReportsWithServer();
-
+  Q_INVOKABLE  void syncSettingsWithServer();
   // Q_INVOKABLE methods - Settings Operations
   Q_INVOKABLE QString createSettingsJsonFile(const QString &filePath);
   Q_INVOKABLE bool deleteSettingsJsonFile(const QString &filePath);
@@ -115,6 +115,7 @@ signals:
   void loadingChanged();
   void errorOccurred(const  QString &error);
   void startTimeChanged();
+  void settingsSyncFinished(bool success);
 
   // Operation signals
   void dataLoaded();

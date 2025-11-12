@@ -236,7 +236,76 @@ void DataManager::uploadReportToDjango(const QUrl &apiUrl) {
   setLoading(true);
   m_reportManager->networkService()->uploadReport(apiUrl, filePath);
 }
+void DataManager::syncSettingsWithServer() {
+  DEBUG_COLORED("DataManager", "syncSettingsWithServer",
+                "Starting settings sync", COLOR_CYAN, COLOR_CYAN);
 
+  QString serialNumber = m_reportManager->settingsManager()->serialNumber();
+  if (serialNumber.isEmpty()) {
+    DEBUG_ERROR_COLORED("DataManager", "syncSettingsWithServer",
+                        "Serial number is empty, cannot sync settings",
+                        COLOR_CYAN, COLOR_CYAN);
+    setError("Serial number is not available");
+    return;
+  }
+
+  QString model = m_reportManager->settingsManager()->currentModel();
+  if (model.isEmpty()) {
+    DEBUG_ERROR_COLORED("DataManager", "syncSettingsWithServer",
+                        "Model is not specified", COLOR_CYAN, COLOR_CYAN);
+    setError("Model is not specified");
+    return;
+  }
+
+  QUrl apiUrl(QString(djangoBaseUrl() + "/api/" + model + "/%1/get_settings")
+                  .arg(serialNumber));
+
+  DEBUG_COLORED("DataManager", "syncSettingsWithServer",
+                QString("Downloading settings from: %1").arg(apiUrl.toString()),
+                COLOR_CYAN, COLOR_CYAN);
+
+  if (!apiUrl.isValid() || apiUrl.scheme().isEmpty()) {
+    setError("Invalid API URL for settings sync");
+    return;
+  }
+
+  setLoading(true);
+  setError("");
+
+  m_reportManager->networkService()->getJsonFromDjango(
+      apiUrl,
+      [this](const QJsonObject &json) {
+        if (json.isEmpty()) {
+          setError("Received empty settings JSON from server");
+          setLoading(false);
+          return;
+        }
+
+        // Extract settings object from response
+        QJsonObject settingsObj = json;
+        if (json.contains("settings") && json["settings"].isObject()) {
+          settingsObj = json["settings"].toObject();
+        }
+
+        // Apply settings to SettingsManager
+        m_reportManager->settingsManager()->fromJson(settingsObj);
+
+        DEBUG_COLORED("DataManager", "syncSettingsWithServer",
+                      "Settings successfully synchronized from server",
+                      COLOR_CYAN, COLOR_CYAN);
+
+        setLoading(false);
+        emit settingsSyncFinished(true);
+      },
+      [this](const QString &error) {
+        DEBUG_ERROR_COLORED("DataManager", "syncSettingsWithServer",
+                            QString("Failed to sync settings: %1").arg(error),
+                            COLOR_CYAN, COLOR_CYAN);
+        setError(QString("Settings sync failed: %1").arg(error));
+        setLoading(false);
+        emit settingsSyncFinished(false);
+      });
+}
 void DataManager::syncReportsWithServer() {
   DEBUG_COLORED("DataManager", "syncReportsWithServer", "Starts sync",
                 COLOR_CYAN, COLOR_CYAN);
@@ -381,51 +450,53 @@ void DataManager::startNextUpload() {
                   COLOR_CYAN, COLOR_CYAN);
 
     // Синхронная загрузка отчета
-    bool success = uploadReportSynchronous(nextReportList[0], 
-                                          nextReportList[1], 
-                                          nextReportList[2]);
+    bool success = uploadReportSynchronous(nextReportList[0], nextReportList[1],
+                                           nextReportList[2]);
 
     if (!success) {
-      DEBUG_ERROR_COLORED("DataManager", "startNextUpload",
-                          QString("Failed to upload report: %1").arg(nextReportList[0]),
-                          COLOR_CYAN, COLOR_CYAN);
+      DEBUG_ERROR_COLORED(
+          "DataManager", "startNextUpload",
+          QString("Failed to upload report: %1").arg(nextReportList[0]),
+          COLOR_CYAN, COLOR_CYAN);
     }
 
     // Немедленно начинаем следующую загрузку
-    QCoreApplication::processEvents(); // Обрабатываем события перед следующей загрузкой
+    QCoreApplication::processEvents(); // Обрабатываем события перед следующей
+                                       // загрузкой
     startNextUpload();
-            
+
   } catch (const std::exception &e) {
     DEBUG_ERROR_COLORED("DataManager", "startNextUpload",
-                        QString("Exception: %1").arg(e.what()),
-                        COLOR_CYAN, COLOR_CYAN);
+                        QString("Exception: %1").arg(e.what()), COLOR_CYAN,
+                        COLOR_CYAN);
     QCoreApplication::processEvents();
     startNextUpload();
   }
 }
 
-bool DataManager::uploadReportSynchronous(const QString &reportPath, 
-                                         const QString &uploadTime, 
-                                         const QString &numberTO) {
+bool DataManager::uploadReportSynchronous(const QString &reportPath,
+                                          const QString &uploadTime,
+                                          const QString &numberTO) {
   DEBUG_COLORED("DataManager", "uploadReportSynchronous",
-                QString("Synchronous upload: %1").arg(reportPath),
-                COLOR_CYAN, COLOR_CYAN);
+                QString("Synchronous upload: %1").arg(reportPath), COLOR_CYAN,
+                COLOR_CYAN);
 
   QString apiUrl = djangoBaseUrl() + "/api/report/";
   auto *networkService = m_reportManager->networkService();
-  
+
   // Проверяем существование директории отчета
   QDir reportDir(reportPath);
   if (!reportDir.exists()) {
-    DEBUG_ERROR_COLORED("DataManager", "uploadReportSynchronous",
-                        QString("Report directory doesn't exist: %1").arg(reportPath),
-                        COLOR_CYAN, COLOR_CYAN);
+    DEBUG_ERROR_COLORED(
+        "DataManager", "uploadReportSynchronous",
+        QString("Report directory doesn't exist: %1").arg(reportPath),
+        COLOR_CYAN, COLOR_CYAN);
     return false;
   }
 
   // Выполняем синхронную загрузку
-  return networkService->uploadReportSynchronous(
-      QUrl(apiUrl), reportPath, uploadTime, numberTO);
+  return networkService->uploadReportSynchronous(QUrl(apiUrl), reportPath,
+                                                 uploadTime, numberTO);
 }
 
 QStringList DataManager::getFixStatusOptions() const {

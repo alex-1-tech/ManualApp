@@ -267,8 +267,12 @@ Item {
                     dashboardLoader.visible = false;
                     reportsLoader.visible = false;
                     installPoLoader.visible = false;
-                    settingsLoader.visible = true;
                     aboutLoader.visible = false;
+
+                    // Пересоздаем Settings при каждом переходе
+                    settingsLoader.active = false;
+                    settingsLoader.visible = true;
+                    settingsLoader.active = true;
 
                     // Скрываем панель после выбора пункта
                     root.hideSidebar()
@@ -315,7 +319,11 @@ Item {
                     reportsLoader.visible = false;
                     settingsLoader.visible = false;
                     installPoLoader.visible = false;
+
+                    // Пересоздаем About при каждом переходе
+                    aboutLoader.active = false;
                     aboutLoader.visible = true;
+                    aboutLoader.active = true;
 
                     // Скрываем панель после выбора пункта
                     root.hideSidebar()
@@ -394,7 +402,7 @@ Item {
             id: settingsLoader
             anchors.fill: parent
             source: "Settings.qml"
-            active: true
+            active: false  // Изменено с true на false
             visible: false
         }
 
@@ -402,7 +410,7 @@ Item {
             id: aboutLoader
             anchors.fill: parent
             source: "About.qml"
-            active: true
+            active: false  // Изменено с true на false
             visible: false
         }
     }

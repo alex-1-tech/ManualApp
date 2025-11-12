@@ -33,6 +33,7 @@ ReportManager::ReportManager(FileService *fileService,
             }
           });
 }
+
 QString ReportManager::getReportDirPath() const {
   return m_fileService->ensureAppDataDirectory() + "/reports/";
 }

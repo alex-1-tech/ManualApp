@@ -26,6 +26,7 @@ ApplicationWindow {
             contentLoader.sourceComponent = modelSelectionComponent
         } else {
             DataManager.syncReportsWithServer();
+            DataManager.syncSettingsWithServer();
             contentLoader.sourceComponent = mainComponent
         }
     }

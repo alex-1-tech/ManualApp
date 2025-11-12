@@ -15,4 +15,5 @@ public:
                               const QString &prefix = "") const = 0;
   virtual QJsonObject toJson() const = 0;
   virtual void fromJson(const QJsonObject &obj) = 0;
+  virtual void debugPrint() const = 0;
 };

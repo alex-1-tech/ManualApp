@@ -1,4 +1,5 @@
 ﻿#include "settingsmanager.h"
+#include "kalmar32settings.h"
 #include "utils.h"
 #include <QDebug>
 #include <QJsonObject>
@@ -17,7 +18,7 @@ const QHash<QString, QString> &specialCamelToSnake() {
       {QStringLiteral("wifiRouterAddress"), QStringLiteral("wifi_router_address")},
       {QStringLiteral("windowsPassword"), QStringLiteral("windows_password")},
       {QStringLiteral("notes"), QStringLiteral("notes")},
-      // {QStringLiteral("currentModel"), QStringLiteral("equipment_type")}
+      {QStringLiteral("currentModel"), QStringLiteral("equipment_type")}
   };
   return map;
 }
@@ -119,6 +120,11 @@ void SettingsManager::debugPrint() const {
     QVariant value = prop.read(this);
     qDebug() << prop.name() << "=" << value;
   }
+
+  if(currentModel() == "kalmar32")
+    m_kalmarSettings->debugPrint();
+  else if(currentModel() == "phasar32")
+    m_phasarSettings->debugPrint();
 }
 
 QJsonObject SettingsManager::toJsonForDjango() const {
@@ -252,17 +258,39 @@ void SettingsManager::fromJson(const QJsonObject &obj) {
     }
   }
 
-  // Deserialize model-specific settings
-  if (obj.contains("pc_tablet_dell_7230") ||
-      obj.contains("water_tank_with_tap")) {
-    // Try to detect which model this JSON belongs to
+  // Update current model from settings if it was changed
+  QString newModel = m_settings.value("currentModel").toString();
+  
+  // Deserialize model-specific settings based on current model
+  if (newModel == "kalmar32") {
+    DEBUG_COLORED("SettingsManager", "fromJson", "Loading Kalmar32 settings", COLOR_MAGENTA, COLOR_MAGENTA);
+    m_kalmarSettings->fromJson(obj);
+    // Сохраняем настройки Kalmar32 в QSettings
+    m_kalmarSettings->saveToSettings(m_settings);
+  } else if (newModel == "phasar32") {
+    DEBUG_COLORED("SettingsManager", "fromJson", "Loading Phasar32 settings", COLOR_MAGENTA, COLOR_MAGENTA);
+    m_phasarSettings->fromJson(obj);
+    // Сохраняем настройки Phasar32 в QSettings
+    m_phasarSettings->saveToSettings(m_settings);
+  } else {
+    // Fallback: Try to detect which model this JSON belongs to
+    DEBUG_COLORED("SettingsManager", "fromJson", "Model not specified, trying to detect", COLOR_MAGENTA, COLOR_MAGENTA);
     if (obj.contains("water_tank_with_tap")) {
       m_phasarSettings->fromJson(obj);
-    } else {
+      m_phasarSettings->saveToSettings(m_settings);
+      // Auto-set model if detected
+      m_settings.setValue("currentModel", "phasar32");
+    } else if (obj.contains("pc_tablet_dell_7230")) {
       m_kalmarSettings->fromJson(obj);
+      m_kalmarSettings->saveToSettings(m_settings);
+      // Auto-set model if detected
+      m_settings.setValue("currentModel", "kalmar32");
+    } else {
+      DEBUG_ERROR_COLORED("SettingsManager", "fromJson", 
+                         "Could not detect model type from JSON", COLOR_MAGENTA, COLOR_MAGENTA);
     }
   }
-
+  
   m_settings.sync();
   loadAllSettings();
 }

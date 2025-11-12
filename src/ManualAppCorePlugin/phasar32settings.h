@@ -52,4 +52,5 @@ public:
                       const QString &prefix = "") const override;
   QJsonObject toJson() const override;
   void fromJson(const QJsonObject &obj) override;
+  void debugPrint() const override;
 };
