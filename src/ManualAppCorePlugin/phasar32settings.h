@@ -29,7 +29,22 @@ class Phasar32Settings : public SettingsBase {
 
   // Ultrasonic equipment
   DEFINE_MODULE_SETTING(QString, ultrasonicPhasedArrayPulsar, QString())
-  DEFINE_MODULE_SETTING(QString, manualProbs36, QString())
+  // Ultrasonic blocks with dates
+  DEFINE_MODULE_SETTING(QString, dcn, QString())
+  DEFINE_MODULE_SETTING(QString, dcnDate, QString())
+  DEFINE_MODULE_SETTING(QString, abBack, QString())
+  DEFINE_MODULE_SETTING(QString, abBackDate, QString())
+  DEFINE_MODULE_SETTING(QString, gfCombo, QString())
+  DEFINE_MODULE_SETTING(QString, gfComboDate, QString())
+  DEFINE_MODULE_SETTING(QString, ffCombo, QString())
+  DEFINE_MODULE_SETTING(QString, ffComboDate, QString())
+  DEFINE_MODULE_SETTING(QString, abFront, QString())
+  DEFINE_MODULE_SETTING(QString, abFrontDate, QString())
+  DEFINE_MODULE_SETTING(QString, flange50, QString())
+  DEFINE_MODULE_SETTING(QString, flange50Date, QString())
+  DEFINE_MODULE_SETTING(QString, manualProbs, QString())
+  DEFINE_MODULE_SETTING(QString, manualProbsDate, QString())
+  
   DEFINE_MODULE_SETTING(bool, hasDcCableBattery, false)
   DEFINE_MODULE_SETTING(bool, hasEthernetCables, false)
 

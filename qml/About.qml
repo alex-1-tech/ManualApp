@@ -230,8 +230,60 @@ ScrollView {
                         "value": SettingsManager.phasarSettings.ultrasonicPhasedArrayPulsar
                     },
                     {
-                        "label": qsTr("Manual probs 36° RA2.25L16 0.9x10-17"),
-                        "value": SettingsManager.phasarSettings.manualProbs36
+                        "label": qsTr("DCN P112-2,5-F"),
+                        "value": SettingsManager.phasarSettings.dcn
+                    },
+                    {
+                        "label": qsTr("Production date DCN P112-2,5-F"),
+                        "value": SettingsManager.phasarSettings.dcnDate
+                    },
+                    {
+                        "label": qsTr("AB-back PA2,5L16 1,1x10-17-F"),
+                        "value": SettingsManager.phasarSettings.abBack
+                    },
+                    {
+                        "label": qsTr("Production date AB-back PA2,5L16 1,1x10-17-F"),
+                        "value": SettingsManager.phasarSettings.abBackDate
+                    },
+                    {
+                        "label": qsTr("GF combo 2PA2,5L16 0,6x10-10-F"),
+                        "value": SettingsManager.phasarSettings.gfCombo
+                    },
+                    {
+                        "label": qsTr("Production date GF combo 2PA2,5L16 0,6x10-10-F"),
+                        "value": SettingsManager.phasarSettings.gfComboDate
+                    },
+                    {
+                        "label": qsTr("FF combo 2PA2,5L16 0,6x10-10-F"),
+                        "value": SettingsManager.phasarSettings.ffCombo
+                    },
+                    {
+                        "label": qsTr("Production date FF combo 2PA2,5L16 0,6x10-10-F"),
+                        "value": SettingsManager.phasarSettings.ffComboDate
+                    },
+                    {
+                        "label": qsTr("AB-front PA2,5L16 1,1x10-17-F"),
+                        "value": SettingsManager.phasarSettings.abFront
+                    },
+                    {
+                        "label": qsTr("Production date AB-front PA2,5L16 1,1x10-17-F"),
+                        "value": SettingsManager.phasarSettings.abFrontDate
+                    },
+                    {
+                        "label": qsTr("Flange 50 P112-0,6-50-F"),
+                        "value": SettingsManager.phasarSettings.flange50
+                    },
+                    {
+                        "label": qsTr("Production date Flange 50 P112-0,6-50-F"),
+                        "value": SettingsManager.phasarSettings.flange50Date
+                    },
+                    {
+                        "label": qsTr("Manual probs PA2.25L16 0.9x10-17"),
+                        "value": SettingsManager.phasarSettings.manualProbs
+                    },
+                    {
+                        "label": qsTr("Production date Manual probs PA2.25L16 0.9x10-17"),
+                        "value": SettingsManager.phasarSettings.manualProbsDate
                     },
                     {
                         "label": qsTr("DC Cable from battery box"),

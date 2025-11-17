@@ -73,7 +73,7 @@ Item {
                             Text {
                                 text: {
                                     var fullText = DataManager.stepsModel.getData(delegate.index, StepModel.TitleRole);
-                                    return fullText.length > 45 ? fullText.substring(0, 45) + "..." : fullText;
+                                    return fullText.length > 70 ? fullText.substring(0, 70) + "..." : fullText;
                                 }
                                 font.pixelSize: 18
                                 font.bold: true

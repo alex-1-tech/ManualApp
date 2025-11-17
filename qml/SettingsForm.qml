@@ -354,7 +354,7 @@ ScrollView {
                     }
                 }
 
-                CardSection {
+                                CardSection {
                     title: qsTr("Ultrasonic Equipment")
 
                     FormField {
@@ -366,9 +366,113 @@ ScrollView {
                     }
 
                     FormField {
-                        label: qsTr("Manual probs 36° RA2.25L16 0.9x10-17")
-                        placeholder: qsTr("serial number of Manual probs 36° RA2.25L16 0.9x10-17")
-                        settingName: "manualProbs36"
+                        label: qsTr("DCN P112-2,5-F")
+                        placeholder: qsTr("serial number of DCN P112-2,5-F")
+                        settingName: "dcn"
+                        modelSettings: SettingsManager.phasarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Production date DCN P112-2,5-F")
+                        placeholder: qsTr("Production date of DCN P112-2,5-F")
+                        settingName: "dcnDate"
+                        modelSettings: SettingsManager.phasarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("AB-back PA2,5L16 1,1x10-17-F")
+                        placeholder: qsTr("serial number of AB-back PA2,5L16 1,1x10-17-F")
+                        settingName: "abBack"
+                        modelSettings: SettingsManager.phasarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Production date AB-back PA2,5L16 1,1x10-17-F")
+                        placeholder: qsTr("Production date of AB-back PA2,5L16 1,1x10-17-F")
+                        settingName: "abBackDate"
+                        modelSettings: SettingsManager.phasarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("GF combo 2PA2,5L16 0,6x10-10-F")
+                        placeholder: qsTr("serial number of GF combo 2PA2,5L16 0,6x10-10-F")
+                        settingName: "gfCombo"
+                        modelSettings: SettingsManager.phasarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Production date GF combo 2PA2,5L16 0,6x10-10-F")
+                        placeholder: qsTr("Production date of GF combo 2PA2,5L16 0,6x10-10-F")
+                        settingName: "gfComboDate"
+                        modelSettings: SettingsManager.phasarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("FF combo 2PA2,5L16 0,6x10-10-F")
+                        placeholder: qsTr("serial number of FF combo 2PA2,5L16 0,6x10-10-F")
+                        settingName: "ffCombo"
+                        modelSettings: SettingsManager.phasarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Production date FF combo 2PA2,5L16 0,6x10-10-F")
+                        placeholder: qsTr("Production date of FF combo 2PA2,5L16 0,6x10-10-F")
+                        settingName: "ffComboDate"
+                        modelSettings: SettingsManager.phasarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("AB-front PA2,5L16 1,1x10-17-F")
+                        placeholder: qsTr("serial number of AB-front PA2,5L16 1,1x10-17-F")
+                        settingName: "abFront"
+                        modelSettings: SettingsManager.phasarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Production date AB-front PA2,5L16 1,1x10-17-F")
+                        placeholder: qsTr("Production date of AB-front PA2,5L16 1,1x10-17-F")
+                        settingName: "abFrontDate"
+                        modelSettings: SettingsManager.phasarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Flange 50 P112-0,6-50-F")
+                        placeholder: qsTr("serial number of Flange 50 P112-0,6-50-F")
+                        settingName: "flange50"
+                        modelSettings: SettingsManager.phasarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Production date Flange 50 P112-0,6-50-F")
+                        placeholder: qsTr("Production date of Flange 50 P112-0,6-50-F")
+                        settingName: "flange50Date"
+                        modelSettings: SettingsManager.phasarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Manual probs PA2.25L16 0.9x10-17")
+                        placeholder: qsTr("serial number of Manual probs PA2.25L16 0.9x10-17")
+                        settingName: "manualProbs"
+                        modelSettings: SettingsManager.phasarSettings
+                        Layout.fillWidth: true
+                    }
+
+                    FormField {
+                        label: qsTr("Production date Manual probs PA2.25L16 0.9x10-17")
+                        placeholder: qsTr("Production date of Manual probs PA2.25L16 0.9x10-17")
+                        settingName: "manualProbsDate"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
