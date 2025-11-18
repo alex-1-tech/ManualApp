@@ -3,12 +3,13 @@
 #include "configmanager.h"
 #include "reportmanager.h"
 #include "stepmodel.h"
+#include <QCoreApplication>
 #include <QObject>
 #include <QQmlEngine>
 #include <QQueue>
-#include <QCoreApplication>
 #include <qcontainerfwd.h>
 #include <qtmetamacros.h>
+
 
 class NetworkService;
 class FileService;
@@ -21,6 +22,7 @@ class DataManager : public QObject {
   // Property declarations
   Q_PROPERTY(QString title READ title NOTIFY titleChanged)
   Q_PROPERTY(bool isLoading READ isLoading NOTIFY loadingChanged)
+  Q_PROPERTY(bool loading READ isLoading NOTIFY loadingChanged)
   Q_PROPERTY(QString error READ error NOTIFY errorOccurred)
   Q_PROPERTY(StepModel *stepsModel READ stepsModel CONSTANT)
   Q_PROPERTY(SettingsManager *settingsManager READ settingsManager WRITE
@@ -45,7 +47,7 @@ public:
   Q_INVOKABLE bool uploadReport(const QString &sourceFolderPath, bool after);
   Q_INVOKABLE void uploadReportToDjango(const QUrl &apiUrl);
   Q_INVOKABLE void syncReportsWithServer();
-  Q_INVOKABLE  void syncSettingsWithServer();
+  Q_INVOKABLE void syncSettingsWithServer();
   // Q_INVOKABLE methods - Settings Operations
   Q_INVOKABLE QString createSettingsJsonFile(const QString &filePath);
   Q_INVOKABLE bool deleteSettingsJsonFile(const QString &filePath);
@@ -104,18 +106,21 @@ public:
   void startNextUpload();
   void startNextUpload(const QUrl &apiUrl);
   void processServerReports(const QJsonObject &serverReports,
-                           const QString &serialNumber);
-  
+                            const QString &serialNumber);
+
   // Dir getters
-  Q_INVOKABLE QString applicationDirPath() { return QCoreApplication::applicationDirPath();}
+  Q_INVOKABLE QString applicationDirPath() {
+    return QCoreApplication::applicationDirPath();
+  }
 signals:
   // Property change signals
   void titleChanged();
   void settingsManagerChanged();
   void loadingChanged();
-  void errorOccurred(const  QString &error);
+  void errorOccurred(const QString &error);
   void startTimeChanged();
   void settingsSyncFinished(bool success);
+  void settingsUploadFinished(bool success);
 
   // Operation signals
   void dataLoaded();
@@ -128,9 +133,9 @@ private:
   void setError(const QString &error);
 
   // Synchronous upload methods
-  bool uploadReportSynchronous(const QString &reportPath, 
-                              const QString &uploadTime, 
-                              const QString &numberTO);
+  bool uploadReportSynchronous(const QString &reportPath,
+                               const QString &uploadTime,
+                               const QString &numberTO);
 
 private:
   // State management

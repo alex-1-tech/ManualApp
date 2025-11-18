@@ -151,6 +151,42 @@ ScrollView {
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
                     }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Label {
+                            Layout.preferredWidth: root.width < 700 ? 280 : 450
+                            text: qsTr("DC Cable from Battery")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        ModelSettingCheckBox {
+                            settingName: "hasDcCableBattery"
+                            modelSettings: SettingsManager.kalmarSettings
+                            text: qsTr("Included")
+                            Layout.columnSpan: 1
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Label {
+                            Layout.preferredWidth: root.width < 700 ? 280 : 450
+                            text: qsTr("Ethernet Cables")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        ModelSettingCheckBox {
+                            settingName: "hasEthernetCables"
+                            modelSettings: SettingsManager.kalmarSettings
+                            text: qsTr("Included")
+                            Layout.columnSpan: 1
+                        }
+                    }
                 }
 
                 CardSection {
@@ -369,6 +405,42 @@ ScrollView {
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Label {
+                            Layout.preferredWidth: root.width < 700 ? 280 : 450
+                            text: qsTr("DC Cable from Battery")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        ModelSettingCheckBox {
+                            settingName: "hasDcCableBattery"
+                            modelSettings: SettingsManager.phasarSettings
+                            text: qsTr("Included")
+                            Layout.columnSpan: 1
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Label {
+                            Layout.preferredWidth: root.width < 700 ? 280 : 450
+                            text: qsTr("Ethernet Cables")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        ModelSettingCheckBox {
+                            settingName: "hasEthernetCables"
+                            modelSettings: SettingsManager.phasarSettings
+                            text: qsTr("Included")
+                            Layout.columnSpan: 1
+                        }
+                    }
                 }
 
                 CardSection {
@@ -542,14 +614,227 @@ ScrollView {
                         }
 
                         onClicked: {
-                            SettingsManager.saveModelSettings();
-                            if (SettingsManager.currentModel == "kalmar32")
-                                DataManager.uploadSettingsToDjango(DataManager.djangoBaseUrl() + "/api/kalmar32/");
-                            else
-                                DataManager.uploadSettingsToDjango(DataManager.djangoBaseUrl() + "/api/phasar32/");
                             confirmDialog.close();
+
+                            uploadProgressPopup.open();
+                            uploadProgressPopup.uploadInProgress = true;
+
+                            SettingsManager.saveModelSettings();
+
+                            var uploadUrl = "";
+                            if (SettingsManager.currentModel == "kalmar32") {
+                                uploadUrl = DataManager.djangoBaseUrl() + "/api/kalmar32/";
+                            } else {
+                                uploadUrl = DataManager.djangoBaseUrl() + "/api/phasar32/";
+                            }
+
+                            DataManager.uploadSettingsToDjango(uploadUrl);
                         }
                     }
+                }
+            }
+        }
+
+        Popup {
+            id: uploadProgressPopup
+            modal: true
+            focus: true
+            width: 400
+            height: 220
+            anchors.centerIn: Overlay.overlay
+            closePolicy: Popup.NoAutoClose
+
+            background: Rectangle {
+                color: Theme.colorBgPrimary
+                radius: 8
+                border.color: Theme.colorBorder
+                border.width: 1
+            }
+
+            property bool uploadComplete: false
+            property bool uploadSuccess: false
+            property bool uploadInProgress: false
+
+            onOpened: {
+                if (uploadProgressPopup.uploadComplete) {
+                    retryTimer.start();
+                    return;
+                }
+
+                uploadProgressPopup.uploadComplete = false;
+                uploadProgressPopup.uploadSuccess = false;
+                uploadProgressPopup.uploadInProgress = true;
+                resetTimer.start();
+            }
+
+            onClosed: {
+                resetTimer.stop();
+                retryTimer.stop();
+                uploadProgressPopup.uploadInProgress = false;
+            }
+
+            Timer {
+                id: resetTimer
+                interval: 10000 // 10 секунд таймаут
+                repeat: false
+                onTriggered: {
+                    if (uploadProgressPopup.uploadInProgress && !uploadProgressPopup.uploadComplete) {
+                        uploadProgressPopup.uploadInProgress = false;
+                        uploadProgressPopup.uploadComplete = true;
+                        uploadProgressPopup.uploadSuccess = false;
+                        retryTimer.start();
+                    }
+                }
+            }
+
+            Timer {
+                id: retryTimer
+                interval: 3000
+                repeat: false
+                onTriggered: {
+                    uploadProgressPopup.close();
+                }
+            }
+
+            Connections {
+                target: DataManager
+
+                function onErrorOccurred(errorMsg) {
+                    if (uploadProgressPopup.uploadInProgress && !uploadProgressPopup.uploadComplete) {
+                        uploadProgressPopup.uploadInProgress = false;
+                        uploadProgressPopup.uploadComplete = true;
+                        uploadProgressPopup.uploadSuccess = false;
+                        retryTimer.start();
+                    } else {
+                        console.log("QML: ignoring errorOccurred (not current upload or already completed)");
+                    }
+                }
+
+                function onSettingsUploadFinished(success) {
+                    if (uploadProgressPopup.uploadInProgress && !uploadProgressPopup.uploadComplete) {
+                        uploadProgressPopup.uploadInProgress = false;
+                        resetTimer.stop();
+                        uploadProgressPopup.uploadComplete = true;
+                        uploadProgressPopup.uploadSuccess = success;
+                        retryTimer.start();
+                    } else {
+                        if (!uploadProgressPopup.uploadComplete) {
+                            uploadProgressPopup.uploadComplete = true;
+                            uploadProgressPopup.uploadSuccess = success;
+                        } else {
+                            console.log("QML: settingsUploadFinished ignored (already completed)");
+                        }
+                    }
+                }
+
+                function onLoadingChanged() {
+                // Резерв — не меняем финальный статус здесь.
+                }
+            }
+
+            contentItem: ColumnLayout {
+                spacing: 20
+
+                Label {
+                    text: uploadProgressPopup.uploadComplete ? (uploadProgressPopup.uploadSuccess ? qsTr("Upload Successful") : qsTr("Upload Failed")) : qsTr("Uploading Settings")
+                    font.bold: true
+                    font.pointSize: Theme.fontSubtitle
+                    color: uploadProgressPopup.uploadComplete ? (uploadProgressPopup.uploadSuccess ? Theme.colorSuccess : Theme.colorError) : Theme.colorTextPrimary
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                }
+
+                ProgressBar {
+                    id: progressBar
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 8
+                    visible: !uploadProgressPopup.uploadComplete
+                    indeterminate: true
+
+                    background: Rectangle {
+                        color: Theme.colorTextSecondary
+                        radius: 4
+                    }
+
+                    contentItem: Item {
+                        implicitHeight: 8
+
+                        Rectangle {
+                            width: progressBar.visualPosition * parent.width
+                            height: parent.height
+                            radius: 4
+                            color: Theme.colorButtonPrimary
+
+                            SequentialAnimation on opacity {
+                                loops: Animation.Infinite
+                                running: progressBar.visible
+                                NumberAnimation {
+                                    from: 0.3
+                                    to: 1.0
+                                    duration: 800
+                                    easing.type: Easing.InOutQuad
+                                }
+                                NumberAnimation {
+                                    from: 1.0
+                                    to: 0.3
+                                    duration: 800
+                                    easing.type: Easing.InOutQuad
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Item {
+                    Layout.preferredWidth: 60
+                    Layout.preferredHeight: 60
+                    Layout.alignment: Qt.AlignHCenter
+                    visible: uploadProgressPopup.uploadComplete
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: width / 2
+                        color: uploadProgressPopup.uploadSuccess ? Theme.colorSuccess : Theme.colorError
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: uploadProgressPopup.uploadSuccess ? "✓" : "!"
+                            color: "white"
+                            font.pointSize: 24
+                            font.bold: true
+                        }
+                    }
+                }
+
+                Label {
+                    text: uploadProgressPopup.uploadComplete ? (uploadProgressPopup.uploadSuccess ? qsTr("Settings have been successfully uploaded to the server.") : qsTr("Failed to upload settings. Please check your connection and try again.")) : qsTr("Please wait while settings are being uploaded...")
+                    wrapMode: Text.WordWrap
+                    color: Theme.colorTextSecondary
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                }
+
+                Button {
+                    id: closeStatusButton
+                    text: uploadProgressPopup.uploadComplete ? "Close" : "Cancel"
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 35
+                    visible: uploadProgressPopup.uploadComplete || !DataManager.isLoading
+
+                    background: Rectangle {
+                        color: closeStatusButton.pressed ? Theme.colorButtonPrimaryHover : Theme.colorButtonPrimary
+                        radius: Theme.radiusButton
+                    }
+
+                    contentItem: Text {
+                        text: closeStatusButton.text
+                        color: "white"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        font.pointSize: Theme.fontSmall
+                    }
+
+                    onClicked: uploadProgressPopup.close()
                 }
             }
         }

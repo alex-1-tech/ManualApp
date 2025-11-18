@@ -205,22 +205,39 @@ void DataManager::uploadSettingsToDjango(const QUrl &apiUrl) {
 
   if (!apiUrl.isValid() || apiUrl.scheme().isEmpty()) {
     setError("Invalid API URL: must include http:// or https://");
+    emit settingsUploadFinished(false);
     return;
   }
 
   if (!m_reportManager->settingsManager()) {
     setError("SettingsManager не инициализирован");
+    emit settingsUploadFinished(false);
     return;
   }
+
   QJsonObject json = m_reportManager->settingsManager()->toJsonForDjango();
   if (json.isEmpty()) {
     setError("Failed to load JSON settings.");
+    emit settingsUploadFinished(false);
     return;
   }
 
   setLoading(true);
-  m_reportManager->networkService()->uploadJsonToDjango(apiUrl, json);
+
+  auto ns = m_reportManager->networkService();
+  connect(ns, &NetworkService::uploadFinished, this, [this]() {
+    setLoading(false);
+    emit settingsUploadFinished(true);
+  });
+  connect(ns, &NetworkService::errorOccurred, this, [this](const QString &err) {
+    setLoading(false);
+    setError(err);
+    emit settingsUploadFinished(false);
+  });
+
+  ns->uploadJsonToDjango(apiUrl, json);
 }
+
 QString DataManager::getReportDirPath() const {
   return m_reportManager->getReportDirPath();
 }
