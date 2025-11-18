@@ -47,6 +47,11 @@ qt_add_executable(${PROJECT_NAME}
     resources.qrc
 )
 
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    WIN32_EXECUTABLE TRUE
+)
+
+
 if(WIN32)
     get_target_property(QMAKE_EXE Qt6::qmake IMPORTED_LOCATION)
     get_filename_component(QT_BIN_DIR "${QMAKE_EXE}" DIRECTORY)
