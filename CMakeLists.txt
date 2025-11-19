@@ -45,6 +45,7 @@ add_subdirectory(src/ManualAppCorePlugin)
 qt_add_executable(${PROJECT_NAME}
     src/main.cpp
     resources.qrc
+    app_icon.rc
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
