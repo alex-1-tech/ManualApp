@@ -1,5 +1,6 @@
 #include "pdfexporter.h"
-#include "utils.h"
+
+#include <qcontainerfwd.h>
 
 #include <QDebug>
 #include <QFileInfo>
@@ -8,10 +9,13 @@
 #include <QPageSize>
 #include <QPrinter>
 #include <QTextDocument>
-#include <qcontainerfwd.h>
 
-bool PdfExporter::exportToPdf(const QString &html, const QString &filePath,
-                              const QString &secondFilePath = QString()) {
+#include "utils.h"
+
+
+bool PdfExporter::exportToPdf(const QString& html, const QString& filePath,
+                              const QString& secondFilePath = QString())
+{
   if (html.trimmed().isEmpty()) {
     qWarning() << "PdfExporter: Пустой HTML. PDF не создан.";
     return false;
@@ -32,13 +36,11 @@ bool PdfExporter::exportToPdf(const QString &html, const QString &filePath,
     printer.setOutputFileName(secondFilePath);
     document.print(&printer);
     DEBUG_COLORED("PdfExporter", "exportToPdf",
-                  QString("PDF успешно сохранен в %1")
-                      .arg(QFileInfo(secondFilePath).absoluteFilePath()),
+                  QString("PDF успешно сохранен в %1").arg(QFileInfo(secondFilePath).absoluteFilePath()),
                   COLOR_CYAN, COLOR_CYAN);
   }
   DEBUG_COLORED("PdfExporter", "exportToPdf",
-                QString("PDF успешно сохранен в %1")
-                    .arg(QFileInfo(filePath).absoluteFilePath()),
-                COLOR_CYAN, COLOR_CYAN);
+                QString("PDF успешно сохранен в %1").arg(QFileInfo(filePath).absoluteFilePath()), COLOR_CYAN,
+                COLOR_CYAN);
   return true;
 }

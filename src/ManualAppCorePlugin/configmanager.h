@@ -5,11 +5,12 @@
 #include <QObject>
 #include <QSettings>
 
-class ConfigManager : public QObject {
+class ConfigManager : public QObject
+{
   Q_OBJECT
 
 public:
-  static ConfigManager &instance();
+  static ConfigManager& instance();
 
   QString djangoBaseUrl() const;
   QString appVersion() const;
@@ -17,7 +18,7 @@ public:
   void printConfig() const;
 
 private:
-  ConfigManager(QObject *parent = nullptr);
-  QSettings *m_settings;
+  ConfigManager(QObject* parent = nullptr);
+  QSettings* m_settings;
   QString m_configPath;
 };

@@ -1,9 +1,4 @@
 #include "datamanager.h"
-#include "fileservice.h"
-#include "networkservice.h"
-#include "reportmanager.h"
-#include "settingsmanager.h"
-#include "utils.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -12,59 +7,76 @@
 #include <QJsonObject>
 #include <QTimer>
 
-DataManager::DataManager(QObject *parent) : QObject(parent) {
+#include "fileservice.h"
+#include "installmanager.h"
+#include "networkservice.h"
+#include "reportmanager.h"
+#include "settingsmanager.h"
+#include "utils.h"
 
-  FileService *fileService = new FileService(this);
-  NetworkService *networkService =
-      new NetworkService(fileService, nullptr, this);
+
+DataManager::DataManager(QObject* parent)
+    : QObject(parent)
+{
+  FileService* fileService = new FileService(this);
+  NetworkService* networkService = new NetworkService(fileService, nullptr, this);
   m_reportManager = new ReportManager(fileService, networkService, this);
   networkService->setReportManager(m_reportManager);
+  m_installManager = new InstallManager(this, m_reportManager);
 
-  DEBUG_COLORED("DataManager", "Constructor", "DataManager initialized",
-                COLOR_CYAN, COLOR_CYAN);
+  DEBUG_COLORED("DataManager", "Constructor", "DataManager initialized", COLOR_CYAN, COLOR_CYAN);
 
   // Проксируем сигналы от ReportManager
-  connect(m_reportManager->networkService(), &NetworkService::errorOccurred,
-          this, &DataManager::setError);
-  connect(m_reportManager, &ReportManager::titleChanged, this,
-          &DataManager::titleChanged);
-  connect(m_reportManager, &ReportManager::startTimeChanged, this,
-          &DataManager::startTimeChanged);
+  connect(m_reportManager->networkService(), &NetworkService::errorOccurred, this, &DataManager::setError);
+  connect(m_reportManager, &ReportManager::titleChanged, this, &DataManager::titleChanged);
+  connect(m_reportManager, &ReportManager::startTimeChanged, this, &DataManager::startTimeChanged);
   connect(m_reportManager, &ReportManager::settingsManagerChanged, this,
           &DataManager::settingsManagerChanged);
-  connect(m_reportManager, &ReportManager::reportLoaded, this,
-          &DataManager::dataLoaded);
+  connect(m_reportManager, &ReportManager::reportLoaded, this, &DataManager::dataLoaded);
   connect(m_reportManager, &ReportManager::errorOccurred, this,
-          [this](const QString &error) { setError(error); });
+          [this](const QString& error) { setError(error); });
 }
 
-QString DataManager::title() const { return m_reportManager->title(); }
+QString DataManager::title() const
+{
+  return m_reportManager->title();
+}
 
-QString DataManager::startTime() const { return m_reportManager->startTime(); }
+QString DataManager::startTime() const
+{
+  return m_reportManager->startTime();
+}
 
-void DataManager::setStartTime(const QString &time) {
+void DataManager::setStartTime(const QString& time)
+{
   m_reportManager->setStartTime(time);
 }
-void DataManager::setCurrentNumberTO(const QString &numberTO) {
+void DataManager::setCurrentNumberTO(const QString& numberTO)
+{
   m_reportManager->setCurrentNumberTO(numberTO);
 }
-QString DataManager::currentNumberTO() {
+QString DataManager::currentNumberTO()
+{
   return m_reportManager->currentNumberTO();
 }
-StepModel *DataManager::stepsModel() { return m_reportManager->stepsModel(); }
+StepModel* DataManager::stepsModel()
+{
+  return m_reportManager->stepsModel();
+}
 
-SettingsManager *DataManager::settingsManager() const {
+SettingsManager* DataManager::settingsManager() const
+{
   return m_reportManager->settingsManager();
 }
 
-void DataManager::setSettingsManager(SettingsManager *manager) {
+void DataManager::setSettingsManager(SettingsManager* manager)
+{
   m_reportManager->setSettingsManager(manager);
 }
 
-bool DataManager::load(const QString &filePath) {
-  DEBUG_COLORED("DataManager", "load",
-                QString("Loading file: %1").arg(filePath), COLOR_CYAN,
-                COLOR_CYAN);
+bool DataManager::load(const QString& filePath)
+{
+  DEBUG_COLORED("DataManager", "load", QString("Loading file: %1").arg(filePath), COLOR_CYAN, COLOR_CYAN);
   setLoading(true);
   setError("");
   bool result = m_reportManager->loadReport(filePath);
@@ -72,58 +84,55 @@ bool DataManager::load(const QString &filePath) {
   return result;
 }
 
-void DataManager::saveJson(const QString &path) {
-  DEBUG_COLORED("DataManager", "saveJson",
-                QString("Saving JSON to: %1").arg(path), COLOR_CYAN,
-                COLOR_CYAN);
+void DataManager::saveJson(const QString& path)
+{
+  DEBUG_COLORED("DataManager", "saveJson", QString("Saving JSON to: %1").arg(path), COLOR_CYAN, COLOR_CYAN);
   m_reportManager->saveReportJson(path);
 }
 
-void DataManager::exportPdf(const QString &path) {
-  DEBUG_COLORED("DataManager", "exportPdf",
-                QString("Exporting PDF to: %1").arg(path), COLOR_CYAN,
+void DataManager::exportPdf(const QString& path)
+{
+  DEBUG_COLORED("DataManager", "exportPdf", QString("Exporting PDF to: %1").arg(path), COLOR_CYAN,
                 COLOR_CYAN);
   m_reportManager->exportReportToPdf(path);
 }
 
-void DataManager::save(const bool first_save) {
-  DEBUG_COLORED("DataManager", "save",
-                QString("Saving report, first save: %1").arg(first_save),
-                COLOR_CYAN, COLOR_CYAN);
+void DataManager::save(const bool first_save)
+{
+  DEBUG_COLORED("DataManager", "save", QString("Saving report, first save: %1").arg(first_save), COLOR_CYAN,
+                COLOR_CYAN);
   m_reportManager->saveReport(first_save);
 }
 
-void DataManager::revoke() {
-  DEBUG_COLORED("DataManager", "revoke", "Revoking report", COLOR_CYAN,
-                COLOR_CYAN);
+void DataManager::revoke()
+{
+  DEBUG_COLORED("DataManager", "revoke", "Revoking report", COLOR_CYAN, COLOR_CYAN);
   m_reportManager->revokeReport();
 }
 
-bool DataManager::uploadReport(const QString &sourceFolderPath, bool after) {
+bool DataManager::uploadReport(const QString& sourceFolderPath, bool after)
+{
   DEBUG_COLORED("DataManager", "uploadReport",
-                QString("Uploading report from: %1, after: %2")
-                    .arg(sourceFolderPath)
-                    .arg(after),
-                COLOR_CYAN, COLOR_CYAN);
+                QString("Uploading report from: %1, after: %2").arg(sourceFolderPath).arg(after), COLOR_CYAN,
+                COLOR_CYAN);
   setLoading(true);
   bool result = m_reportManager->uploadReport(sourceFolderPath, after);
   setLoading(false);
   return result;
 }
 
-void DataManager::setStepStatus(int index, Step::CompletionStatus status) {
-  DEBUG_COLORED("DataManager", "setStepStatus",
-                QString("Setting status for step: %1").arg(index), COLOR_CYAN,
+void DataManager::setStepStatus(int index, Step::CompletionStatus status)
+{
+  DEBUG_COLORED("DataManager", "setStepStatus", QString("Setting status for step: %1").arg(index), COLOR_CYAN,
                 COLOR_CYAN);
   m_reportManager->stepsModel()->setStepStatus(index, status);
   emit stepUpdated(index);
 }
 
-void DataManager::setDefectDetails(int index, const QString &description,
-                                   const QString &repairMethod,
-                                   Step::DefectDetails::FixStatus fixStatus) {
-  DEBUG_COLORED("DataManager", "setDefectDetails",
-                QString("Setting defect details for step: %1").arg(index),
+void DataManager::setDefectDetails(int index, const QString& description, const QString& repairMethod,
+                                   Step::DefectDetails::FixStatus fixStatus)
+{
+  DEBUG_COLORED("DataManager", "setDefectDetails", QString("Setting defect details for step: %1").arg(index),
                 COLOR_CYAN, COLOR_CYAN);
   if (index >= 0 && index < m_reportManager->stepsModel()->rowCount()) {
     Step step = m_reportManager->stepsModel()->get(index);
@@ -134,30 +143,30 @@ void DataManager::setDefectDetails(int index, const QString &description,
   }
 }
 
-QString DataManager::createSettingsJsonFile(const QString &filePath) {
+QString DataManager::createSettingsJsonFile(const QString& filePath)
+{
   DEBUG_COLORED("DataManager", "createSettingsJsonFile",
-                QString("Creating settings JSON at: %1").arg(filePath),
-                COLOR_CYAN, COLOR_CYAN);
+                QString("Creating settings JSON at: %1").arg(filePath), COLOR_CYAN, COLOR_CYAN);
   if (!m_reportManager->settingsManager()) {
     setError("SettingsManager не инициализирован");
     return QString();
   }
-  return m_reportManager->fileService()->saveJsonToFile(
-             filePath, m_reportManager->settingsManager()->toJsonForDjango())
+  return m_reportManager->fileService()->saveJsonToFile(filePath,
+                                                        m_reportManager->settingsManager()->toJsonForDjango())
              ? filePath
              : QString();
 }
 
-bool DataManager::deleteSettingsJsonFile(const QString &filePath) {
-  DEBUG_COLORED("DataManager", "deleteSettingsJsonFile",
-                QString("Deleting file: %1").arg(filePath), COLOR_CYAN,
-                COLOR_CYAN);
+bool DataManager::deleteSettingsJsonFile(const QString& filePath)
+{
+  DEBUG_COLORED("DataManager", "deleteSettingsJsonFile", QString("Deleting file: %1").arg(filePath),
+                COLOR_CYAN, COLOR_CYAN);
   return m_reportManager->fileService()->deleteFile(filePath);
 }
-void DataManager::setCurrentSettings(const QUrl &apiUrl) {
+void DataManager::setCurrentSettings(const QUrl& apiUrl)
+{
   DEBUG_COLORED("DataManager", "setCurrentSettings",
-                QString("Download settings from %1").arg(apiUrl.toString()),
-                COLOR_CYAN, COLOR_CYAN);
+                QString("Download settings from %1").arg(apiUrl.toString()), COLOR_CYAN, COLOR_CYAN);
 
   if (!apiUrl.isValid() || apiUrl.scheme().isEmpty()) {
     setError("Invalid API URL: must include http:// or https://");
@@ -169,7 +178,7 @@ void DataManager::setCurrentSettings(const QUrl &apiUrl) {
 
   m_reportManager->networkService()->getJsonFromDjango(
       apiUrl,
-      [this](const QJsonObject &json) {
+      [this](const QJsonObject& json) {
         if (json.isEmpty()) {
           setError("Received empty settings JSON.");
           setLoading(false);
@@ -182,26 +191,23 @@ void DataManager::setCurrentSettings(const QUrl &apiUrl) {
         }
         m_reportManager->settingsManager()->fromJson(settingsObj);
 
-        DEBUG_COLORED("DataManager", "setCurrentSettings",
-                      "Settings successfully downloaded and applied",
+        DEBUG_COLORED("DataManager", "setCurrentSettings", "Settings successfully downloaded and applied",
                       COLOR_CYAN, COLOR_CYAN);
 
         setLoading(false);
       },
-      [this](const QString &error) {
-        DEBUG_ERROR_COLORED(
-            "DataManager", "setCurrentSettings",
-            QString("Failed to download settings: %1").arg(error), COLOR_CYAN,
-            COLOR_CYAN);
+      [this](const QString& error) {
+        DEBUG_ERROR_COLORED("DataManager", "setCurrentSettings",
+                            QString("Failed to download settings: %1").arg(error), COLOR_CYAN, COLOR_CYAN);
         setError(error);
         setLoading(false);
       });
 }
 
-void DataManager::uploadSettingsToDjango(const QUrl &apiUrl) {
+void DataManager::uploadSettingsToDjango(const QUrl& apiUrl)
+{
   DEBUG_COLORED("DataManager", "uploadSettingsToDjango",
-                QString("Uploading settings to %1").arg(apiUrl.toString()),
-                COLOR_CYAN, COLOR_CYAN);
+                QString("Uploading settings to %1").arg(apiUrl.toString()), COLOR_CYAN, COLOR_CYAN);
 
   if (!apiUrl.isValid() || apiUrl.scheme().isEmpty()) {
     setError("Invalid API URL: must include http:// or https://");
@@ -229,7 +235,7 @@ void DataManager::uploadSettingsToDjango(const QUrl &apiUrl) {
     setLoading(false);
     emit settingsUploadFinished(true);
   });
-  connect(ns, &NetworkService::errorOccurred, this, [this](const QString &err) {
+  connect(ns, &NetworkService::errorOccurred, this, [this](const QString& err) {
     setLoading(false);
     setError(err);
     emit settingsUploadFinished(false);
@@ -238,48 +244,44 @@ void DataManager::uploadSettingsToDjango(const QUrl &apiUrl) {
   ns->uploadJsonToDjango(apiUrl, json);
 }
 
-QString DataManager::getReportDirPath() const {
+QString DataManager::getReportDirPath() const
+{
   return m_reportManager->getReportDirPath();
 }
-void DataManager::uploadReportToDjango(const QUrl &apiUrl) {
-  const QString basePath =
-      getReportDirPath() + m_reportManager->currentNumberTO() + "/";
+void DataManager::uploadReportToDjango(const QUrl& apiUrl)
+{
+  const QString basePath = getReportDirPath() + m_reportManager->currentNumberTO() + "/";
   const QString filePath = basePath + startTime();
   DEBUG_COLORED("DataManager", "uploadReportToDjango",
-                QString("Uploading report from: %1 to: %2")
-                    .arg(filePath)
-                    .arg(apiUrl.toString()),
-                COLOR_CYAN, COLOR_CYAN);
+                QString("Uploading report from: %1 to: %2").arg(filePath).arg(apiUrl.toString()), COLOR_CYAN,
+                COLOR_CYAN);
   setLoading(true);
   m_reportManager->networkService()->uploadReport(apiUrl, filePath);
 }
-void DataManager::syncSettingsWithServer() {
-  DEBUG_COLORED("DataManager", "syncSettingsWithServer",
-                "Starting settings sync", COLOR_CYAN, COLOR_CYAN);
+void DataManager::syncSettingsWithServer()
+{
+  DEBUG_COLORED("DataManager", "syncSettingsWithServer", "Starting settings sync", COLOR_CYAN, COLOR_CYAN);
 
   QString serialNumber = m_reportManager->settingsManager()->serialNumber();
   if (serialNumber.isEmpty()) {
     DEBUG_ERROR_COLORED("DataManager", "syncSettingsWithServer",
-                        "Serial number is empty, cannot sync settings",
-                        COLOR_CYAN, COLOR_CYAN);
+                        "Serial number is empty, cannot sync settings", COLOR_CYAN, COLOR_CYAN);
     setError("Serial number is not available");
     return;
   }
 
   QString model = m_reportManager->settingsManager()->currentModel();
   if (model.isEmpty()) {
-    DEBUG_ERROR_COLORED("DataManager", "syncSettingsWithServer",
-                        "Model is not specified", COLOR_CYAN, COLOR_CYAN);
+    DEBUG_ERROR_COLORED("DataManager", "syncSettingsWithServer", "Model is not specified", COLOR_CYAN,
+                        COLOR_CYAN);
     setError("Model is not specified");
     return;
   }
 
-  QUrl apiUrl(QString(djangoBaseUrl() + "/api/" + model + "/%1/get_settings")
-                  .arg(serialNumber));
+  QUrl apiUrl(QString(djangoBaseUrl() + "/api/" + model + "/%1/get_settings").arg(serialNumber));
 
   DEBUG_COLORED("DataManager", "syncSettingsWithServer",
-                QString("Downloading settings from: %1").arg(apiUrl.toString()),
-                COLOR_CYAN, COLOR_CYAN);
+                QString("Downloading settings from: %1").arg(apiUrl.toString()), COLOR_CYAN, COLOR_CYAN);
 
   if (!apiUrl.isValid() || apiUrl.scheme().isEmpty()) {
     setError("Invalid API URL for settings sync");
@@ -291,7 +293,7 @@ void DataManager::syncSettingsWithServer() {
 
   m_reportManager->networkService()->getJsonFromDjango(
       apiUrl,
-      [this](const QJsonObject &json) {
+      [this](const QJsonObject& json) {
         if (json.isEmpty()) {
           setError("Received empty settings JSON from server");
           setLoading(false);
@@ -308,58 +310,54 @@ void DataManager::syncSettingsWithServer() {
         m_reportManager->settingsManager()->fromJson(settingsObj);
 
         DEBUG_COLORED("DataManager", "syncSettingsWithServer",
-                      "Settings successfully synchronized from server",
-                      COLOR_CYAN, COLOR_CYAN);
+                      "Settings successfully synchronized from server", COLOR_CYAN, COLOR_CYAN);
 
         setLoading(false);
         emit settingsSyncFinished(true);
       },
-      [this](const QString &error) {
+      [this](const QString& error) {
         DEBUG_ERROR_COLORED("DataManager", "syncSettingsWithServer",
-                            QString("Failed to sync settings: %1").arg(error),
-                            COLOR_CYAN, COLOR_CYAN);
+                            QString("Failed to sync settings: %1").arg(error), COLOR_CYAN, COLOR_CYAN);
         setError(QString("Settings sync failed: %1").arg(error));
         setLoading(false);
         emit settingsSyncFinished(false);
       });
 }
-void DataManager::syncReportsWithServer() {
-  DEBUG_COLORED("DataManager", "syncReportsWithServer", "Starts sync",
-                COLOR_CYAN, COLOR_CYAN);
+void DataManager::syncReportsWithServer()
+{
+  DEBUG_COLORED("DataManager", "syncReportsWithServer", "Starts sync", COLOR_CYAN, COLOR_CYAN);
   QString serialNumber = m_reportManager->settingsManager()->serialNumber();
   if (serialNumber.isEmpty()) {
-    DEBUG_ERROR_COLORED("DataManager", "syncReportsWithServer",
-                        "Serial number doesn`t exist", COLOR_CYAN, COLOR_CYAN);
+    DEBUG_ERROR_COLORED("DataManager", "syncReportsWithServer", "Serial number doesn`t exist", COLOR_CYAN,
+                        COLOR_CYAN);
     return;
   }
-  QUrl apiUrl(QString(djangoBaseUrl() + "/api/" +
-                      SettingsManager().currentModel() + "/%1/get_reports")
+  QUrl apiUrl(QString(djangoBaseUrl() + "/api/" + SettingsManager().currentModel() + "/%1/get_reports")
                   .arg(serialNumber));
 
   setLoading(true);
   m_reportManager->networkService()->getJsonFromDjango(
       apiUrl,
-      [this, serialNumber](const QJsonObject &json) {
+      [this, serialNumber](const QJsonObject& json) {
         processServerReports(json, serialNumber);
         setLoading(false);
       },
-      [this](const QString &error) {
-        DEBUG_ERROR_COLORED("DataManager", "syncReportsWithServer",
-                            "Error when receiving data: " + error, COLOR_CYAN,
-                            COLOR_CYAN);
+      [this](const QString& error) {
+        DEBUG_ERROR_COLORED("DataManager", "syncReportsWithServer", "Error when receiving data: " + error,
+                            COLOR_CYAN, COLOR_CYAN);
         setLoading(false);
       });
 }
 
-void DataManager::processServerReports(const QJsonObject &serverReports,
-                                       const QString &serialNumber) {
+void DataManager::processServerReports(const QJsonObject& serverReports, const QString& serialNumber)
+{
   QString basePath = getReportDirPath();
 
   m_pendingReports.clear();
 
   QDate oneMonthAgo = QDate::currentDate().addMonths(-1).addDays(-1);
 
-  for (auto const &number_to : numbersTO) {
+  for (auto const& number_to : numbersTO) {
     QString toPath = basePath + number_to + "/";
     QDir reportDir(toPath);
 
@@ -367,91 +365,77 @@ void DataManager::processServerReports(const QJsonObject &serverReports,
       continue;
     }
 
-    QStringList localReports =
-        reportDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    QStringList localReports = reportDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
     QJsonArray onlineReports = serverReports[number_to].toArray();
 
     QMap<QString, QJsonObject> onlineReportMap;
 
-    for (const auto &val : onlineReports) {
+    for (const auto& val : onlineReports) {
       if (val.isObject()) {
         QJsonObject reportObj = val.toObject();
         QString date = reportObj["date"].toString();
         onlineReportMap[date] = reportObj;
       }
     }
-    for (const auto &localReport : localReports) {
+    for (const auto& localReport : localReports) {
       QDate reportDate = QDate::fromString(localReport, "yyyy-MM-dd");
       QString fullReportPath = toPath + localReport;
       QDir reportDir(fullReportPath);
       if (reportDir.isEmpty()) {
         if (reportDir.removeRecursively()) {
           DEBUG_COLORED("DataManager", "processServerReports",
-                        QString("Deleted empty report: %1/%2")
-                            .arg(number_to)
-                            .arg(localReport),
-                        COLOR_CYAN, COLOR_CYAN);
+                        QString("Deleted empty report: %1/%2").arg(number_to).arg(localReport), COLOR_CYAN,
+                        COLOR_CYAN);
           continue;
         } else {
           DEBUG_ERROR_COLORED("DataManager", "processServerReports",
-                              QString("Failed to delete empty report: %1/%2")
-                                  .arg(number_to)
-                                  .arg(localReport),
+                              QString("Failed to delete empty report: %1/%2").arg(number_to).arg(localReport),
                               COLOR_CYAN, COLOR_CYAN);
         }
       }
       if (reportDate.isValid() && reportDate < oneMonthAgo) {
         if (QDir(fullReportPath).removeRecursively()) {
           DEBUG_COLORED("DataManager", "processServerReports",
-                        QString("Deleted old report: %1/%2")
-                            .arg(number_to)
-                            .arg(localReport),
-                        COLOR_CYAN, COLOR_CYAN);
+                        QString("Deleted old report: %1/%2").arg(number_to).arg(localReport), COLOR_CYAN,
+                        COLOR_CYAN);
         } else {
           DEBUG_ERROR_COLORED("DataManager", "processServerReports",
-                              QString("Failed to delete old report: %1/%2")
-                                  .arg(number_to)
-                                  .arg(localReport),
+                              QString("Failed to delete old report: %1/%2").arg(number_to).arg(localReport),
                               COLOR_CYAN, COLOR_CYAN);
         }
         continue;
       }
       if (onlineReportMap.contains(localReport)) {
-
         QJsonObject serverReport = onlineReportMap[localReport];
         bool jsonExists = serverReport["json"].toBool();
         bool pdfExists = serverReport["pdf"].toBool();
 
         if (!jsonExists || !pdfExists) {
-          m_pendingReports.enqueue(
-              {toPath + localReport + '/', localReport, number_to});
+          m_pendingReports.enqueue({toPath + localReport + '/', localReport, number_to});
         }
       } else {
-        m_pendingReports.enqueue(
-            {toPath + localReport + '/', localReport, number_to});
+        m_pendingReports.enqueue({toPath + localReport + '/', localReport, number_to});
       }
     }
   }
 
-  DEBUG_COLORED(
-      "DataManager", "processServerReports",
-      QString("Found %1 reports to upload").arg(m_pendingReports.size()),
-      COLOR_CYAN, COLOR_CYAN);
+  DEBUG_COLORED("DataManager", "processServerReports",
+                QString("Found %1 reports to upload").arg(m_pendingReports.size()), COLOR_CYAN, COLOR_CYAN);
 
   if (!m_pendingReports.isEmpty()) {
     startNextUpload();
   } else {
     m_isUploading = false;
-    DEBUG_COLORED("DataManager", "processServerReports", "No reports to upload",
-                  COLOR_CYAN, COLOR_CYAN);
+    DEBUG_COLORED("DataManager", "processServerReports", "No reports to upload", COLOR_CYAN, COLOR_CYAN);
   }
 }
 
-void DataManager::startNextUpload() {
+void DataManager::startNextUpload()
+{
   if (m_pendingReports.isEmpty()) {
     m_isUploading = false;
-    DEBUG_COLORED("DataManager", "startNextUpload",
-                  "All reports uploaded successfully", COLOR_CYAN, COLOR_CYAN);
+    DEBUG_COLORED("DataManager", "startNextUpload", "All reports uploaded successfully", COLOR_CYAN,
+                  COLOR_CYAN);
     emit allReportsUploaded();
     return;
   }
@@ -467,78 +451,69 @@ void DataManager::startNextUpload() {
                   COLOR_CYAN, COLOR_CYAN);
 
     // Синхронная загрузка отчета
-    bool success = uploadReportSynchronous(nextReportList[0], nextReportList[1],
-                                           nextReportList[2]);
+    bool success = uploadReportSynchronous(nextReportList[0], nextReportList[1], nextReportList[2]);
 
     if (!success) {
-      DEBUG_ERROR_COLORED(
-          "DataManager", "startNextUpload",
-          QString("Failed to upload report: %1").arg(nextReportList[0]),
-          COLOR_CYAN, COLOR_CYAN);
+      DEBUG_ERROR_COLORED("DataManager", "startNextUpload",
+                          QString("Failed to upload report: %1").arg(nextReportList[0]), COLOR_CYAN,
+                          COLOR_CYAN);
     }
 
-    // Немедленно начинаем следующую загрузку
-    QCoreApplication::processEvents(); // Обрабатываем события перед следующей
-                                       // загрузкой
+    QCoreApplication::processEvents();
     startNextUpload();
 
-  } catch (const std::exception &e) {
-    DEBUG_ERROR_COLORED("DataManager", "startNextUpload",
-                        QString("Exception: %1").arg(e.what()), COLOR_CYAN,
+  } catch (const std::exception& e) {
+    DEBUG_ERROR_COLORED("DataManager", "startNextUpload", QString("Exception: %1").arg(e.what()), COLOR_CYAN,
                         COLOR_CYAN);
     QCoreApplication::processEvents();
     startNextUpload();
   }
 }
 
-bool DataManager::uploadReportSynchronous(const QString &reportPath,
-                                          const QString &uploadTime,
-                                          const QString &numberTO) {
-  DEBUG_COLORED("DataManager", "uploadReportSynchronous",
-                QString("Synchronous upload: %1").arg(reportPath), COLOR_CYAN,
-                COLOR_CYAN);
+bool DataManager::uploadReportSynchronous(const QString& reportPath, const QString& uploadTime,
+                                          const QString& numberTO)
+{
+  DEBUG_COLORED("DataManager", "uploadReportSynchronous", QString("Synchronous upload: %1").arg(reportPath),
+                COLOR_CYAN, COLOR_CYAN);
 
   QString apiUrl = djangoBaseUrl() + "/api/report/";
-  auto *networkService = m_reportManager->networkService();
+  auto* networkService = m_reportManager->networkService();
 
-  // Проверяем существование директории отчета
   QDir reportDir(reportPath);
   if (!reportDir.exists()) {
-    DEBUG_ERROR_COLORED(
-        "DataManager", "uploadReportSynchronous",
-        QString("Report directory doesn't exist: %1").arg(reportPath),
-        COLOR_CYAN, COLOR_CYAN);
+    DEBUG_ERROR_COLORED("DataManager", "uploadReportSynchronous",
+                        QString("Report directory doesn't exist: %1").arg(reportPath), COLOR_CYAN,
+                        COLOR_CYAN);
     return false;
   }
 
-  // Выполняем синхронную загрузку
-  return networkService->uploadReportSynchronous(QUrl(apiUrl), reportPath,
-                                                 uploadTime, numberTO);
+  return networkService->uploadReportSynchronous(QUrl(apiUrl), reportPath, uploadTime, numberTO);
 }
 
-QStringList DataManager::getFixStatusOptions() const {
-  DEBUG_COLORED("DataManager", "getFixStatusOptions",
-                "Getting fix status options", COLOR_CYAN, COLOR_CYAN);
+QStringList DataManager::getFixStatusOptions() const
+{
+  DEBUG_COLORED("DataManager", "getFixStatusOptions", "Getting fix status options", COLOR_CYAN, COLOR_CYAN);
   return {"Fixed", "Postponed", "Not Required", "Not Fixed"};
 }
 
-bool DataManager::createArchive(const QString &folderPath,
-                                const QString &mode) {
-  DEBUG_COLORED(
-      "DataManager", "createArchive",
-      QString("Creating archive from: %1 mode: %2").arg(folderPath).arg(mode),
-      COLOR_CYAN, COLOR_CYAN);
+bool DataManager::createArchive(const QString& folderPath, const QString& mode)
+{
+  DEBUG_COLORED("DataManager", "createArchive",
+                QString("Creating archive from: %1 mode: %2").arg(folderPath).arg(mode), COLOR_CYAN,
+                COLOR_CYAN);
   return m_reportManager->createArchive(folderPath, mode);
 }
 
-void DataManager::setLoading(bool loading) {
+void DataManager::setLoading(bool loading)
+{
   if (m_loading != loading) {
     m_loading = loading;
     emit loadingChanged();
   }
 }
 
-void DataManager::setError(const QString &error) {
+void DataManager::setError(const QString& error)
+{
   m_error = error;
   emit errorOccurred(error);
 }

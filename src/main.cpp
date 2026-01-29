@@ -1,16 +1,16 @@
 ﻿#include <QApplication>
+#include <QDebug>
 #include <QDir>
 #include <QGuiApplication>
+#include <QIcon>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQuickStyle>
-#include <QDebug>
 #include <QUrl>
-#include <QIcon>
 
-int main(int argc, char *argv[]) {
-
+int main(int argc, char* argv[])
+{
   QApplication app(argc, argv);
   QQmlApplicationEngine engine;
   QQuickStyle::setStyle("Material");

@@ -73,18 +73,10 @@ ScrollView {
 
                 FormField {
                     label: qsTr("Serial number")
-                    placeholder: qsTr("serial number of equipment")
+                    placeholder: qsTr("Serial number")
                     settingName: "serialNumber"
                     Layout.fillWidth: true
                 }
-
-                FormField {
-                    label: qsTr("Case number")
-                    placeholder: qsTr("serial number of equipment storage case")
-                    settingName: "caseNumber"
-                    Layout.fillWidth: true
-                }
-
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: 8
@@ -94,6 +86,18 @@ ScrollView {
                         settingName: "shipmentDate"
                         modelSettings: SettingsManager
                     }
+                }
+                FormField {
+                    label: qsTr("Invoice")
+                    placeholder: qsTr("Invoice number")
+                    settingName: "invoice"
+                    Layout.fillWidth: true
+                }
+                FormField {
+                    label: qsTr("Packet list")
+                    placeholder: qsTr("Document number")
+                    settingName: "packetList"
+                    Layout.fillWidth: true
                 }
             }
 
@@ -108,7 +112,7 @@ ScrollView {
 
                     FormField {
                         label: qsTr("PC tablet Latitude Dell 7230")
-                        placeholder: qsTr("serial number of PC tablet Latitude Dell 7230")
+                        placeholder: qsTr("Serial number")
                         settingName: "pcTabletDell7230"
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
@@ -116,7 +120,7 @@ ScrollView {
 
                     FormField {
                         label: qsTr("AC/DC Power adapter for Dell 7230")
-                        placeholder: qsTr("serial number of AC/DC Power adapter for Dell 7230")
+                        placeholder: qsTr("Serial number")
                         settingName: "acDcPowerAdapterDell"
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
@@ -124,7 +128,7 @@ ScrollView {
 
                     FormField {
                         label: qsTr("DC Charger adapter for Dell 7230 from battery")
-                        placeholder: qsTr("serial number of DC Charger adapter for Dell 7230 from battery")
+                        placeholder: qsTr("Serial number")
                         settingName: "dcChargerAdapterBattery"
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
@@ -136,7 +140,7 @@ ScrollView {
 
                     FormField {
                         label: qsTr("Ultrasonic phased array PULSAR OEM 16/64 established")
-                        placeholder: qsTr("serial number of Ultrasonic phased array PULSAR OEM 16/64 established")
+                        placeholder: qsTr("Serial number")
                         settingName: "ultrasonicPhasedArrayPulsar"
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
@@ -144,64 +148,32 @@ ScrollView {
 
                     FormField {
                         label: qsTr("Left probs RA2.25L16 1.1x10-17")
-                        placeholder: qsTr("serial number of Left probs RA2.25L16 1.1x10-17")
+                        placeholder: qsTr("0000 MM.YEAR")
                         settingName: "leftProbs"
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
                     }
 
                     FormField {
-                        label: qsTr("Production date Left probs RA2.25L16 1.1x10-17")
-                        placeholder: qsTr("Production date of left probs RA2.25L16 1.1x10-17")
-                        settingName: "leftProbsDate"
-                        modelSettings: SettingsManager.kalmarSettings
-                        Layout.fillWidth: true
-                    }
-
-                    FormField {
                         label: qsTr("Right probs RA2.25L16 1.1x10-17")
-                        placeholder: qsTr("serial number of Right probs RA2.25L16 1.1x10-17")
+                        placeholder: qsTr("0000 MM.YEAR")
                         settingName: "rightProbs"
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
                     }
 
                     FormField {
-                        label: qsTr("Production date right probs RA2.25L16 1.1x10-17")
-                        placeholder: qsTr("Production date of right probs RA2.25L16 1.1x10-17")
-                        settingName: "rightProbsDate"
-                        modelSettings: SettingsManager.kalmarSettings
-                        Layout.fillWidth: true
-                    }
-
-                    FormField {
                         label: qsTr("Manual probs RA2.25L16 0.9x10-17")
-                        placeholder: qsTr("serial number of Manual probs RA2.25L16 0.9x10-17")
+                        placeholder: qsTr("0000 MM.YEAR")
                         settingName: "manualProbs"
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
                     }
 
                     FormField {
-                        label: qsTr("Production date Manual probs RA2.25L16 0.9x10-17")
-                        placeholder: qsTr("Production date of manual probs RA2.25L16 0.9x10-17")
-                        settingName: "manualProbsDate"
-                        modelSettings: SettingsManager.kalmarSettings
-                        Layout.fillWidth: true
-                    }
-
-                    FormField {
                         label: qsTr("Straight probs RA5.0L16 0.6x10-12")
-                        placeholder: qsTr("serial number of Straight probs RA5.0L16 0.6x10-12")
+                        placeholder: qsTr("0000 MM.YEAR")
                         settingName: "straightProbs"
-                        modelSettings: SettingsManager.kalmarSettings
-                        Layout.fillWidth: true
-                    }
-
-                    FormField {
-                        label: qsTr("Production date Straight probs RA5.0L16 0.6x10-12")
-                        placeholder: qsTr("Production date of straight probs RA5.0L16 0.6x10-12")
-                        settingName: "straightProbsDate"
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
                     }
@@ -248,18 +220,28 @@ ScrollView {
 
                     FormField {
                         label: qsTr("DC Battery box established")
-                        placeholder: qsTr("serial number of DC Battery box established")
+                        placeholder: qsTr("Serial number")
                         settingName: "dcBatteryBox"
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
                     }
 
-                    FormField {
-                        label: qsTr("AC/DC Charger adapter for battery 2")
-                        placeholder: qsTr("serial number of AC/DC Charger adapter for battery 2")
-                        settingName: "acDcChargerAdapterBattery"
-                        modelSettings: SettingsManager.kalmarSettings
+                    RowLayout {
                         Layout.fillWidth: true
+                        spacing: 8
+                        Label {
+                            Layout.preferredWidth: root.width < 700 ? 280 : 450
+                            text: qsTr("AC/DC Charger adapter for battery")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        ModelSettingCheckBox {
+                            settingName: "hasAcDcChargerAdapterBattery"
+                            modelSettings: SettingsManager.kalmarSettings
+                            text: qsTr("Included")
+                            Layout.columnSpan: 1
+                        }
                     }
                 }
 
@@ -268,7 +250,7 @@ ScrollView {
 
                     FormField {
                         label: qsTr("Calibration bloc SO-3R")
-                        placeholder: qsTr("serial number of Calibration bloc SO-3R")
+                        placeholder: qsTr("Serial number")
                         settingName: "calibrationBlockSo3r"
                         modelSettings: SettingsManager.kalmarSettings
                         Layout.fillWidth: true
@@ -323,23 +305,15 @@ ScrollView {
 
                     FormField {
                         label: qsTr("PC tablet Latitude Dell 7230")
-                        placeholder: qsTr("serial number of PC tablet Latitude Dell 7230")
+                        placeholder: qsTr("Serial number")
                         settingName: "pcTabletDell7230"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
 
                     FormField {
-                        label: qsTr("Personalised name tag")
-                        placeholder: qsTr("personalised name tag details")
-                        settingName: "personalisedNameTag"
-                        modelSettings: SettingsManager.phasarSettings
-                        Layout.fillWidth: true
-                    }
-
-                    FormField {
                         label: qsTr("AC/DC Power adapter for Dell 7230")
-                        placeholder: qsTr("serial number of AC/DC Power adapter for Dell 7230")
+                        placeholder: qsTr("Serial number")
                         settingName: "acDcPowerAdapterDell"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
@@ -347,19 +321,19 @@ ScrollView {
 
                     FormField {
                         label: qsTr("DC Charger adapter for Dell 7230 from battery")
-                        placeholder: qsTr("serial number of DC Charger adapter for Dell 7230 from battery")
+                        placeholder: qsTr("Serial number")
                         settingName: "dcChargerAdapterBattery"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
                 }
 
-                                CardSection {
+                CardSection {
                     title: qsTr("Ultrasonic Equipment")
 
                     FormField {
                         label: qsTr("Ultrasonic phased array PULSAR OEM 16/128 established")
-                        placeholder: qsTr("serial number of Ultrasonic phased array PULSAR OEM 16/128 established")
+                        placeholder: qsTr("Serial number")
                         settingName: "ultrasonicPhasedArrayPulsar"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
@@ -367,115 +341,61 @@ ScrollView {
 
                     FormField {
                         label: qsTr("DCN P112-2,5-F")
-                        placeholder: qsTr("serial number of DCN P112-2,5-F")
+                        placeholder: qsTr("0000 MM.YEAR")
                         settingName: "dcn"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
 
                     FormField {
-                        label: qsTr("Production date DCN P112-2,5-F")
-                        placeholder: qsTr("Production date of DCN P112-2,5-F")
-                        settingName: "dcnDate"
-                        modelSettings: SettingsManager.phasarSettings
-                        Layout.fillWidth: true
-                    }
-
-                    FormField {
                         label: qsTr("AB-back PA2,5L16 1,1x10-17-F")
-                        placeholder: qsTr("serial number of AB-back PA2,5L16 1,1x10-17-F")
+                        placeholder: qsTr("0000 MM.YEAR")
                         settingName: "abBack"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
 
                     FormField {
-                        label: qsTr("Production date AB-back PA2,5L16 1,1x10-17-F")
-                        placeholder: qsTr("Production date of AB-back PA2,5L16 1,1x10-17-F")
-                        settingName: "abBackDate"
-                        modelSettings: SettingsManager.phasarSettings
-                        Layout.fillWidth: true
-                    }
-
-                    FormField {
                         label: qsTr("GF combo 2PA2,5L16 0,6x10-10-F")
-                        placeholder: qsTr("serial number of GF combo 2PA2,5L16 0,6x10-10-F")
+                        placeholder: qsTr("0000 MM.YEAR")
                         settingName: "gfCombo"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
 
-                    FormField {
-                        label: qsTr("Production date GF combo 2PA2,5L16 0,6x10-10-F")
-                        placeholder: qsTr("Production date of GF combo 2PA2,5L16 0,6x10-10-F")
-                        settingName: "gfComboDate"
-                        modelSettings: SettingsManager.phasarSettings
-                        Layout.fillWidth: true
-                    }
 
                     FormField {
                         label: qsTr("FF combo 2PA2,5L16 0,6x10-10-F")
-                        placeholder: qsTr("serial number of FF combo 2PA2,5L16 0,6x10-10-F")
+                        placeholder: qsTr("0000 MM.YEAR")
                         settingName: "ffCombo"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
 
                     FormField {
-                        label: qsTr("Production date FF combo 2PA2,5L16 0,6x10-10-F")
-                        placeholder: qsTr("Production date of FF combo 2PA2,5L16 0,6x10-10-F")
-                        settingName: "ffComboDate"
-                        modelSettings: SettingsManager.phasarSettings
-                        Layout.fillWidth: true
-                    }
-
-                    FormField {
                         label: qsTr("AB-front PA2,5L16 1,1x10-17-F")
-                        placeholder: qsTr("serial number of AB-front PA2,5L16 1,1x10-17-F")
+                        placeholder: qsTr("0000 MM.YEAR")
                         settingName: "abFront"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
 
                     FormField {
-                        label: qsTr("Production date AB-front PA2,5L16 1,1x10-17-F")
-                        placeholder: qsTr("Production date of AB-front PA2,5L16 1,1x10-17-F")
-                        settingName: "abFrontDate"
-                        modelSettings: SettingsManager.phasarSettings
-                        Layout.fillWidth: true
-                    }
-
-                    FormField {
                         label: qsTr("Flange 50 P112-0,6-50-F")
-                        placeholder: qsTr("serial number of Flange 50 P112-0,6-50-F")
+                        placeholder: qsTr("0000 MM.YEAR")
                         settingName: "flange50"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
 
                     FormField {
-                        label: qsTr("Production date Flange 50 P112-0,6-50-F")
-                        placeholder: qsTr("Production date of Flange 50 P112-0,6-50-F")
-                        settingName: "flange50Date"
-                        modelSettings: SettingsManager.phasarSettings
-                        Layout.fillWidth: true
-                    }
-
-                    FormField {
                         label: qsTr("Manual probs PA2.25L16 0.9x10-17")
-                        placeholder: qsTr("serial number of Manual probs PA2.25L16 0.9x10-17")
+                        placeholder: qsTr("0000 MM.YEAR")
                         settingName: "manualProbs"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
                     }
 
-                    FormField {
-                        label: qsTr("Production date Manual probs PA2.25L16 0.9x10-17")
-                        placeholder: qsTr("Production date of Manual probs PA2.25L16 0.9x10-17")
-                        settingName: "manualProbsDate"
-                        modelSettings: SettingsManager.phasarSettings
-                        Layout.fillWidth: true
-                    }
 
                     RowLayout {
                         Layout.fillWidth: true
@@ -527,7 +447,7 @@ ScrollView {
 
                     FormField {
                         label: qsTr("DC Battery box established")
-                        placeholder: qsTr("serial number of DC Battery box established")
+                        placeholder: qsTr("Serial number")
                         settingName: "dcBatteryBox"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
@@ -535,7 +455,7 @@ ScrollView {
 
                     FormField {
                         label: qsTr("AC/DC Charger adapter for battery")
-                        placeholder: qsTr("serial number of AC/DC Charger adapter for battery")
+                        placeholder: qsTr("Serial number")
                         settingName: "acDcChargerAdapterBattery"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true
@@ -547,7 +467,7 @@ ScrollView {
 
                     FormField {
                         label: qsTr("Calibration bloc SO-3R")
-                        placeholder: qsTr("serial number of Calibration bloc SO-3R")
+                        placeholder: qsTr("Serial number")
                         settingName: "calibrationBlockSo3r"
                         modelSettings: SettingsManager.phasarSettings
                         Layout.fillWidth: true

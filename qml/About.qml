@@ -75,8 +75,12 @@ ScrollView {
                     "value": mainColumn.formatDate(SettingsManager.shipmentDate)
                 },
                 {
-                    "label": qsTr("Case number"),
-                    "value": SettingsManager.caseNumber
+                    "label": qsTr("Invoice"),
+                    "value": SettingsManager.invoice
+                },
+                {
+                    "label": qsTr("Packet List"),
+                    "value": SettingsManager.packetList
                 }
             ]
         }
@@ -115,35 +119,19 @@ ScrollView {
                         "value": SettingsManager.kalmarSettings.ultrasonicPhasedArrayPulsar
                     },
                     {
-                        "label": qsTr("Left probs RA2.25L16 1.1x10-17"),
+                        "label": qsTr("Left probs PA2.25L16 1.1x10-17"),
                         "value": SettingsManager.kalmarSettings.leftProbs
                     },
                     {
-                        "label": qsTr("Production date left probs RA2.25L16 1.1x10-17"),
-                        "value": SettingsManager.kalmarSettings.leftProbs
-                    },
-                    {
-                        "label": qsTr("Right probs RA2.25L16 1.1x10-17"),
+                        "label": qsTr("Right probs PA2.25L16 1.1x10-17"),
                         "value": SettingsManager.kalmarSettings.rightProbs
                     },
                     {
-                        "label": qsTr("Production date right probs RA2.25L16 1.1x10-17"),
-                        "value": SettingsManager.kalmarSettings.rightProbs
-                    },
-                    {
-                        "label": qsTr("Manual probs RA2.25L16 0.9x10-17"),
-                        "value": SettingsManager.kalmarSettings.manualProbs
-                    },
-                    {
-                        "label": qsTr("Production date manual probs RA2.25L16 0.9x10-17"),
+                        "label": qsTr("Manual probs PA2.25L16 0.9x10-17"),
                         "value": SettingsManager.kalmarSettings.manualProbs
                     },
                     {
                         "label": qsTr("Straight probs RA5.0L16 0.6x10-12"),
-                        "value": SettingsManager.kalmarSettings.straightProbs
-                    },
-                    {
-                        "label": qsTr("Production date straight probs RA5.0L16 0.6x10-12"),
                         "value": SettingsManager.kalmarSettings.straightProbs
                     },
                     {
@@ -166,8 +154,8 @@ ScrollView {
                         "value": SettingsManager.kalmarSettings.dcBatteryBox
                     },
                     {
-                        "label": qsTr("AC/DC Charger adapter for battery 2"),
-                        "value": SettingsManager.kalmarSettings.acDcChargerAdapterBattery
+                        "label": qsTr("AC/DC Charger adapter for battery"),
+                        "value": mainColumn.getStatusText(SettingsManager.kalmarSettings.hasAcDcChargerAdapterBattery)
                     }
                 ]
             }
@@ -234,56 +222,28 @@ ScrollView {
                         "value": SettingsManager.phasarSettings.dcn
                     },
                     {
-                        "label": qsTr("Production date DCN P112-2,5-F"),
-                        "value": SettingsManager.phasarSettings.dcnDate
-                    },
-                    {
                         "label": qsTr("AB-back PA2,5L16 1,1x10-17-F"),
                         "value": SettingsManager.phasarSettings.abBack
-                    },
-                    {
-                        "label": qsTr("Production date AB-back PA2,5L16 1,1x10-17-F"),
-                        "value": SettingsManager.phasarSettings.abBackDate
                     },
                     {
                         "label": qsTr("GF combo 2PA2,5L16 0,6x10-10-F"),
                         "value": SettingsManager.phasarSettings.gfCombo
                     },
                     {
-                        "label": qsTr("Production date GF combo 2PA2,5L16 0,6x10-10-F"),
-                        "value": SettingsManager.phasarSettings.gfComboDate
-                    },
-                    {
                         "label": qsTr("FF combo 2PA2,5L16 0,6x10-10-F"),
                         "value": SettingsManager.phasarSettings.ffCombo
-                    },
-                    {
-                        "label": qsTr("Production date FF combo 2PA2,5L16 0,6x10-10-F"),
-                        "value": SettingsManager.phasarSettings.ffComboDate
                     },
                     {
                         "label": qsTr("AB-front PA2,5L16 1,1x10-17-F"),
                         "value": SettingsManager.phasarSettings.abFront
                     },
                     {
-                        "label": qsTr("Production date AB-front PA2,5L16 1,1x10-17-F"),
-                        "value": SettingsManager.phasarSettings.abFrontDate
-                    },
-                    {
                         "label": qsTr("Flange 50 P112-0,6-50-F"),
                         "value": SettingsManager.phasarSettings.flange50
                     },
                     {
-                        "label": qsTr("Production date Flange 50 P112-0,6-50-F"),
-                        "value": SettingsManager.phasarSettings.flange50Date
-                    },
-                    {
                         "label": qsTr("Manual probs PA2.25L16 0.9x10-17"),
                         "value": SettingsManager.phasarSettings.manualProbs
-                    },
-                    {
-                        "label": qsTr("Production date Manual probs PA2.25L16 0.9x10-17"),
-                        "value": SettingsManager.phasarSettings.manualProbsDate
                     },
                     {
                         "label": qsTr("DC Cable from battery box"),
@@ -310,7 +270,7 @@ ScrollView {
                     },
                     {
                         "label": qsTr("AC/DC Charger adapter for battery"),
-                        "value": SettingsManager.phasarSettings.acDcChargerAdapterBattery
+                        "value": mainColumn.getStatusText(SettingsManager.phasarSettings.hasAcDcChargerAdapterBattery)
                     }
                 ]
             }
@@ -341,11 +301,11 @@ ScrollView {
             model: [
                 {
                     "label": qsTr("Wifi router address"),
-                    "value": SettingsManager.wifiRouterAddress,
+                    "value": SettingsManager.wifiRouterAddress
                 },
                 {
                     "label": qsTr("Windows password"),
-                    "value": SettingsManager.windowsPassword,
+                    "value": SettingsManager.windowsPassword
                 }
             ]
         }

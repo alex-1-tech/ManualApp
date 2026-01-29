@@ -11,19 +11,16 @@
 #define COLOR_CYAN "\033[36m"
 #define COLOR_WHITE "\033[37m"
 
-#define DEBUG_COLORED(module, action, message, colorModule, colorAction)       \
-  qDebug().noquote() << (QString(colorModule) + "[" + module + "]" +           \
-                         colorAction + "[" + action + "] " + COLOR_RESET +     \
-                         message)
-#define DEBUG_ERROR_COLORED(module, action, message, colorModule, colorAction) \
-  qWarning().noquote() << (QString(colorModule) + "[" + module + "]" +         \
-                           colorAction + "[" + action + "] " + COLOR_RED +     \
-                           message + COLOR_RESET)
+#define DEBUG_COLORED(module, action, message, colorModule, colorAction)                                     \
+  qDebug().noquote() << (QString(colorModule) + "[" + module + "]" + colorAction + "[" + action + "] " +     \
+                         COLOR_RESET + message)
+#define DEBUG_ERROR_COLORED(module, action, message, colorModule, colorAction)                               \
+  qWarning().noquote() << (QString(colorModule) + "[" + module + "]" + colorAction + "[" + action + "] " +   \
+                           COLOR_RED + message + COLOR_RESET)
 
-inline QString resolveResourcePath(const QString &filePath) {
-  if (filePath.startsWith("qrc:/"))
-    return ":" + filePath.mid(4);
-  if (filePath.startsWith(":/"))
-    return filePath;
+inline QString resolveResourcePath(const QString& filePath)
+{
+  if (filePath.startsWith("qrc:/")) return ":" + filePath.mid(4);
+  if (filePath.startsWith(":/")) return filePath;
   return ":/" + filePath;
 }
