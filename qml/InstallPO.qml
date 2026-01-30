@@ -15,19 +15,11 @@ ScrollView {
     property string currentModel: SettingsManager.currentModel
     property bool isDownloading: DataManager.installManager().isDownloading
     property bool isInstallerReady: DataManager.installManager().installerExists
-    property string hwidInput: SettingsManager.HWID
     property bool isActivating: false
-    property string activationStatus: ""
-    property bool isActivated: SettingsManager.HWID !== ""
-
-    property string hwidType: "host"
+    property bool isActivated: SettingsManager.hostHWID !== "" || SettingsManager.deviceHWID !== ""
     property string mode: "control"
-
-    Component.onCompleted: {
-        if (SettingsManager.HWID !== "") {
-            root.hwidInput = SettingsManager.HWID;
-        }
-    }
+    property string tempHostHWID: SettingsManager.hostHWID
+    property string tempDeviceHWID: SettingsManager.deviceHWID
 
     contentItem: Flickable {
         id: flick
@@ -43,6 +35,7 @@ ScrollView {
             anchors.top: parent.top
             anchors.topMargin: 10
             spacing: 20
+
             RowLayout {
                 Layout.leftMargin: 50
                 Image {
@@ -57,6 +50,7 @@ ScrollView {
                     font.pointSize: 24
                 }
             }
+
             // Model Info
             Rectangle {
                 Layout.fillWidth: true
@@ -243,10 +237,9 @@ ScrollView {
                     font.bold: true
                 }
 
-                // Карточка активации
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 280
+                    Layout.preferredHeight: 340
                     color: Theme.colorBgMuted
                     radius: Theme.radiusCard
                     border.color: Theme.colorBorder
@@ -256,132 +249,61 @@ ScrollView {
                         anchors.margins: 15
                         spacing: 15
 
-                        Rectangle {
+                        // Software Mode
+                        ColumnLayout {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 60
-                            color: "transparent"
+                            spacing: 5
+
+                            Text {
+                                text: "Software Mode"
+                                color: Theme.colorTextPrimary
+                                font.pointSize: Theme.fontSmall
+                                font.bold: true
+                            }
 
                             RowLayout {
-                                anchors.fill: parent
-                                spacing: 30
+                                spacing: 10
+                                Layout.alignment: Qt.AlignLeft
 
-                                // HWID Type
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 5
+                                Rectangle {
+                                    id: controlModeBtn
+                                    width: 100
+                                    height: 30
+                                    radius: 4
+                                    color: root.mode === "control" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
+                                    border.color: root.mode === "control" ? Theme.colorButtonPrimary : Theme.colorBorder
 
                                     Text {
-                                        text: "HWID Type"
-                                        color: Theme.colorTextPrimary
+                                        anchors.centerIn: parent
+                                        text: "Control"
+                                        color: root.mode === "control" ? "white" : Theme.colorTextPrimary
                                         font.pointSize: Theme.fontSmall
-                                        font.bold: true
                                     }
 
-                                    RowLayout {
-                                        spacing: 10
-                                        Layout.alignment: Qt.AlignLeft
-
-                                        Rectangle {
-                                            id: hostHwidBtn
-                                            width: 100
-                                            height: 30
-                                            radius: 4
-                                            color: root.hwidType === "host" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
-                                            border.color: root.hwidType === "host" ? Theme.colorButtonPrimary : Theme.colorBorder
-
-                                            Text {
-                                                anchors.centerIn: parent
-                                                text: "Host"
-                                                color: root.hwidType === "host" ? "white" : Theme.colorTextPrimary
-                                                font.pointSize: Theme.fontSmall
-                                            }
-
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                onClicked: root.hwidType = "host"
-                                            }
-                                        }
-
-                                        Rectangle {
-                                            id: deviceHwidBtn
-                                            width: 100
-                                            height: 30
-                                            radius: 4
-                                            color: root.hwidType === "device" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
-                                            border.color: root.hwidType === "device" ? Theme.colorButtonPrimary : Theme.colorBorder
-
-                                            Text {
-                                                anchors.centerIn: parent
-                                                text: "Device"
-                                                color: root.hwidType === "device" ? "white" : Theme.colorTextPrimary
-                                                font.pointSize: Theme.fontSmall
-                                            }
-
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                onClicked: root.hwidType = "device"
-                                            }
-                                        }
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: root.mode = "control"
                                     }
                                 }
 
-                                // Software Mode
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 5
+                                Rectangle {
+                                    id: analysisModeBtn
+                                    width: 100
+                                    height: 30
+                                    radius: 4
+                                    color: root.mode === "analysis" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
+                                    border.color: root.mode === "analysis" ? Theme.colorButtonPrimary : Theme.colorBorder
 
                                     Text {
-                                        text: "Software Mode"
-                                        color: Theme.colorTextPrimary
+                                        anchors.centerIn: parent
+                                        text: "Analysis"
+                                        color: root.mode === "analysis" ? "white" : Theme.colorTextPrimary
                                         font.pointSize: Theme.fontSmall
-                                        font.bold: true
                                     }
 
-                                    RowLayout {
-                                        spacing: 10
-                                        Layout.alignment: Qt.AlignLeft
-
-                                        Rectangle {
-                                            id: controlModeBtn
-                                            width: 100
-                                            height: 30
-                                            radius: 4
-                                            color: root.mode === "control" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
-                                            border.color: root.mode === "control" ? Theme.colorButtonPrimary : Theme.colorBorder
-
-                                            Text {
-                                                anchors.centerIn: parent
-                                                text: "Control"
-                                                color: root.mode === "control" ? "white" : Theme.colorTextPrimary
-                                                font.pointSize: Theme.fontSmall
-                                            }
-
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                onClicked: root.mode = "control"
-                                            }
-                                        }
-
-                                        Rectangle {
-                                            id: analysisModeBtn
-                                            width: 100
-                                            height: 30
-                                            radius: 4
-                                            color: root.mode === "analysis" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
-                                            border.color: root.mode === "analysis" ? Theme.colorButtonPrimary : Theme.colorBorder
-
-                                            Text {
-                                                anchors.centerIn: parent
-                                                text: "Analysis"
-                                                color: root.mode === "analysis" ? "white" : Theme.colorTextPrimary
-                                                font.pointSize: Theme.fontSmall
-                                            }
-
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                onClicked: root.mode = "analysis"
-                                            }
-                                        }
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: root.mode = "analysis"
                                     }
                                 }
                             }
@@ -394,59 +316,114 @@ ScrollView {
                             opacity: 0.3
                         }
 
+                        // HWID Input Fields
                         ColumnLayout {
                             Layout.fillWidth: true
-                            spacing: 5
+                            spacing: 15
 
-                            Text {
-                                text: "HWID (Hardware ID)"
-                                color: Theme.colorTextPrimary
-                                font.pointSize: Theme.fontSmall
-                                font.bold: true
-                            }
-
-                            Rectangle {
+                            // Host HWID
+                            ColumnLayout {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 40
-                                color: Theme.colorBgPrimary
-                                radius: 6
-                                border.color: root.hwidInput !== "" ? Theme.colorButtonPrimary : Theme.colorBorder
-                                border.width: 1
+                                spacing: 5
 
-                                TextInput {
-                                    id: hwidInputField
-                                    anchors.fill: parent
-                                    anchors.margins: 10
-                                    verticalAlignment: Text.AlignVCenter
-                                    color: root.hwidInput === "" ? Theme.colorTextMuted : Theme.colorTextPrimary
-                                    font.pointSize: Theme.fontBody
-                                    text: root.hwidInput
-                                    clip: true
-                                    enabled: !root.isActivated
+                                Text {
+                                    text: "Host HWID"
+                                    color: Theme.colorTextPrimary
+                                    font.pointSize: Theme.fontSmall
+                                    font.bold: true
+                                }
 
-                                    onTextChanged: {
-                                        root.hwidInput = text;
-                                    }
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 40
+                                    color: Theme.colorBgPrimary
+                                    radius: 6
+                                    border.color: Theme.colorBorder
+                                    border.width: 1
 
-                                    Label {
+                                    TextInput {
+                                        id: hostHwidInputField
                                         anchors.fill: parent
+                                        anchors.margins: 10
                                         verticalAlignment: Text.AlignVCenter
-                                        text: root.isActivated ? "Already activated" : "Enter your HWID here..."
-                                        color: Theme.colorTextMuted
+                                        color: Theme.colorTextPrimary
                                         font.pointSize: Theme.fontBody
-                                        visible: hwidInputField.text === ""
-                                        elide: Text.ElideRight
+                                        text: root.tempHostHWID
+                                        clip: true
+                                        enabled: !root.isActivated
+
+                                        onTextChanged: {
+                                            root.tempHostHWID = text;
+                                        }
+
+                                        Label {
+                                            anchors.fill: parent
+                                            verticalAlignment: Text.AlignVCenter
+                                            text: "Enter Host HWID (optional)..."
+                                            color: Theme.colorTextMuted
+                                            font.pointSize: Theme.fontBody
+                                            visible: hostHwidInputField.text === ""
+                                            elide: Text.ElideRight
+                                        }
                                     }
                                 }
                             }
 
-                            Text {
-                                text: "Your HWID can be found in the software or obtained from your administrator"
-                                color: Theme.colorTextMuted
-                                font.pointSize: 9
-                                wrapMode: Text.WordWrap
+                            // Device HWID
+                            ColumnLayout {
                                 Layout.fillWidth: true
+                                spacing: 5
+
+                                Text {
+                                    text: "Device HWID"
+                                    color: Theme.colorTextPrimary
+                                    font.pointSize: Theme.fontSmall
+                                    font.bold: true
+                                }
+
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 40
+                                    color: Theme.colorBgPrimary
+                                    radius: 6
+                                    border.color: Theme.colorBorder
+                                    border.width: 1
+
+                                    TextInput {
+                                        id: deviceHwidInputField
+                                        anchors.fill: parent
+                                        anchors.margins: 10
+                                        verticalAlignment: Text.AlignVCenter
+                                        color: Theme.colorTextPrimary
+                                        font.pointSize: Theme.fontBody
+                                        text: root.tempDeviceHWID
+                                        clip: true
+                                        enabled: !root.isActivated
+
+                                        onTextChanged: {
+                                            root.tempDeviceHWID = text;
+                                        }
+
+                                        Label {
+                                            anchors.fill: parent
+                                            verticalAlignment: Text.AlignVCenter
+                                            text: "Enter Device HWID (optional)..."
+                                            color: Theme.colorTextMuted
+                                            font.pointSize: Theme.fontBody
+                                            visible: deviceHwidInputField.text === ""
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+                                }
                             }
+                        }
+
+                        Text {
+                            text: "Note: You can enter either Host HWID, Device HWID, or both. At least one must be provided."
+                            color: Theme.colorTextMuted
+                            font.pointSize: 9
+                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
                         }
 
                         Button {
@@ -462,7 +439,7 @@ ScrollView {
                                 else
                                     "Activate Software";
                             }
-                            enabled: !root.isActivating && !root.isActivated && root.hwidInput.trim() !== ""
+                            enabled: !root.isActivating && !root.isActivated && (root.tempHostHWID.trim() !== "" || root.tempDeviceHWID.trim() !== "")
 
                             background: Rectangle {
                                 color: {
@@ -709,7 +686,7 @@ ScrollView {
 
                 Timer {
                     id: resetTimer
-                    interval: 10000 
+                    interval: 10000
                     repeat: false
                     onTriggered: {
                         if (uploadProgressPopup.uploadInProgress && !uploadProgressPopup.uploadComplete) {
@@ -879,9 +856,12 @@ ScrollView {
             return;
         root.isActivating = true;
 
+        SettingsManager.hostHWID = root.tempHostHWID.trim();
+        SettingsManager.deviceHWID = root.tempDeviceHWID.trim();
+
         var uploadUrl = DataManager.djangoBaseUrl() + "/api/activate/" + SettingsManager.serialNumber + "/";
 
-        DataManager.installManager().activate(root.currentModel, root.hwidInput.trim(), root.hwidType, root.mode, uploadUrl);
+        DataManager.installManager().activate(root.currentModel, SettingsManager.hostHWID, SettingsManager.deviceHWID, root.mode, uploadUrl);
     }
 
     Connections {
