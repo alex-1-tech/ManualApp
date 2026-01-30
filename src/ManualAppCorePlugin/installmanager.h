@@ -34,7 +34,7 @@ public:
   Q_INVOKABLE bool installerExists(const QString& model) const;
   Q_INVOKABLE void downloadInstaller(const QString& model);
   Q_INVOKABLE void runInstaller(const QString& model);
-  Q_INVOKABLE void activate(const QString& model, const QString& hwid, const QString& hwidType,
+  Q_INVOKABLE void activate(const QString& model, const QString& hostHWID, const QString& deviceHWID,
                             const QString& mode, const QString& url);
 signals:
   void statusMessageChanged();

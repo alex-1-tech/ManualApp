@@ -379,10 +379,10 @@ QString getVersionFromRegistry(const QString& model)
   return registry.value("LicenseVer", "").toString();
 }
 
-void InstallManager::activate(const QString& model, const QString& hwid, const QString& hwidType,
+void InstallManager::activate(const QString& model, const QString& hostHWID, const QString& deviceHWID,
                               const QString& mode, const QString& url)
 {
-  if (hwid.isEmpty()) {
+  if (hostHWID.isEmpty() && deviceHWID.isEmpty()) {
     emit activationFailed("HWID is empty");
     return;
   }
@@ -398,12 +398,12 @@ void InstallManager::activate(const QString& model, const QString& hwid, const Q
   payload["product"] = model;
   payload["company_name"] = "technovotum";
 
-  if (hwidType == "host") {
-    payload["host_hwid"] = hwid;
-    payload["device_hwid"] = "";
-  } else {
-    payload["host_hwid"] = "";
-    payload["device_hwid"] = hwid;
+  if (!hostHWID.isEmpty()) {
+    payload["host_hwid"] = hostHWID;
+  }
+
+  if (!deviceHWID.isEmpty()) {
+    payload["device_hwid"] = deviceHWID;
   }
 
   payload["exp"] = "2100-01-01";
