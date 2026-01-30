@@ -24,7 +24,6 @@ const QHash<QString, QString>& specialCamelToSnake()
       {QStringLiteral("wifiRouterAddress"), QStringLiteral("wifi_router_address")},
       {QStringLiteral("windowsPassword"), QStringLiteral("windows_password")},
       {QStringLiteral("notes"), QStringLiteral("notes")},
-      {QStringLiteral("HWID"), QStringLiteral("HWID")},
       {QStringLiteral("currentModel"), QStringLiteral("equipment_type")}};
   return map;
 }
@@ -356,13 +355,6 @@ Q_INVOKABLE void SettingsManager::saveLicense(const QJsonObject& license)
 
   m_settings.endGroup();
 
-  QString hostHwid = payload.value("host_hwid").toString();
-  if (hostHwid != "") {
-    m_settings.setValue("HWID", hostHwid);
-  } else {
-    QString device_hwid = payload.value("device_hwid").toString();
-    m_settings.setValue("HWID", device_hwid);
-  }
   m_settings.sync();
 
   DEBUG_COLORED("SettingsManager", "saveLicense", "License saved with all parameters", COLOR_GREEN,

@@ -60,7 +60,8 @@ class SettingsManager : public QObject
   DEFINE_SETTING(QString, windowsPassword, QString())
   DEFINE_SETTING(QString, notes, QString())
 
-  DEFINE_SETTING(QString, HWID, QString())
+  DEFINE_SETTING(QString, deviceHWID, QString())
+  DEFINE_SETTING(QString, hostHWID, QString())
   DEFINE_SETTING(bool, isFirstRun, true)
 
 public:
