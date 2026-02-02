@@ -15,7 +15,7 @@ qt_add_qml_module(ManualAppCorePlugin
         reportmanager.cpp reportmanager.h
         configmanager.cpp configmanager.h
         step.h
-        utils.h
+        loger.h
         settingsbase.h
         kalmar32settings.h kalmar32settings.cpp
         phasar32settings.h phasar32settings.cpp
