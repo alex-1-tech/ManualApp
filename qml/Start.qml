@@ -42,20 +42,16 @@ ApplicationWindow {
         anchors.fill: parent
     }
 
-    // Компонент выбора модели
     Component {
         id: modelSelectionComponent
         ModelSelectionPage {
             onModelSelected: function(modelType) {
-                // Сохраняем выбранную модель
                 SettingsManager.currentModel = modelType
-                // Переходим к настройкам оборудования
                 contentLoader.sourceComponent = settingsComponent
             }
         }
     }
 
-    // Компонент начальных настроек оборудования
     Component {
         id: settingsComponent
         SettingsForm {
@@ -67,14 +63,9 @@ ApplicationWindow {
                     DataManager.uploadSettingsToDjango(DataManager.djangoBaseUrl() + "/api/phasar32/");
                 contentLoader.sourceComponent = mainComponent
             }
-            // onBackRequested: {
-            //     // Возврат к выбору модели
-            //     contentLoader.sourceComponent = modelSelectionComponent
-            // }
         }
     }
 
-    // Основной компонент приложения
     Component {
         id: mainComponent
         Main {
