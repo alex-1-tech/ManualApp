@@ -6,8 +6,23 @@
 #include <QJsonValue>
 #include <QMetaProperty>
 
+#ifdef Q_OS_LINUX
+#include <openssl/ec.h>
+#include <openssl/ecdsa.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
+#include <openssl/rsa.h>
+#include <openssl/sha.h>
+
+#include <QBuffer>
+#include <QByteArray>
+
+#endif
+
 #include "kalmar32settings.h"
 #include "loger.h"
+#include "phasar32settings.h"
 
 
 namespace
@@ -45,6 +60,105 @@ bool stringToBool(const QString& s)
   return (t == QLatin1String("true") || t == QLatin1String("1") || t == QLatin1String("yes") ||
           t == QLatin1String("да") || t == QLatin1String("y"));
 }
+
+#ifdef Q_OS_LINUX
+static const char* PUBLIC_KEY_PEM = R"(-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAqK42YubXaskgDhTJEOBF
+BGiJKJ1FxyS111FI29y1Uw1KuQiPhPzkK9ni8kT9qCr7HA83dcSehS9UHMjl5Wox
+mg42GgxOkN4v3nfgULkUhyziLVCw9AaYsUVU08TCuA5DjFJAyadsEDaogumcjquP
+TcDrzZnED68F/PWIwoeknlzgK8Q5hKxyG4EvofkAjmSKw2Kuri8IIWh5FbKqHGmc
+OXQZWBjIR9gRh6rCsO1MnKjqfInqvrnEMrTr5YuyqwMBPwKtZsg3C78EqT3CzTV2
+sR6ccgZtgcxu54/aLi45IfT38VvImhdESObdde8dsOVyYUoUvm0rsUI1L2dRN3Qh
+MJLOxuZLd8J6RT+lIk3jYaG1dQrvILQnguYEq9Q1P0IUsuAvu3gBD/ELXVO3cMm8
+iTy3PKIBA9hAx2QYqKVJ1BR6zs0byWj+8Llm95ldJ2IH7Gnmk8AMdFs4epAukWnu
+7x/in2STlRgaZrR7EQ5h9iRER5PYkCG1A6rp1/HfuE9kX1NLAI3M/wVubogzUYzq
+pPNPpKF0HuXHtcUEVgfNBFnIeF03xqO/MUGsDuFGSPCbiGK8umbcGAypYvD3UcnG
+OQ/T+8ZepbGsZlYpL3Ls2tAcN/SqD5bi4cx+JiSntk8JGTlIqVwOCWykeFntNmeh
+0QrCabPEyR8hB7dr63xBUTcCAwEAAQ==
+-----END PUBLIC KEY-----
+)";
+
+static QByteArray lenientBase64Decode(const QByteArray& in)
+{
+  QByteArray tmp = in;
+  tmp.replace('-', '+');
+  tmp.replace('_', '/');
+
+  int mod = tmp.size() % 4;
+  if (mod != 0) {
+    tmp.append(QByteArray(4 - mod, '='));
+  }
+
+  return QByteArray::fromBase64(tmp);
+}
+
+static QByteArray canonicalizeJson(const QByteArray& json)
+{
+  QJsonDocument doc = QJsonDocument::fromJson(json);
+  if (!doc.isObject()) {
+    return json;
+  }
+
+  QJsonObject obj = doc.object();
+  QJsonObject sorted;
+
+  QStringList keys = obj.keys();
+  keys.sort();
+
+  for (const QString& key : keys) {
+    sorted[key] = obj[key];
+  }
+
+  return QJsonDocument(sorted).toJson(QJsonDocument::Compact);
+}
+
+static bool verifySignatureSha256(EVP_PKEY* pubkey, const QByteArray& message, const QByteArray& signature)
+{
+  if (signature.size() != 512) {
+    return false;
+  }
+
+  EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+  if (!ctx) {
+    return false;
+  }
+
+  bool result = false;
+
+  if (EVP_DigestVerifyInit(ctx, nullptr, EVP_sha256(), nullptr, pubkey) <= 0) {
+    EVP_MD_CTX_free(ctx);
+    return false;
+  }
+
+  int verify_result =
+      EVP_DigestVerify(ctx, reinterpret_cast<const unsigned char*>(signature.constData()), signature.size(),
+                       reinterpret_cast<const unsigned char*>(message.constData()), message.size());
+
+  if (verify_result == 1) {
+    result = true;
+  } else if (verify_result == 0) {
+    result = false;
+  } else {
+    result = false;
+  }
+
+  EVP_MD_CTX_free(ctx);
+  return result;
+}
+
+static EVP_PKEY* loadPublicKey()
+{
+  BIO* bio = BIO_new_mem_buf(PUBLIC_KEY_PEM, -1);
+  if (!bio) {
+    return nullptr;
+  }
+
+  EVP_PKEY* key = PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
+  BIO_free(bio);
+
+  return key;
+}
+#endif
 
 } // namespace
 
@@ -398,104 +512,9 @@ Q_INVOKABLE void SettingsManager::clearLicense()
   m_settings.sync();
 }
 
-static const char* PUBLIC_KEY_PEM = R"(-----BEGIN PUBLIC KEY-----
-MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAqK42YubXaskgDhTJEOBF
-BGiJKJ1FxyS111FI29y1Uw1KuQiPhPzkK9ni8kT9qCr7HA83dcSehS9UHMjl5Wox
-mg42GgxOkN4v3nfgULkUhyziLVCw9AaYsUVU08TCuA5DjFJAyadsEDaogumcjquP
-TcDrzZnED68F/PWIwoeknlzgK8Q5hKxyG4EvofkAjmSKw2Kuri8IIWh5FbKqHGmc
-OXQZWBjIR9gRh6rCsO1MnKjqfInqvrnEMrTr5YuyqwMBPwKtZsg3C78EqT3CzTV2
-sR6ccgZtgcxu54/aLi45IfT38VvImhdESObdde8dsOVyYUoUvm0rsUI1L2dRN3Qh
-MJLOxuZLd8J6RT+lIk3jYaG1dQrvILQnguYEq9Q1P0IUsuAvu3gBD/ELXVO3cMm8
-iTy3PKIBA9hAx2QYqKVJ1BR6zs0byWj+8Llm95ldJ2IH7Gnmk8AMdFs4epAukWnu
-7x/in2STlRgaZrR7EQ5h9iRER5PYkCG1A6rp1/HfuE9kX1NLAI3M/wVubogzUYzq
-pPNPpKF0HuXHtcUEVgfNBFnIeF03xqO/MUGsDuFGSPCbiGK8umbcGAypYvD3UcnG
-OQ/T+8ZepbGsZlYpL3Ls2tAcN/SqD5bi4cx+JiSntk8JGTlIqVwOCWykeFntNmeh
-0QrCabPEyR8hB7dr63xBUTcCAwEAAQ==
------END PUBLIC KEY-----
-)";
-
-static QByteArray lenientBase64Decode(const QByteArray& in)
-{
-  QByteArray tmp = in;
-  tmp.replace('-', '+');
-  tmp.replace('_', '/');
-
-  int mod = tmp.size() % 4;
-  if (mod != 0) {
-    tmp.append(QByteArray(4 - mod, '='));
-  }
-
-  return QByteArray::fromBase64(tmp);
-}
-
-static QByteArray canonicalizeJson(const QByteArray& json)
-{
-  QJsonDocument doc = QJsonDocument::fromJson(json);
-  if (!doc.isObject()) {
-    return json;
-  }
-
-  QJsonObject obj = doc.object();
-  QJsonObject sorted;
-
-  QStringList keys = obj.keys();
-  keys.sort();
-
-  for (const QString& key : keys) {
-    sorted[key] = obj[key];
-  }
-
-  return QJsonDocument(sorted).toJson(QJsonDocument::Compact);
-}
-
-static bool verifySignatureSha256(EVP_PKEY* pubkey, const QByteArray& message, const QByteArray& signature)
-{
-  if (signature.size() != 512) {
-    return false;
-  }
-
-  EVP_MD_CTX* ctx = EVP_MD_CTX_new();
-  if (!ctx) {
-    return false;
-  }
-
-  bool result = false;
-
-  if (EVP_DigestVerifyInit(ctx, nullptr, EVP_sha256(), nullptr, pubkey) <= 0) {
-    EVP_MD_CTX_free(ctx);
-    return false;
-  }
-
-  int verify_result =
-      EVP_DigestVerify(ctx, reinterpret_cast<const unsigned char*>(signature.constData()), signature.size(),
-                       reinterpret_cast<const unsigned char*>(message.constData()), message.size());
-
-  if (verify_result == 1) {
-    result = true;
-  } else if (verify_result == 0) {
-    result = false;
-  } else {
-    result = false;
-  }
-
-  EVP_MD_CTX_free(ctx);
-  return result;
-}
-static EVP_PKEY* loadPublicKey()
-{
-  BIO* bio = BIO_new_mem_buf(PUBLIC_KEY_PEM, -1);
-  if (!bio) {
-    return nullptr;
-  }
-
-  EVP_PKEY* key = PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
-  BIO_free(bio);
-
-  return key;
-}
-
 bool SettingsManager::verifyLicense()
 {
+#ifdef Q_OS_LINUX
   DEBUG_COLORED("SettingsManager", "verifyLicense", "Starting license verification", COLOR_BLUE, COLOR_BLUE);
 
   if (!hasLicense()) {
@@ -569,4 +588,10 @@ bool SettingsManager::verifyLicense()
   }
 
   return valid;
+#else
+  DEBUG_COLORED("SettingsManager", "verifyLicense",
+                "License verification not supported on this platform, returning true", COLOR_YELLOW,
+                COLOR_YELLOW);
+  return true;
+#endif
 }

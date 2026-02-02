@@ -1,4 +1,6 @@
 #pragma once
+
+#ifdef Q_OS_LINUX
 #include <openssl/ec.h>
 #include <openssl/ecdsa.h>
 #include <openssl/err.h>
@@ -9,6 +11,9 @@
 
 #include <QBuffer>
 #include <QByteArray>
+
+#endif
+
 #include <QDate>
 #include <QJsonObject>
 #include <QObject>
