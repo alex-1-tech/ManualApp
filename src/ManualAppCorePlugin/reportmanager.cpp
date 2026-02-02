@@ -16,9 +16,9 @@
 #include <QRegularExpression>
 
 #include "fileservice.h"
+#include "loger.h"
 #include "networkservice.h"
 #include "pdfexporter.h"
-#include "utils.h"
 
 
 ReportManager::ReportManager(FileService* fileService, NetworkService* networkService, QObject* parent)

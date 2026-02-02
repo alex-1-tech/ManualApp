@@ -10,7 +10,7 @@
 #include <QPrinter>
 #include <QTextDocument>
 
-#include "utils.h"
+#include "loger.h"
 
 
 bool PdfExporter::exportToPdf(const QString& html, const QString& filePath,
