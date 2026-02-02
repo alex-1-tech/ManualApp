@@ -7,7 +7,7 @@
 #include <QMetaProperty>
 
 #include "kalmar32settings.h"
-#include "utils.h"
+#include "loger.h"
 
 
 namespace
@@ -16,7 +16,6 @@ namespace
 const QHash<QString, QString>& specialCamelToSnake()
 {
   static const QHash<QString, QString> map = {
-      // Регистрационные данные
       {QStringLiteral("serialNumber"), QStringLiteral("serial_number")},
       {QStringLiteral("shipmentDate"), QStringLiteral("shipment_date")},
       {QStringLiteral("invoice"), QStringLiteral("invoice")},
@@ -58,32 +57,34 @@ SettingsManager::SettingsManager(QObject* parent)
   loadAllSettings();
 }
 
-SettingsManager::~SettingsManager()
-{
-  // QObject parent-child relationship handles deletion
-}
+SettingsManager::~SettingsManager() {}
 
 void SettingsManager::completeFirstRun()
 {
-  DEBUG_COLORED("SettingsManager", "completeFirstRun", "first init settings", COLOR_MAGENTA, COLOR_MAGENTA);
+  DEBUG_COLORED("SettingsManager", "completeFirstRun", "Initial setup completed - first run flag cleared",
+                COLOR_GREEN, COLOR_GREEN);
   m_settings.setValue("isFirstRun", false);
 }
+
 void SettingsManager::saveModelSettings()
 {
+  DEBUG_COLORED("SettingsManager", "saveModelSettings", "Saving model-specific settings", COLOR_CYAN,
+                COLOR_CYAN);
   m_kalmarSettings->saveToSettings(m_settings);
   m_phasarSettings->saveToSettings(m_settings);
 }
+
 void SettingsManager::saveAllSettings()
 {
-  // Save common properties
+  DEBUG_COLORED("SettingsManager", "saveAllSettings", "Saving all settings to persistent storage", COLOR_BLUE,
+                COLOR_BLUE);
+
   const QMetaObject* meta = this->metaObject();
   for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
     QMetaProperty prop = meta->property(i);
     if (!prop.isReadable()) continue;
 
     QVariant value = prop.read(this);
-
-    // Сохраняем QDate как ISO-строку, остальные типы — как есть
     if (value.canConvert<QDate>()) {
       m_settings.setValue(prop.name(), value.toDate().toString(Qt::ISODate));
     } else {
@@ -91,14 +92,15 @@ void SettingsManager::saveAllSettings()
     }
   }
 
-  // Save model-specific settings
   m_kalmarSettings->saveToSettings(m_settings);
   m_phasarSettings->saveToSettings(m_settings);
 }
 
 void SettingsManager::loadAllSettings()
 {
-  // Load common properties
+  DEBUG_COLORED("SettingsManager", "loadAllSettings", "Loading all settings from persistent storage",
+                COLOR_BLUE, COLOR_BLUE);
+
   const QMetaObject* meta = this->metaObject();
   for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
     QMetaProperty prop = meta->property(i);
@@ -107,7 +109,6 @@ void SettingsManager::loadAllSettings()
     if (!m_settings.contains(prop.name())) continue;
 
     QVariant val = m_settings.value(prop.name());
-
     if (prop.userType() == QMetaType::QDate) {
       QDate date = QDate::fromString(val.toString(), Qt::ISODate);
       prop.write(this, date);
@@ -116,7 +117,6 @@ void SettingsManager::loadAllSettings()
     }
   }
 
-  // Load model-specific settings
   m_kalmarSettings->loadFromSettings(m_settings);
   m_phasarSettings->loadFromSettings(m_settings);
 }
@@ -143,7 +143,6 @@ QJsonObject SettingsManager::toJsonForDjango() const
   const QMetaObject* meta = this->metaObject();
   const QHash<QString, QString>& special = specialCamelToSnake();
 
-  // Serialize common properties
   for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
     QMetaProperty prop = meta->property(i);
     if (!prop.isReadable()) continue;
@@ -156,7 +155,7 @@ QJsonObject SettingsManager::toJsonForDjango() const
     if (special.contains(originalName)) {
       outKey = special.value(originalName);
     } else {
-      continue; // Skip properties not in special map
+      continue;
     }
 
     if (type == QMetaType::QDate) {
@@ -170,7 +169,6 @@ QJsonObject SettingsManager::toJsonForDjango() const
     }
   }
 
-  // Serialize model-specific settings based on current model
   if (currentModel() == "kalmar32") {
     QJsonObject modelObj = m_kalmarSettings->toJson();
     for (auto it = modelObj.constBegin(); it != modelObj.constEnd(); ++it) {
@@ -188,23 +186,24 @@ QJsonObject SettingsManager::toJsonForDjango() const
 
 void SettingsManager::fromJson(const QJsonObject& obj)
 {
+  DEBUG_COLORED("SettingsManager", "fromJson", "Loading settings from JSON object", COLOR_MAGENTA,
+                COLOR_MAGENTA);
+
   const QMetaObject* meta = this->metaObject();
   const QHash<QString, QString>& specialRev = specialSnakeToCamel();
 
-  // Deserialize common properties
   for (auto it = obj.constBegin(); it != obj.constEnd(); ++it) {
     const QString key = it.key();
     const QJsonValue val = it.value();
 
     QString propName = specialRev.contains(key) ? specialRev.value(key) : key;
-
     if (propName.isEmpty()) {
       continue;
     }
 
     int propIndex = meta->indexOfProperty(propName.toLatin1().constData());
     if (propIndex < 0) {
-      continue; // Skip unknown properties
+      continue;
     }
 
     QMetaProperty prop = meta->property(propIndex);
@@ -272,27 +271,31 @@ void SettingsManager::fromJson(const QJsonObject& obj)
   QString newModel = m_settings.value("currentModel").toString();
 
   if (newModel == "kalmar32") {
-    DEBUG_COLORED("SettingsManager", "fromJson", "Loading Kalmar32 settings", COLOR_MAGENTA, COLOR_MAGENTA);
+    DEBUG_COLORED("SettingsManager", "fromJson", "Loading Kalmar32 model-specific settings", COLOR_CYAN,
+                  COLOR_CYAN);
     m_kalmarSettings->fromJson(obj);
     m_kalmarSettings->saveToSettings(m_settings);
   } else if (newModel == "phasar32") {
-    DEBUG_COLORED("SettingsManager", "fromJson", "Loading Phasar32 settings", COLOR_MAGENTA, COLOR_MAGENTA);
+    DEBUG_COLORED("SettingsManager", "fromJson", "Loading Phasar32 model-specific settings", COLOR_CYAN,
+                  COLOR_CYAN);
     m_phasarSettings->fromJson(obj);
     m_phasarSettings->saveToSettings(m_settings);
   } else {
-    DEBUG_COLORED("SettingsManager", "fromJson", "Model not specified, trying to detect", COLOR_MAGENTA,
-                  COLOR_MAGENTA);
     if (obj.contains("water_tank_with_tap")) {
+      DEBUG_COLORED("SettingsManager", "fromJson", "Auto-detected Phasar32 from JSON data", COLOR_YELLOW,
+                    COLOR_YELLOW);
       m_phasarSettings->fromJson(obj);
       m_phasarSettings->saveToSettings(m_settings);
       m_settings.setValue("currentModel", "phasar32");
     } else if (obj.contains("pc_tablet_dell_7230")) {
+      DEBUG_COLORED("SettingsManager", "fromJson", "Auto-detected Kalmar32 from JSON data", COLOR_YELLOW,
+                    COLOR_YELLOW);
       m_kalmarSettings->fromJson(obj);
       m_kalmarSettings->saveToSettings(m_settings);
       m_settings.setValue("currentModel", "kalmar32");
     } else {
-      DEBUG_ERROR_COLORED("SettingsManager", "fromJson", "Could not detect model type from JSON",
-                          COLOR_MAGENTA, COLOR_MAGENTA);
+      DEBUG_COLORED("SettingsManager", "fromJson", "Could not detect model type from JSON", COLOR_RED,
+                    COLOR_RED);
     }
   }
 
@@ -325,24 +328,32 @@ Q_INVOKABLE QJsonObject SettingsManager::license()
   payload["exp"] = m_settings.value("exp").toString();
 
   QJsonObject features;
-  payload["features"] = features;
+  QString featuresStr = m_settings.value("features").toString();
+  if (!featuresStr.isEmpty()) {
+    QJsonDocument fdoc = QJsonDocument::fromJson(featuresStr.toUtf8());
+    if (fdoc.isObject()) {
+      features = fdoc.object();
+    }
+  }
 
+  payload["features"] = features;
   result["payload"] = payload;
 
   m_settings.endGroup();
-
   return result;
 }
 
 Q_INVOKABLE void SettingsManager::saveLicense(const QJsonObject& license)
 {
+  DEBUG_COLORED("SettingsManager", "saveLicense", "Saving license to persistent storage", COLOR_GREEN,
+                COLOR_GREEN);
+
   m_settings.beginGroup("license");
 
   m_settings.setValue("license_key", license.value("license_key").toString());
   m_settings.setValue("signature", license.value("signature").toString());
 
   QJsonObject payload = license.value("payload").toObject();
-
   m_settings.setValue("ver", payload.value("ver").toString());
   m_settings.setValue("product", payload.value("product").toString());
   m_settings.setValue("company_name", payload.value("company_name").toString());
@@ -354,7 +365,6 @@ Q_INVOKABLE void SettingsManager::saveLicense(const QJsonObject& license)
   m_settings.setValue("features", QJsonDocument(features).toJson(QJsonDocument::Compact));
 
   m_settings.endGroup();
-
   m_settings.sync();
 
   QString product = payload.value("product").toString().toLower();
@@ -362,6 +372,8 @@ Q_INVOKABLE void SettingsManager::saveLicense(const QJsonObject& license)
 
 #ifdef Q_OS_WIN
   if (product == "phasar32") {
+    DEBUG_COLORED("SettingsManager", "saveLicense", "Writing Phasar32 license to Windows registry",
+                  COLOR_YELLOW, COLOR_YELLOW);
     QString keyPath = "HKEY_LOCAL_MACHINE\\Software\\Technovotum\\Phasar";
     QSettings registry(keyPath, QSettings::NativeFormat);
     registry.setValue("ProductKey", licenseKey);
@@ -369,19 +381,192 @@ Q_INVOKABLE void SettingsManager::saveLicense(const QJsonObject& license)
   }
 #endif
 
+  verifyLicense();
   DEBUG_COLORED("SettingsManager", "saveLicense", "License saved with all parameters", COLOR_GREEN,
                 COLOR_GREEN);
 }
 
 Q_INVOKABLE void SettingsManager::clearLicense()
 {
+  DEBUG_COLORED("SettingsManager", "clearLicense", "Clearing license from settings", COLOR_RED, COLOR_RED);
+
   m_settings.beginGroup("license");
   for (const QString& k : m_settings.childKeys()) {
     m_settings.remove(k);
   }
   m_settings.endGroup();
   m_settings.sync();
+}
 
-  DEBUG_COLORED("SettingsManager", "clearLicense", "License cleared from QSettings", COLOR_MAGENTA,
-                COLOR_MAGENTA);
+static const char* PUBLIC_KEY_PEM = R"(-----BEGIN PUBLIC KEY-----
+MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAqK42YubXaskgDhTJEOBF
+BGiJKJ1FxyS111FI29y1Uw1KuQiPhPzkK9ni8kT9qCr7HA83dcSehS9UHMjl5Wox
+mg42GgxOkN4v3nfgULkUhyziLVCw9AaYsUVU08TCuA5DjFJAyadsEDaogumcjquP
+TcDrzZnED68F/PWIwoeknlzgK8Q5hKxyG4EvofkAjmSKw2Kuri8IIWh5FbKqHGmc
+OXQZWBjIR9gRh6rCsO1MnKjqfInqvrnEMrTr5YuyqwMBPwKtZsg3C78EqT3CzTV2
+sR6ccgZtgcxu54/aLi45IfT38VvImhdESObdde8dsOVyYUoUvm0rsUI1L2dRN3Qh
+MJLOxuZLd8J6RT+lIk3jYaG1dQrvILQnguYEq9Q1P0IUsuAvu3gBD/ELXVO3cMm8
+iTy3PKIBA9hAx2QYqKVJ1BR6zs0byWj+8Llm95ldJ2IH7Gnmk8AMdFs4epAukWnu
+7x/in2STlRgaZrR7EQ5h9iRER5PYkCG1A6rp1/HfuE9kX1NLAI3M/wVubogzUYzq
+pPNPpKF0HuXHtcUEVgfNBFnIeF03xqO/MUGsDuFGSPCbiGK8umbcGAypYvD3UcnG
+OQ/T+8ZepbGsZlYpL3Ls2tAcN/SqD5bi4cx+JiSntk8JGTlIqVwOCWykeFntNmeh
+0QrCabPEyR8hB7dr63xBUTcCAwEAAQ==
+-----END PUBLIC KEY-----
+)";
+
+static QByteArray lenientBase64Decode(const QByteArray& in)
+{
+  QByteArray tmp = in;
+  tmp.replace('-', '+');
+  tmp.replace('_', '/');
+
+  int mod = tmp.size() % 4;
+  if (mod != 0) {
+    tmp.append(QByteArray(4 - mod, '='));
+  }
+
+  return QByteArray::fromBase64(tmp);
+}
+
+static QByteArray canonicalizeJson(const QByteArray& json)
+{
+  QJsonDocument doc = QJsonDocument::fromJson(json);
+  if (!doc.isObject()) {
+    return json;
+  }
+
+  QJsonObject obj = doc.object();
+  QJsonObject sorted;
+
+  QStringList keys = obj.keys();
+  keys.sort();
+
+  for (const QString& key : keys) {
+    sorted[key] = obj[key];
+  }
+
+  return QJsonDocument(sorted).toJson(QJsonDocument::Compact);
+}
+
+static bool verifySignatureSha256(EVP_PKEY* pubkey, const QByteArray& message, const QByteArray& signature)
+{
+  if (signature.size() != 512) {
+    return false;
+  }
+
+  EVP_MD_CTX* ctx = EVP_MD_CTX_new();
+  if (!ctx) {
+    return false;
+  }
+
+  bool result = false;
+
+  if (EVP_DigestVerifyInit(ctx, nullptr, EVP_sha256(), nullptr, pubkey) <= 0) {
+    EVP_MD_CTX_free(ctx);
+    return false;
+  }
+
+  int verify_result =
+      EVP_DigestVerify(ctx, reinterpret_cast<const unsigned char*>(signature.constData()), signature.size(),
+                       reinterpret_cast<const unsigned char*>(message.constData()), message.size());
+
+  if (verify_result == 1) {
+    result = true;
+  } else if (verify_result == 0) {
+    result = false;
+  } else {
+    result = false;
+  }
+
+  EVP_MD_CTX_free(ctx);
+  return result;
+}
+static EVP_PKEY* loadPublicKey()
+{
+  BIO* bio = BIO_new_mem_buf(PUBLIC_KEY_PEM, -1);
+  if (!bio) {
+    return nullptr;
+  }
+
+  EVP_PKEY* key = PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
+  BIO_free(bio);
+
+  return key;
+}
+
+bool SettingsManager::verifyLicense()
+{
+  DEBUG_COLORED("SettingsManager", "verifyLicense", "Starting license verification", COLOR_BLUE, COLOR_BLUE);
+
+  if (!hasLicense()) {
+    DEBUG_COLORED("SettingsManager", "verifyLicense", "No license found in settings", COLOR_RED, COLOR_RED);
+    return false;
+  }
+
+  const QString licenseKey = license().value("license_key").toString();
+  if (licenseKey.isEmpty()) {
+    DEBUG_COLORED("SettingsManager", "verifyLicense", "License key is empty", COLOR_RED, COLOR_RED);
+    return false;
+  }
+
+  const QStringList parts = licenseKey.split('.');
+  if (parts.size() != 2) {
+    DEBUG_COLORED("SettingsManager", "verifyLicense",
+                  "Invalid license_key format - expected two parts separated by dot", COLOR_RED, COLOR_RED);
+    return false;
+  }
+
+  QByteArray canonicalRaw = lenientBase64Decode(parts[0].toLatin1());
+  QByteArray signatureRaw = lenientBase64Decode(parts[1].toLatin1());
+
+  if (canonicalRaw.isEmpty() || signatureRaw.isEmpty()) {
+    DEBUG_COLORED("SettingsManager", "verifyLicense", "Failed to decode license parts from base64", COLOR_RED,
+                  COLOR_RED);
+    return false;
+  }
+
+  QByteArray canonicalized = canonicalizeJson(canonicalRaw);
+  QJsonDocument doc = QJsonDocument::fromJson(canonicalized);
+  if (!doc.isObject()) {
+    DEBUG_COLORED("SettingsManager", "verifyLicense", "Invalid license payload JSON", COLOR_RED, COLOR_RED);
+    return false;
+  }
+
+  const QJsonObject payload = doc.object();
+  QStringList requiredFields = {"ver", "product", "company_name", "host_hwid", "exp"};
+  for (const QString& field : requiredFields) {
+    if (!payload.contains(field)) {
+      DEBUG_COLORED("SettingsManager", "verifyLicense", QString("Missing required field: %1").arg(field),
+                    COLOR_RED, COLOR_RED);
+      return false;
+    }
+  }
+
+  const QString expStr = payload.value("exp").toString();
+  const QDate expDate = QDate::fromString(expStr, Qt::ISODate);
+  if (expDate.isValid() && expDate < QDate::currentDate()) {
+    DEBUG_COLORED("SettingsManager", "verifyLicense", QString("License expired on %1").arg(expStr), COLOR_RED,
+                  COLOR_RED);
+    return false;
+  }
+
+  EVP_PKEY* pubkey = loadPublicKey();
+  if (!pubkey) {
+    DEBUG_COLORED("SettingsManager", "verifyLicense", "Failed to load public key for verification", COLOR_RED,
+                  COLOR_RED);
+    return false;
+  }
+
+  const bool valid = verifySignatureSha256(pubkey, canonicalized, signatureRaw);
+  EVP_PKEY_free(pubkey);
+
+  if (valid) {
+    DEBUG_COLORED("SettingsManager", "verifyLicense", "License verification SUCCESS", COLOR_GREEN,
+                  COLOR_GREEN);
+  } else {
+    DEBUG_COLORED("SettingsManager", "verifyLicense", "License verification FAILED - signature invalid",
+                  COLOR_RED, COLOR_RED);
+  }
+
+  return valid;
 }

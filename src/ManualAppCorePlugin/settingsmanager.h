@@ -1,4 +1,14 @@
 #pragma once
+#include <openssl/ec.h>
+#include <openssl/ecdsa.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
+#include <openssl/rsa.h>
+#include <openssl/sha.h>
+
+#include <QBuffer>
+#include <QByteArray>
 #include <QDate>
 #include <QJsonObject>
 #include <QObject>
@@ -84,7 +94,7 @@ public:
   Q_INVOKABLE QJsonObject license();
   Q_INVOKABLE void saveLicense(const QJsonObject& license);
   Q_INVOKABLE void clearLicense();
-
+  Q_INVOKABLE bool verifyLicense();
 
   [[nodiscard]] QJsonObject toJsonForDjango() const;
   void fromJson(const QJsonObject& obj);
