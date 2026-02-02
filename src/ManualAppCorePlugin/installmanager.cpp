@@ -6,8 +6,8 @@
 
 #include "datamanager.h"
 #include "fileservice.h"
+#include "loger.h"
 #include "reportmanager.h"
-#include "utils.h"
 
 InstallManager::InstallManager(QObject* parent, ReportManager* reportManager)
     : QObject(parent)
@@ -390,12 +390,16 @@ void InstallManager::activate(const QString& model, const QString& hostHWID, con
   setStatusMessage("Activating license...");
   QJsonObject features;
   features["saved_data"] = true;
-  features["device_models"] = true;
+  features["device_modes"] = true;
   if (mode == "analysis") features["saved_data"] = false;
 
   QJsonObject payload;
   payload["ver"] = getVersionFromRegistry(model);
-  payload["product"] = model;
+  if (model == "phasar32")
+    payload["product"] = "Phasar";
+  else if (model == "kalmar32")
+    payload["product"] = "Kalmar";
+
   payload["company_name"] = "technovotum";
 
   if (!hostHWID.isEmpty()) {
