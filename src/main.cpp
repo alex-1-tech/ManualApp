@@ -9,11 +9,14 @@
 #include <QQuickStyle>
 #include <QUrl>
 
+#include "ManualAppCorePlugin/loger.h"
+
 int main(int argc, char* argv[])
 {
+  QQuickStyle::setStyle("Material");
   QApplication app(argc, argv);
   QQmlApplicationEngine engine;
-  QQuickStyle::setStyle("Material");
+
   app.setWindowIcon(QIcon(":/media/icons/logo.png"));
 
   app.setOrganizationName("technovotum");
