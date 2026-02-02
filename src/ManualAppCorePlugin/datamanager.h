@@ -38,7 +38,8 @@ class DataManager : public QObject
 public:
   // Construction/Destruction
   explicit DataManager(QObject* parent = nullptr);
-  ~DataManager() = default;
+  ~DataManager() override;
+  void shutdown();
 
   // Q_INVOKABLE methods - File Operations
   Q_INVOKABLE bool load(const QString& filePath);

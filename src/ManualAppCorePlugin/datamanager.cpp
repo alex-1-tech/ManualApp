@@ -9,15 +9,16 @@
 
 #include "fileservice.h"
 #include "installmanager.h"
+#include "loger.h"
 #include "networkservice.h"
 #include "reportmanager.h"
 #include "settingsmanager.h"
-#include "utils.h"
 
 
 DataManager::DataManager(QObject* parent)
     : QObject(parent)
 {
+  // Logger::instance().initialize("logs", 5 * 1024 * 1024, 3);
   FileService* fileService = new FileService(this);
   NetworkService* networkService = new NetworkService(fileService, nullptr, this);
   m_reportManager = new ReportManager(fileService, networkService, this);
@@ -26,7 +27,6 @@ DataManager::DataManager(QObject* parent)
 
   DEBUG_COLORED("DataManager", "Constructor", "DataManager initialized", COLOR_CYAN, COLOR_CYAN);
 
-  // Проксируем сигналы от ReportManager
   connect(m_reportManager->networkService(), &NetworkService::errorOccurred, this, &DataManager::setError);
   connect(m_reportManager, &ReportManager::titleChanged, this, &DataManager::titleChanged);
   connect(m_reportManager, &ReportManager::startTimeChanged, this, &DataManager::startTimeChanged);
@@ -36,7 +36,26 @@ DataManager::DataManager(QObject* parent)
   connect(m_reportManager, &ReportManager::errorOccurred, this,
           [this](const QString& error) { setError(error); });
 }
+DataManager::~DataManager()
+{
+  DEBUG_COLORED("DataManager", "Destructor", "Destroying DataManager", COLOR_CYAN, COLOR_CYAN);
+  shutdown();
+}
+void DataManager::shutdown()
+{
+  DEBUG_COLORED("DataManager", "shutdown", "Stopping all operations", COLOR_CYAN, COLOR_CYAN);
 
+  m_pendingReports.clear();
+  m_isUploading = false;
+
+  if (m_reportManager) {
+    if (auto ns = m_reportManager->networkService()) {
+      ns->shutdown();
+    }
+  }
+
+  // Logger::cleanup();
+}
 QString DataManager::title() const
 {
   return m_reportManager->title();
@@ -432,6 +451,13 @@ void DataManager::processServerReports(const QJsonObject& serverReports, const Q
 
 void DataManager::startNextUpload()
 {
+  if (QCoreApplication::closingDown()) {
+    DEBUG_COLORED("DataManager", "startNextUpload", "App is closing, stopping upload", COLOR_CYAN,
+                  COLOR_CYAN);
+    return;
+  }
+
+
   if (m_pendingReports.isEmpty()) {
     m_isUploading = false;
     DEBUG_COLORED("DataManager", "startNextUpload", "All reports uploaded successfully", COLOR_CYAN,

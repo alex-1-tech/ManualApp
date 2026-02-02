@@ -22,7 +22,8 @@ class NetworkService : public QObject
 public:
   // Construction/Destruction
   explicit NetworkService(FileService* fileService, ReportManager* reportManager, QObject* parent = nullptr);
-  ~NetworkService();
+  ~NetworkService() override;
+  void shutdown();
 
   // Status methods
   bool isUploadingReport() const { return m_isUploadingReport; }

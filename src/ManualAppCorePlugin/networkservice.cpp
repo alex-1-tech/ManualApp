@@ -11,9 +11,9 @@
 #include <QUrlQuery>
 
 #include "fileservice.h"
+#include "loger.h"
 #include "reportmanager.h"
 #include "settingsmanager.h"
-#include "utils.h"
 
 
 NetworkService::NetworkService(FileService* fileService, ReportManager* reportManager, QObject* parent)
@@ -29,10 +29,30 @@ NetworkService::NetworkService(FileService* fileService, ReportManager* reportMa
 
 NetworkService::~NetworkService()
 {
-  cleanupCurrentReply();
+  DEBUG_COLORED("NetworkService", "Destructor", "Destroying NetworkService", COLOR_BLUE, COLOR_BLUE);
+  shutdown();
+}
+void NetworkService::shutdown()
+{
+  DEBUG_COLORED("NetworkService", "shutdown", "Aborting all network activity", COLOR_BLUE, COLOR_BLUE);
+
+  if (m_currentReply) {
+    m_currentReply->disconnect();
+    m_currentReply->abort();
+    m_currentReply->deleteLater();
+    m_currentReply = nullptr;
+  }
+
+  const auto replies = m_manager->findChildren<QNetworkReply*>();
+  for (QNetworkReply* reply : replies) {
+    reply->abort();
+    reply->deleteLater();
+  }
+
+  m_manager->clearAccessCache();
+
   m_manager->deleteLater();
 }
-
 void NetworkService::setReportManager(ReportManager* reportManager)
 {
   if (reportManager == nullptr) {
