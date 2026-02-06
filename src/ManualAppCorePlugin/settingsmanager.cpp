@@ -481,7 +481,7 @@ Q_INVOKABLE void SettingsManager::saveLicense(const QJsonObject& license)
   m_settings.endGroup();
   m_settings.sync();
 
-  QString product = payload.value("product").toString().toLower();
+  QString product = payload.value("product").toString();
   QString licenseKey = license.value("license_key").toString();
 
 #ifdef Q_OS_WIN
