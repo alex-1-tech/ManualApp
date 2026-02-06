@@ -485,7 +485,7 @@ Q_INVOKABLE void SettingsManager::saveLicense(const QJsonObject& license)
   QString licenseKey = license.value("license_key").toString();
 
 #ifdef Q_OS_WIN
-  if (product == "phasar32") {
+  if (product == "Phasar") {
     DEBUG_COLORED("SettingsManager", "saveLicense", "Writing Phasar32 license to Windows registry",
                   COLOR_YELLOW, COLOR_YELLOW);
     QString keyPath = "HKEY_CURRENT_USER\\Software\\Technovotum\\Phasar";
