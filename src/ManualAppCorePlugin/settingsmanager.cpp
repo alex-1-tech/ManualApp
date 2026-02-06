@@ -464,7 +464,7 @@ Q_INVOKABLE void SettingsManager::saveLicense(const QJsonObject& license)
 
   m_settings.beginGroup("license");
 
-  m_settings.setValue("license_key", license.value("license_key").toString());
+  m_settings.setValue("ProductKey", license.value("license_key").toString());
   m_settings.setValue("signature", license.value("signature").toString());
 
   QJsonObject payload = license.value("payload").toObject();
@@ -482,19 +482,6 @@ Q_INVOKABLE void SettingsManager::saveLicense(const QJsonObject& license)
   m_settings.sync();
 
   QString product = payload.value("product").toString().toLower();
-  QString licenseKey = license.value("license_key").toString();
-
-#ifdef Q_OS_WIN
-  if (product == "phasar32") {
-    DEBUG_COLORED("SettingsManager", "saveLicense", "Writing Phasar32 license to Windows registry",
-                  COLOR_YELLOW, COLOR_YELLOW);
-    QString keyPath = "HKEY_LOCAL_MACHINE\\Software\\Technovotum\\Phasar";
-    QSettings registry(keyPath, QSettings::NativeFormat);
-    registry.setValue("ProductKey", licenseKey);
-    registry.sync();
-  }
-#endif
-
   verifyLicense();
   DEBUG_COLORED("SettingsManager", "saveLicense", "License saved with all parameters", COLOR_GREEN,
                 COLOR_GREEN);
