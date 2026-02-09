@@ -21,19 +21,19 @@ DataManager::DataManager(QObject* parent)
   // Logger::instance().initialize("logs", 5 * 1024 * 1024, 3);
   FileService* fileService = new FileService(this);
   NetworkService* networkService = new NetworkService(fileService, nullptr, this);
-  m_reportManager = new ReportManager(fileService, networkService, this);
-  networkService->setReportManager(m_reportManager);
-  m_installManager = new InstallManager(this, m_reportManager);
+  m_reportManager = std::make_unique<ReportManager>(fileService, networkService, this);
+  networkService->setReportManager(m_reportManager.get());
+  m_installManager = std::make_unique<InstallManager>(this, m_reportManager.get());
 
   DEBUG_COLORED("DataManager", "Constructor", "DataManager initialized", COLOR_CYAN, COLOR_CYAN);
 
   connect(m_reportManager->networkService(), &NetworkService::errorOccurred, this, &DataManager::setError);
-  connect(m_reportManager, &ReportManager::titleChanged, this, &DataManager::titleChanged);
-  connect(m_reportManager, &ReportManager::startTimeChanged, this, &DataManager::startTimeChanged);
-  connect(m_reportManager, &ReportManager::settingsManagerChanged, this,
+  connect(m_reportManager.get(), &ReportManager::titleChanged, this, &DataManager::titleChanged);
+  connect(m_reportManager.get(), &ReportManager::startTimeChanged, this, &DataManager::startTimeChanged);
+  connect(m_reportManager.get(), &ReportManager::settingsManagerChanged, this,
           &DataManager::settingsManagerChanged);
-  connect(m_reportManager, &ReportManager::reportLoaded, this, &DataManager::dataLoaded);
-  connect(m_reportManager, &ReportManager::errorOccurred, this,
+  connect(m_reportManager.get(), &ReportManager::reportLoaded, this, &DataManager::dataLoaded);
+  connect(m_reportManager.get(), &ReportManager::errorOccurred, this,
           [this](const QString& error) { setError(error); });
 }
 DataManager::~DataManager()
@@ -175,7 +175,10 @@ QString DataManager::createSettingsJsonFile(const QString& filePath)
              ? filePath
              : QString();
 }
-
+bool DataManager::isValidApiUrl(const QUrl& apiUrl)
+{
+  return !apiUrl.isValid() || apiUrl.scheme().isEmpty();
+}
 bool DataManager::deleteSettingsJsonFile(const QString& filePath)
 {
   DEBUG_COLORED("DataManager", "deleteSettingsJsonFile", QString("Deleting file: %1").arg(filePath),
@@ -187,7 +190,7 @@ void DataManager::setCurrentSettings(const QUrl& apiUrl)
   DEBUG_COLORED("DataManager", "setCurrentSettings",
                 QString("Download settings from %1").arg(apiUrl.toString()), COLOR_CYAN, COLOR_CYAN);
 
-  if (!apiUrl.isValid() || apiUrl.scheme().isEmpty()) {
+  if (isValidApiUrl(apiUrl)) {
     setError("Invalid API URL: must include http:// or https://");
     return;
   }
@@ -228,7 +231,7 @@ void DataManager::uploadSettingsToDjango(const QUrl& apiUrl)
   DEBUG_COLORED("DataManager", "uploadSettingsToDjango",
                 QString("Uploading settings to %1").arg(apiUrl.toString()), COLOR_CYAN, COLOR_CYAN);
 
-  if (!apiUrl.isValid() || apiUrl.scheme().isEmpty()) {
+  if (isValidApiUrl(apiUrl)) {
     setError("Invalid API URL: must include http:// or https://");
     emit settingsUploadFinished(false);
     return;
@@ -302,7 +305,7 @@ void DataManager::syncSettingsWithServer()
   DEBUG_COLORED("DataManager", "syncSettingsWithServer",
                 QString("Downloading settings from: %1").arg(apiUrl.toString()), COLOR_CYAN, COLOR_CYAN);
 
-  if (!apiUrl.isValid() || apiUrl.scheme().isEmpty()) {
+  if (isValidApiUrl(apiUrl)) {
     setError("Invalid API URL for settings sync");
     return;
   }
@@ -376,7 +379,7 @@ void DataManager::processServerReports(const QJsonObject& serverReports, const Q
 
   QDate oneMonthAgo = QDate::currentDate().addMonths(-1).addDays(-1);
 
-  for (auto const& number_to : numbersTO) {
+  for (auto const& number_to : NumbersTO) {
     QString toPath = basePath + number_to + "/";
     QDir reportDir(toPath);
 

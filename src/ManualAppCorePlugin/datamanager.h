@@ -87,14 +87,15 @@ public:
   SettingsManager* settingsManager() const;
   StepModel* stepsModel();
   QString startTime() const;
-  ReportManager* reportManager() { return m_reportManager; }
+  ReportManager* reportManager() { return m_reportManager.get(); }
   FileService* fileService() const { return m_reportManager->fileService(); }
   NetworkService* networkService() const { return m_reportManager->networkService(); }
-  Q_INVOKABLE InstallManager* installManager() const { return m_installManager; };
+  Q_INVOKABLE InstallManager* installManager() const { return m_installManager.get(); };
 
   // Property setters
   Q_INVOKABLE void setStartTime(const QString& time);
   Q_INVOKABLE void setSettingsManager(SettingsManager* manager);
+  bool isValidApiUrl(const QUrl& apiUrl);
 
   // Internal upload management
   void startNextUpload();
@@ -133,12 +134,12 @@ private:
   bool m_isUploading = false;
 
   // Core components
-  ReportManager* m_reportManager;
-  InstallManager* m_installManager;
+  std::unique_ptr<ReportManager> m_reportManager;
+  std::unique_ptr<InstallManager> m_installManager;
 
   // Upload queue management
   QQueue<QList<QString>> m_pendingReports;
 
   // Constants
-  QStringList numbersTO = {"TO-1", "TO-2", "TO-3"};
+  static constexpr std::array<const char*, 3> NumbersTO = {"TO-1", "TO-2", "TO-3"};
 };

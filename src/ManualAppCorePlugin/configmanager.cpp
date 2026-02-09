@@ -13,7 +13,7 @@ ConfigManager::ConfigManager(QObject* parent)
     : QObject(parent)
 {
   QDir currentDir = QDir::current();
-  QString configPath = currentDir.absoluteFilePath(QCoreApplication::applicationDirPath() + "/.config.ini");
+  QString configPath = QCoreApplication::applicationDirPath() + "/.config.ini";
 
   if (!QFile::exists(configPath)) {
     qWarning() << "Config file not found:" << configPath;

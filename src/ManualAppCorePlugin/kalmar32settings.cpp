@@ -103,8 +103,8 @@ void Kalmar32Settings::fromJson(const QJsonObject& obj)
 
   if (obj.contains("ultrasonic_phased_array_pulsar"))
     setultrasonicPhasedArrayPulsar(obj["ultrasonic_phased_array_pulsar"].toString());
-  if (obj.contains("left_probs")) setmanualProbs(obj["left_probs"].toString());
-  if (obj.contains("right_probs")) setmanualProbs(obj["right_probs"].toString());
+  if (obj.contains("left_probs")) setleftProbs(obj["left_probs"].toString());
+  if (obj.contains("right_probs")) setrightProbs(obj["right_probs"].toString());
   if (obj.contains("manual_probs")) setmanualProbs(obj["manual_probs"].toString());
   if (obj.contains("straight_probs")) setstraightProbs(obj["straight_probs"].toString());
 

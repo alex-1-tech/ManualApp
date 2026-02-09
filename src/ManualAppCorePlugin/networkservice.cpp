@@ -50,9 +50,8 @@ void NetworkService::shutdown()
   }
 
   m_manager->clearAccessCache();
-
-  m_manager->deleteLater();
 }
+
 void NetworkService::setReportManager(ReportManager* reportManager)
 {
   if (reportManager == nullptr) {
@@ -281,32 +280,22 @@ void NetworkService::postJson(const QNetworkRequest& request, const QByteArray& 
     QByteArray responseData = reply->readAll();
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
-    if (reply->error() != QNetworkReply::NoError) {
-      QString errorMsg = QString("Network error: %1 (HTTP %2)").arg(reply->errorString()).arg(statusCode);
+    QString errorMsg = QString("Network error: %1 (HTTP %2)").arg(reply->errorString()).arg(statusCode);
 
-      DEBUG_ERROR_COLORED("NetworkService", "postJson", errorMsg, COLOR_BLUE, COLOR_BLUE);
-
-      reply->deleteLater();
-      callback(false, responseData, errorMsg);
-      return;
+    if (!responseData.isEmpty()) {
+      QJsonDocument doc = QJsonDocument::fromJson(responseData);
+      if (!doc.isNull() && doc.isObject()) {
+        QJsonObject obj = doc.object();
+        if (obj.contains("error")) {
+          errorMsg += " | Server error: " + obj["error"].toString();
+        }
+      } else {
+        errorMsg += " | Response: " + QString(responseData);
+      }
     }
 
-    if (statusCode < 200 || statusCode >= 300) {
-      QString errorMsg = QString("Server error: HTTP %1").arg(statusCode);
-
-      DEBUG_ERROR_COLORED("NetworkService", "postJson", errorMsg + " | " + QString::fromUtf8(responseData),
-                          COLOR_BLUE, COLOR_BLUE);
-
-      reply->deleteLater();
-      callback(false, responseData, errorMsg);
-      return;
-    }
-
-    DEBUG_COLORED("NetworkService", "postJson", QString("POST successful (HTTP %1)").arg(statusCode),
-                  COLOR_BLUE, COLOR_BLUE);
-
-    reply->deleteLater();
-    callback(true, responseData, {});
+    DEBUG_ERROR_COLORED("NetworkService", "postJson", errorMsg, COLOR_BLUE, COLOR_BLUE);
+    callback(false, responseData, errorMsg);
   });
 }
 
