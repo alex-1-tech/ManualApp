@@ -11,7 +11,6 @@
 #include <QUrl>
 #include <QUrlQuery>
 
-
 class FileService;
 class ReportManager;
 
@@ -22,8 +21,7 @@ class NetworkService : public QObject
 public:
   // Construction/Destruction
   explicit NetworkService(FileService* fileService, ReportManager* reportManager, QObject* parent = nullptr);
-  ~NetworkService() override;
-  void shutdown();
+  ~NetworkService() = default;
 
   // Status methods
   bool isUploadingReport() const { return m_isUploadingReport; }
@@ -55,29 +53,20 @@ public:
 signals:
   // Upload status signals
   void uploadFinished(bool success, const QString& error);
+  void downloadFinished(bool success, const QString& filePath, const QString& error);
   void progressChanged(qint64 bytesSent, qint64 bytesTotal);
   void errorOccurred(const QString& error);
-
 private slots:
-  // Progress handlers for async operations
-  void handleUploadProgress(qint64 bytesSent, qint64 bytesTotal);
-  void handleUploadFinished();
-  void handleUploadFinishedWithResponse();
+  void onProgress(qint64 sent, qint64 total);
 
 private:
   // Private helper methods
-  void cleanupCurrentReply();
-  bool waitForReplyFinished(QNetworkReply* reply, int timeoutMs = 30000);
   QUrl buildUploadUrl(const QUrl& apiBaseUrl, const QString& endpoint, const QString& serialNumber,
                       const QString& uploadTime, const QString& numberTO, const QString& model);
 
 private:
   // Upload state
   bool m_isUploadingReport = false;
-
-  // Network components
-  QNetworkAccessManager* m_manager;
-  QNetworkReply* m_currentReply;
 
   // Service dependencies
   FileService* m_fileService;

@@ -49,7 +49,7 @@ public:
   SettingsManager* settingsManager() const { return m_settingsManager; };
   StepModel* stepsModel() { return &m_model; }
   FileService* fileService() const { return m_fileService; }
-  NetworkService* networkService() const { return m_networkService; }
+  NetworkService* networkService() const { return m_networkService.get(); }
 
   // Property setters
   void setStartTime(const QString& time);
@@ -83,5 +83,5 @@ private:
   // Service dependencies
   SettingsManager* m_settingsManager = nullptr;
   FileService* m_fileService;
-  NetworkService* m_networkService;
+  std::unique_ptr<NetworkService> m_networkService;
 };

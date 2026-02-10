@@ -17,8 +17,6 @@ InstallManager::InstallManager(QObject* parent, ReportManager* reportManager)
     , m_downloadProgress(0.0)
     , m_process(nullptr)
     , m_timeoutTimer(nullptr)
-    // , m_networkService(nullptr)
-    // , m_fileService(nullptr)
     , m_reportManager(nullptr)
 {
   DEBUG_COLORED("InstallManager", "Constructor", "InstallManager initialized", COLOR_CYAN, COLOR_CYAN);
@@ -71,12 +69,12 @@ QString InstallManager::buildInstallerPath(const QString& model) const
   return appDataDir + installerName;
 }
 
-QString InstallManager::buildDownloadUrl(const QString& model) const
+QString InstallManager::buildDownloadUrl(const QString& model, const QString& baseUrl) const
 {
   if (model.toLower() == "kalmar32") {
-    return "http://votum.asuscomm.com:32222/api/apps/download/kalmar32/";
+    return "http://" + baseUrl + "/api/apps/download/kalmar32/";
   } else if (model.toLower() == "phasar32") {
-    return "http://votum.asuscomm.com:32222/api/apps/download/phasar32/";
+    return "http://" + baseUrl + "/api/apps/download/phasar32/";
   } else {
     DEBUG_ERROR_COLORED("InstallManager", "buildDownloadUrl", QString("Unknown model: %1").arg(model),
                         COLOR_CYAN, COLOR_CYAN);
@@ -99,7 +97,7 @@ bool InstallManager::installerExists(const QString& model) const
   return exists;
 }
 
-void InstallManager::downloadInstaller(const QString& model)
+void InstallManager::downloadInstaller(const QString& model, const QString& baseUrl)
 {
   DEBUG_COLORED("InstallManager", "downloadInstaller", QString("Starting download for model: %1").arg(model),
                 COLOR_CYAN, COLOR_CYAN);
@@ -111,7 +109,7 @@ void InstallManager::downloadInstaller(const QString& model)
   }
 
   // Build download URL and local path
-  QString url = buildDownloadUrl(model);
+  QString url = buildDownloadUrl(model, baseUrl);
   QString path = buildInstallerPath(model);
 
   if (url.isEmpty() || path.isEmpty()) {
@@ -334,6 +332,14 @@ void InstallManager::setIsInstalling(bool installing)
 {
   if (m_isInstalling != installing) {
     m_isInstalling = installing;
+    emit isInstallingChanged();
+  }
+}
+
+void InstallManager::setIsLicenseActivate(bool activating)
+{
+  if (m_isLicenseActivate != activating) {
+    m_isLicenseActivate = activating;
     emit isInstallingChanged();
   }
 }

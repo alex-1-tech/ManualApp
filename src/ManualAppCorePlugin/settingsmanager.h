@@ -78,7 +78,6 @@ class SettingsManager : public QObject
   DEFINE_SETTING(QString, deviceHWID, QString())
   DEFINE_SETTING(QString, hostHWID, QString())
   DEFINE_SETTING(bool, isFirstRun, true)
-
 public:
   explicit SettingsManager(QObject* parent = nullptr);
   ~SettingsManager();

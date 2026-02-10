@@ -18,7 +18,6 @@
 DataManager::DataManager(QObject* parent)
     : QObject(parent)
 {
-  // Logger::instance().initialize("logs", 5 * 1024 * 1024, 3);
   FileService* fileService = new FileService(this);
   NetworkService* networkService = new NetworkService(fileService, nullptr, this);
   m_reportManager = std::make_unique<ReportManager>(fileService, networkService, this);
@@ -47,14 +46,6 @@ void DataManager::shutdown()
 
   m_pendingReports.clear();
   m_isUploading = false;
-
-  if (m_reportManager) {
-    if (auto ns = m_reportManager->networkService()) {
-      ns->shutdown();
-    }
-  }
-
-  // Logger::cleanup();
 }
 QString DataManager::title() const
 {

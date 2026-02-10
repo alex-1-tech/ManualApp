@@ -29,7 +29,7 @@ ReportManager::ReportManager(FileService* fileService, NetworkService* networkSe
   DEBUG_COLORED("ReportManager", "Constructor", "Constructor called", COLOR_GREEN, COLOR_GREEN);
   m_model.setSteps({});
 
-  connect(m_networkService, &NetworkService::uploadFinished, this,
+  connect(m_networkService.get(), &NetworkService::uploadFinished, this,
           [this](bool success, const QString& error) {
             if (!success) {
               setError(error);
@@ -133,9 +133,9 @@ QString ReportManager::findReportPdf(const QString& categoryKey, const QString& 
 
 bool ReportManager::loadReport(const QString& filePath)
 {
-  auto handleError = [this](const QString& msg) {
-    DEBUG_ERROR_COLORED("ReportManager", "loadReport", msg, COLOR_RED, COLOR_GREEN);
-    setError(msg);
+  auto handleError = [this](const QString& message) {
+    DEBUG_ERROR_COLORED("ReportManager", "loadReport", message, COLOR_RED, COLOR_GREEN);
+    setError(message);
     return false;
   };
 

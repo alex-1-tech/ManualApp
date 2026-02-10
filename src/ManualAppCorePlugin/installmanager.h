@@ -20,6 +20,7 @@ class InstallManager : public QObject
   Q_PROPERTY(QString installerPath READ installerPath NOTIFY installerPathChanged)
   Q_PROPERTY(bool isDownloading READ isDownloading NOTIFY isDownloadingChanged)
   Q_PROPERTY(double downloadProgress READ downloadProgress NOTIFY downloadProgressChanged)
+  Q_PROPERTY(bool isLicenseActivate READ isLicenseActivate NOTIFY isLicenseActivateChanged)
 
 public:
   explicit InstallManager(QObject* parent = nullptr, ReportManager* reportManager = nullptr);
@@ -29,13 +30,15 @@ public:
   bool isInstalling() const { return m_isInstalling; }
   QString installerPath() const { return m_installerPath; }
   bool isDownloading() const { return m_isDownloading; }
+  bool isLicenseActivate() const { return m_isLicenseActivate; }
   double downloadProgress() const { return m_downloadProgress; }
 
   Q_INVOKABLE bool installerExists(const QString& model) const;
-  Q_INVOKABLE void downloadInstaller(const QString& model);
+  Q_INVOKABLE void downloadInstaller(const QString& model, const QString& baseUrl);
   Q_INVOKABLE void runInstaller(const QString& model);
   Q_INVOKABLE void activate(const QString& model, const QString& hostHWID, const QString& deviceHWID,
                             const QString& mode, const QString& url);
+  Q_INVOKABLE void setIsLicenseActivate(bool activating);
 signals:
   void statusMessageChanged();
   void isInstallingChanged();
@@ -44,6 +47,7 @@ signals:
   void installationFinished(bool success);
   void errorOccurred(const QString& error);
   void isDownloadingChanged();
+  void isLicenseActivateChanged();
   void downloadProgressChanged();
   void downloadFinished(bool success);
   void activationSucceeded();
@@ -66,18 +70,17 @@ private:
   void setDownloadProgress(double progress);
 
   QString buildInstallerPath(const QString& model) const;
-  QString buildDownloadUrl(const QString& model) const;
+  QString buildDownloadUrl(const QString& model, const QString& baseUrl) const;
   void initializeNetworkService();
 
   QString m_statusMessage;
   bool m_isInstalling;
   QString m_installerPath;
   bool m_isDownloading;
+  bool m_isLicenseActivate;
   double m_downloadProgress;
 
   QProcess* m_process;
   QTimer* m_timeoutTimer;
-  // NetworkService* m_networkService;
-  // FileService* m_fileService;
   ReportManager* m_reportManager;
 };
