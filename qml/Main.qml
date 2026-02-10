@@ -196,7 +196,7 @@ Item {
 
             Text {
                 color: Theme.colorTextPrimary
-                text: qsTr("Install PO")
+                text: qsTr("Software")
                 font.pointSize: 12
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
