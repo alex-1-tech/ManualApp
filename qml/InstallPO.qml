@@ -16,7 +16,7 @@ ScrollView {
     property bool isDownloading: DataManager.installManager().isDownloading
     property bool isInstallerReady: DataManager.installManager().installerExists
     property bool isActivating: false
-    property bool isActivated: SettingsManager.hostHWID !== "" || SettingsManager.deviceHWID !== ""
+    property bool activationSuccessful: DataManager.installManager().isLicenseActivate && SettingsManager.deviceHWID != ""
     property string mode: "control"
     property string tempHostHWID: SettingsManager.hostHWID
     property string tempDeviceHWID: SettingsManager.deviceHWID
@@ -193,7 +193,8 @@ ScrollView {
                         }
 
                         onClicked: {
-                            DataManager.installManager().downloadInstaller(root.currentModel);
+                            var url = DataManager.djangoBaseUrl();
+                            DataManager.installManager().downloadInstaller(root.currentModel, url);
                         }
                     }
 
@@ -239,7 +240,7 @@ ScrollView {
 
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 340
+                    Layout.preferredHeight: root.currentModel === "kalmar32" ? 280 : 340
                     color: Theme.colorBgMuted
                     radius: Theme.radiusCard
                     border.color: Theme.colorBorder
@@ -321,13 +322,14 @@ ScrollView {
                             Layout.fillWidth: true
                             spacing: 15
 
-                            // Host HWID
+                            // Host HWID (только для phasar32)
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 5
+                                visible: root.currentModel === "phasar32"
 
                                 Text {
-                                    text: "Host HWID"
+                                    text: "Host HWID *"
                                     color: Theme.colorTextPrimary
                                     font.pointSize: Theme.fontSmall
                                     font.bold: true
@@ -350,7 +352,7 @@ ScrollView {
                                         font.pointSize: Theme.fontBody
                                         text: root.tempHostHWID
                                         clip: true
-                                        enabled: !root.isActivated
+                                        enabled: !root.activationSuccessful
 
                                         onTextChanged: {
                                             root.tempHostHWID = text;
@@ -359,7 +361,7 @@ ScrollView {
                                         Label {
                                             anchors.fill: parent
                                             verticalAlignment: Text.AlignVCenter
-                                            text: "Enter Host HWID (optional)..."
+                                            text: "Enter Host HWID (required)..."
                                             color: Theme.colorTextMuted
                                             font.pointSize: Theme.fontBody
                                             visible: hostHwidInputField.text === ""
@@ -369,13 +371,13 @@ ScrollView {
                                 }
                             }
 
-                            // Device HWID
+                            // Device HWID (для обеих моделей)
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 5
 
                                 Text {
-                                    text: "Device HWID"
+                                    text: "Device HWID *"
                                     color: Theme.colorTextPrimary
                                     font.pointSize: Theme.fontSmall
                                     font.bold: true
@@ -398,7 +400,7 @@ ScrollView {
                                         font.pointSize: Theme.fontBody
                                         text: root.tempDeviceHWID
                                         clip: true
-                                        enabled: !root.isActivated
+                                        enabled: !root.activationSuccessful
 
                                         onTextChanged: {
                                             root.tempDeviceHWID = text;
@@ -407,7 +409,7 @@ ScrollView {
                                         Label {
                                             anchors.fill: parent
                                             verticalAlignment: Text.AlignVCenter
-                                            text: "Enter Device HWID (optional)..."
+                                            text: "Enter Device HWID (required)..."
                                             color: Theme.colorTextMuted
                                             font.pointSize: Theme.fontBody
                                             visible: deviceHwidInputField.text === ""
@@ -419,7 +421,13 @@ ScrollView {
                         }
 
                         Text {
-                            text: "Note: You can enter either Host HWID, Device HWID, or both. At least one must be provided."
+                            text: {
+                                if (root.currentModel === "kalmar32") {
+                                    "Note: Device HWID is required for KALMAR-32 activation.";
+                                } else {
+                                    "Note: Both Host HWID and Device HWID are required for PHAZAR-32 activation.";
+                                }
+                            }
                             color: Theme.colorTextMuted
                             font.pointSize: 9
                             wrapMode: Text.WordWrap
@@ -434,16 +442,25 @@ ScrollView {
                             text: {
                                 if (root.isActivating)
                                     "Activating...";
-                                else if (root.isActivated)
+                                else if (root.activationSuccessful)
                                     "Already Activated";
                                 else
                                     "Activate Software";
                             }
-                            enabled: !root.isActivating && !root.isActivated && (root.tempHostHWID.trim() !== "" || root.tempDeviceHWID.trim() !== "")
+                            enabled: {
+                                if (root.isActivating || root.activationSuccessful)
+                                    return false;
+
+                                if (root.currentModel === "kalmar32") {
+                                    return root.tempDeviceHWID.trim() !== "";
+                                } else {
+                                    return root.tempHostHWID.trim() !== "" && root.tempDeviceHWID.trim() !== "";
+                                }
+                            }
 
                             background: Rectangle {
                                 color: {
-                                    if (root.isActivated)
+                                    if (root.activationSuccessful)
                                         Theme.colorSuccess;
                                     else if (parent.enabled)
                                         Theme.colorButtonPrimary;
@@ -455,7 +472,7 @@ ScrollView {
 
                             contentItem: Text {
                                 text: activateButton.text
-                                color: root.isActivated ? "white" : (parent.enabled ? Theme.colorTextPrimary : Theme.colorTextMuted)
+                                color: root.activationSuccessful ? "white" : (parent.enabled ? Theme.colorTextPrimary : Theme.colorTextMuted)
                                 font.pointSize: Theme.fontBody
                                 font.bold: true
                                 horizontalAlignment: Text.AlignHCenter
@@ -463,7 +480,7 @@ ScrollView {
                             }
 
                             onClicked: {
-                                if (!root.isActivated) {
+                                if (!root.activationSuccessful) {
                                     root.activateSoftware();
                                 }
                             }
@@ -852,7 +869,7 @@ ScrollView {
     }
 
     function activateSoftware() {
-        if (root.isActivating || root.isActivated)
+        if (root.isActivating || root.activationSuccessful)
             return;
         root.isActivating = true;
 
@@ -869,11 +886,13 @@ ScrollView {
 
         function onActivationSucceeded() {
             root.isActivating = false;
-            root.isActivated = true;
+            root.activationSuccessful = true;
+            DataManager.installManager().isLicenseActivate = true;
         }
 
         function onActivationFailed(error) {
             root.isActivating = false;
+            root.activationSuccessful = false;
         }
     }
 }
