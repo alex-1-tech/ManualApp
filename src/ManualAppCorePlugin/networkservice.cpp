@@ -145,14 +145,12 @@ bool NetworkService::uploadFileSynchronous(const QUrl& apiUrl, const QString& fi
                 QString("Uploading file: %1 to %2").arg(filePath).arg(apiUrl.toString()), COLOR_BLUE,
                 COLOR_BLUE);
 
-  // Check if file exists
   if (!QFile::exists(filePath)) {
     DEBUG_ERROR_COLORED("NetworkService", "uploadFileSynchronous",
                         QString("File does not exist: %1").arg(filePath), COLOR_BLUE, COLOR_BLUE);
     return false;
   }
 
-  // Check file size
   QFileInfo fileInfo(filePath);
   if (fileInfo.size() == 0) {
     DEBUG_ERROR_COLORED("NetworkService", "uploadFileSynchronous", QString("File is empty: %1").arg(filePath),
@@ -168,7 +166,6 @@ bool NetworkService::uploadFileSynchronous(const QUrl& apiUrl, const QString& fi
     return false;
   }
 
-  // Create multipart form data
   QHttpMultiPart* multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
 
   QHttpPart filePart;
@@ -176,31 +173,88 @@ bool NetworkService::uploadFileSynchronous(const QUrl& apiUrl, const QString& fi
   filePart.setHeader(QNetworkRequest::ContentDispositionHeader,
                      QVariant(QString("form-data; name=\"file\"; filename=\"%1\"").arg(fileName)));
   filePart.setBodyDevice(file);
-  file->setParent(multiPart); // multiPart will take ownership of file
+  file->setParent(multiPart);
   multiPart->append(filePart);
 
   QNetworkRequest request(apiUrl);
 
-  // Execute request synchronously
   QNetworkReply* reply = m_manager->post(request, multiPart);
-  multiPart->setParent(reply); // reply will take ownership of multiPart
+  multiPart->setParent(reply);
 
   bool success = waitForReplyFinished(reply);
 
   if (success && reply->error() == QNetworkReply::NoError) {
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     if (statusCode >= 200 && statusCode < 300) {
+      QByteArray responseData = reply->readAll();
+      QString responseString = QString::fromUtf8(responseData);
+
       DEBUG_COLORED("NetworkService", "uploadFileSynchronous",
                     QString("File upload successful (HTTP %1)").arg(statusCode), COLOR_BLUE, COLOR_BLUE);
+
+      if (!responseData.isEmpty()) {
+        DEBUG_COLORED("NetworkService", "uploadFileSynchronous",
+                      QString("Server response: %1").arg(responseString.left(500)), COLOR_BLUE, COLOR_BLUE);
+      }
+
       reply->deleteLater();
       return true;
     } else {
-      DEBUG_ERROR_COLORED("NetworkService", "uploadFileSynchronous",
-                          QString("Server error: HTTP %1").arg(statusCode), COLOR_BLUE, COLOR_BLUE);
+      QByteArray responseData = reply->readAll();
+      QString responseString = QString::fromUtf8(responseData);
+
+      QString errorMsg = QString("Server error: HTTP %1").arg(statusCode);
+      if (!responseData.isEmpty()) {
+        QJsonDocument doc = QJsonDocument::fromJson(responseData);
+        if (!doc.isNull() && doc.isObject()) {
+          QJsonObject obj = doc.object();
+          if (obj.contains("error")) {
+            errorMsg += " | Error: " + obj["error"].toString();
+          } else if (obj.contains("detail")) {
+            errorMsg += " | Detail: " + obj["detail"].toString();
+          } else if (obj.contains("message")) {
+            errorMsg += " | Message: " + obj["message"].toString();
+          } else {
+            errorMsg += " | Response: " + responseString.left(500);
+          }
+        } else {
+          errorMsg += " | Response: " + responseString.left(500);
+        }
+      }
+
+      DEBUG_ERROR_COLORED("NetworkService", "uploadFileSynchronous", errorMsg, COLOR_BLUE, COLOR_BLUE);
     }
   } else {
-    DEBUG_ERROR_COLORED("NetworkService", "uploadFileSynchronous",
-                        QString("Network error: %1").arg(reply->errorString()), COLOR_BLUE, COLOR_BLUE);
+    QString errorMsg;
+    if (reply->error() != QNetworkReply::NoError) {
+      int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+      QByteArray responseData = reply->readAll();
+      QString responseString = QString::fromUtf8(responseData);
+
+      errorMsg = QString("Network error: %1 (HTTP %2)").arg(reply->errorString()).arg(statusCode);
+
+      if (!responseData.isEmpty()) {
+        QJsonDocument doc = QJsonDocument::fromJson(responseData);
+        if (!doc.isNull() && doc.isObject()) {
+          QJsonObject obj = doc.object();
+          if (obj.contains("error")) {
+            errorMsg += " | Server error: " + obj["error"].toString();
+          } else if (obj.contains("detail")) {
+            errorMsg += " | Detail: " + obj["detail"].toString();
+          } else if (obj.contains("message")) {
+            errorMsg += " | Message: " + obj["message"].toString();
+          } else {
+            errorMsg += " | Response: " + responseString.left(500);
+          }
+        } else {
+          errorMsg += " | Response: " + responseString.left(500);
+        }
+      }
+    } else {
+      errorMsg = "Request timeout or unknown error";
+    }
+
+    DEBUG_ERROR_COLORED("NetworkService", "uploadFileSynchronous", errorMsg, COLOR_BLUE, COLOR_BLUE);
   }
 
   reply->deleteLater();
@@ -228,24 +282,82 @@ bool NetworkService::uploadJsonToDjangoSynchronous(const QUrl& apiUrl, const QJs
   request.setRawHeader("User-Agent", "Qt/5.15");
   request.setRawHeader("Connection", "keep-alive");
 
-  // Execute request synchronously
   QNetworkReply* reply = m_manager->post(request, jsonData);
   bool success = waitForReplyFinished(reply);
 
   if (success && reply->error() == QNetworkReply::NoError) {
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     if (statusCode >= 200 && statusCode < 300) {
+      QByteArray responseData = reply->readAll();
+      QString responseString = QString::fromUtf8(responseData);
+
       DEBUG_COLORED("NetworkService", "uploadJsonToDjangoSynchronous",
                     QString("JSON upload successful (HTTP %1)").arg(statusCode), COLOR_BLUE, COLOR_BLUE);
+
+      if (!responseData.isEmpty()) {
+        DEBUG_COLORED("NetworkService", "uploadJsonToDjangoSynchronous",
+                      QString("Server response: %1").arg(responseString.left(500)), COLOR_BLUE, COLOR_BLUE);
+      }
+
       reply->deleteLater();
       return true;
     } else {
-      DEBUG_ERROR_COLORED("NetworkService", "uploadJsonToDjangoSynchronous",
-                          QString("Server error: HTTP %1").arg(statusCode), COLOR_BLUE, COLOR_BLUE);
+      QByteArray responseData = reply->readAll();
+      QString responseString = QString::fromUtf8(responseData);
+
+      QString errorMsg = QString("Server error: HTTP %1").arg(statusCode);
+      if (!responseData.isEmpty()) {
+        QJsonDocument doc = QJsonDocument::fromJson(responseData);
+        if (!doc.isNull() && doc.isObject()) {
+          QJsonObject obj = doc.object();
+          if (obj.contains("error")) {
+            errorMsg += " | Error: " + obj["error"].toString();
+          } else if (obj.contains("detail")) {
+            errorMsg += " | Detail: " + obj["detail"].toString();
+          } else if (obj.contains("message")) {
+            errorMsg += " | Message: " + obj["message"].toString();
+          } else {
+            errorMsg += " | Response: " + responseString.left(500);
+          }
+        } else {
+          errorMsg += " | Response: " + responseString.left(500);
+        }
+      }
+
+      DEBUG_ERROR_COLORED("NetworkService", "uploadJsonToDjangoSynchronous", errorMsg, COLOR_BLUE,
+                          COLOR_BLUE);
     }
   } else {
-    DEBUG_ERROR_COLORED("NetworkService", "uploadJsonToDjangoSynchronous",
-                        QString("Network error: %1").arg(reply->errorString()), COLOR_BLUE, COLOR_BLUE);
+    QString errorMsg;
+    if (reply->error() != QNetworkReply::NoError) {
+      int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+      QByteArray responseData = reply->readAll();
+      QString responseString = QString::fromUtf8(responseData);
+
+      errorMsg = QString("Network error: %1 (HTTP %2)").arg(reply->errorString()).arg(statusCode);
+
+      if (!responseData.isEmpty()) {
+        QJsonDocument doc = QJsonDocument::fromJson(responseData);
+        if (!doc.isNull() && doc.isObject()) {
+          QJsonObject obj = doc.object();
+          if (obj.contains("error")) {
+            errorMsg += " | Server error: " + obj["error"].toString();
+          } else if (obj.contains("detail")) {
+            errorMsg += " | Detail: " + obj["detail"].toString();
+          } else if (obj.contains("message")) {
+            errorMsg += " | Message: " + obj["message"].toString();
+          } else {
+            errorMsg += " | Response: " + responseString.left(500);
+          }
+        } else {
+          errorMsg += " | Response: " + responseString.left(500);
+        }
+      }
+    } else {
+      errorMsg = "Request timeout or unknown error";
+    }
+
+    DEBUG_ERROR_COLORED("NetworkService", "uploadJsonToDjangoSynchronous", errorMsg, COLOR_BLUE, COLOR_BLUE);
   }
 
   reply->deleteLater();
@@ -279,23 +391,73 @@ void NetworkService::postJson(const QNetworkRequest& request, const QByteArray& 
 
     QByteArray responseData = reply->readAll();
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QString errorString = reply->errorString();
 
-    QString errorMsg = QString("Network error: %1 (HTTP %2)").arg(reply->errorString()).arg(statusCode);
+    bool success = false;
+    QString message;
 
-    if (!responseData.isEmpty()) {
-      QJsonDocument doc = QJsonDocument::fromJson(responseData);
-      if (!doc.isNull() && doc.isObject()) {
-        QJsonObject obj = doc.object();
-        if (obj.contains("error")) {
-          errorMsg += " | Server error: " + obj["error"].toString();
+    if (reply->error() == QNetworkReply::NoError) {
+      if (statusCode >= 200 && statusCode < 300) {
+        success = true;
+        message = QString("Request successful (HTTP %1)").arg(statusCode);
+        DEBUG_COLORED("NetworkService", "postJson", message, COLOR_BLUE, COLOR_BLUE);
+
+        if (!responseData.isEmpty()) {
+          QString responseStr = QString::fromUtf8(responseData);
+          DEBUG_COLORED("NetworkService", "postJson", QString("Response: %1").arg(responseStr.left(500)),
+                        COLOR_BLUE, COLOR_BLUE);
         }
       } else {
-        errorMsg += " | Response: " + QString(responseData);
+        success = false;
+        message = QString("HTTP error: %1").arg(statusCode);
+
+        if (!responseData.isEmpty()) {
+          QJsonDocument doc = QJsonDocument::fromJson(responseData);
+          if (!doc.isNull() && doc.isObject()) {
+            QJsonObject obj = doc.object();
+            if (obj.contains("error")) {
+              message += " | Error: " + obj["error"].toString();
+            } else if (obj.contains("detail")) {
+              message += " | Detail: " + obj["detail"].toString();
+            } else if (obj.contains("message")) {
+              message += " | Message: " + obj["message"].toString();
+            } else {
+              message += " | Response: " + QString(responseData).left(500);
+            }
+          } else {
+            message += " | Response: " + QString(responseData).left(500);
+          }
+        }
+
+        DEBUG_ERROR_COLORED("NetworkService", "postJson", message, COLOR_BLUE, COLOR_BLUE);
       }
+    } else {
+      success = false;
+      message = QString("Network error: %1 (HTTP %2)").arg(errorString).arg(statusCode);
+
+      if (!responseData.isEmpty()) {
+        QJsonDocument doc = QJsonDocument::fromJson(responseData);
+        if (!doc.isNull() && doc.isObject()) {
+          QJsonObject obj = doc.object();
+          if (obj.contains("error")) {
+            message += " | Server error: " + obj["error"].toString();
+          } else if (obj.contains("detail")) {
+            message += " | Detail: " + obj["detail"].toString();
+          } else if (obj.contains("message")) {
+            message += " | Message: " + obj["message"].toString();
+          } else {
+            message += " | Response: " + QString(responseData).left(500);
+          }
+        } else {
+          message += " | Response: " + QString(responseData).left(500);
+        }
+      }
+
+      DEBUG_ERROR_COLORED("NetworkService", "postJson", message, COLOR_BLUE, COLOR_BLUE);
     }
 
-    DEBUG_ERROR_COLORED("NetworkService", "postJson", errorMsg, COLOR_BLUE, COLOR_BLUE);
-    callback(false, responseData, errorMsg);
+    callback(success, responseData, message);
+    reply->deleteLater();
   });
 }
 
