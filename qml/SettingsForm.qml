@@ -147,7 +147,7 @@ ScrollView {
                     }
 
                     FormField {
-                        label: qsTr("Left probs RA2.25L16 1.1x10-17")
+                        label: qsTr("Left probs PA2.25L16 1.1x10-17")
                         placeholder: qsTr("0000 MM.YEAR")
                         settingName: "leftProbs"
                         modelSettings: SettingsManager.kalmarSettings
@@ -155,7 +155,7 @@ ScrollView {
                     }
 
                     FormField {
-                        label: qsTr("Right probs RA2.25L16 1.1x10-17")
+                        label: qsTr("Right probs PA2.25L16 1.1x10-17")
                         placeholder: qsTr("0000 MM.YEAR")
                         settingName: "rightProbs"
                         modelSettings: SettingsManager.kalmarSettings
@@ -163,7 +163,7 @@ ScrollView {
                     }
 
                     FormField {
-                        label: qsTr("Manual probs RA2.25L16 0.9x10-17")
+                        label: qsTr("Manual probs PA2.25L16 0.9x10-17")
                         placeholder: qsTr("0000 MM.YEAR")
                         settingName: "manualProbs"
                         modelSettings: SettingsManager.kalmarSettings
@@ -171,7 +171,7 @@ ScrollView {
                     }
 
                     FormField {
-                        label: qsTr("Straight probs RA5.0L16 0.6x10-12")
+                        label: qsTr("Straight probs PA5.0L16 0.6x10-12")
                         placeholder: qsTr("0000 MM.YEAR")
                         settingName: "straightProbs"
                         modelSettings: SettingsManager.kalmarSettings

@@ -131,7 +131,7 @@ ScrollView {
                         "value": SettingsManager.kalmarSettings.manualProbs
                     },
                     {
-                        "label": qsTr("Straight probs RA5.0L16 0.6x10-12"),
+                        "label": qsTr("Straight probs PA5.0L16 0.6x10-12"),
                         "value": SettingsManager.kalmarSettings.straightProbs
                     },
                     {

@@ -887,7 +887,7 @@ ScrollView {
         function onActivationSucceeded() {
             root.isActivating = false;
             root.activationSuccessful = true;
-            DataManager.installManager().isLicenseActivate = true;
+            DataManager.installManager().setIsLicenseActivate(true);
         }
 
         function onActivationFailed(error) {

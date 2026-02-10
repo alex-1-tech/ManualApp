@@ -128,7 +128,7 @@ ScrollView {
                     }
 
                     FormField {
-                        label: qsTr("Straight probs RA5.0L16 0.6x10-12")
+                        label: qsTr("Straight probs PA5.0L16 0.6x10-12")
                         placeholder: qsTr("0000 MM.YEAR")
                         settingName: "straightProbs"
                         modelSettings: SettingsManager.kalmarSettings
