@@ -128,24 +128,12 @@ void NetworkService::downloadFile(const QUrl& url, const QString& filePath)
 
   connect(client, &HttpClient::progress, this, &NetworkService::onProgress);
 
-  connect(client, &HttpClient::finished, this,
-          [this, client, filePath](const HttpClient::HttpResponse& response) {
-            if (response.success) {
-              QFile file(filePath);
-              if (file.open(QIODevice::WriteOnly)) {
-                file.write(response.body);
-                file.close();
-                emit downloadFinished(true, filePath, "");
-              } else {
-                emit downloadFinished(false, filePath, "Failed to open file for writing");
-              }
-            } else {
-              emit downloadFinished(false, filePath, response.errorMessage);
-            }
-            client->deleteLater();
-          });
+  connect(client, &HttpClient::finished, this, [this, client](const HttpClient::HttpResponse& response) {
+    emit uploadFinished(response.success, response.errorMessage);
+    client->deleteLater();
+  });
 
-  client->get(url);
+  client->download(url, filePath);
 }
 void NetworkService::postJson(const QNetworkRequest& request, const QByteArray& json,
                               std::function<void(bool, QByteArray, QString)> callback)

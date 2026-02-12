@@ -21,7 +21,7 @@ public:
   void get(const QUrl& url);
   void postJson(const QUrl& url, const QJsonObject& json);
   void postFile(const QUrl& url, const QString& filePath);
-
+  void download(const QUrl& url, const QString& filePath);
 signals:
   void finished(const HttpClient::HttpResponse& response);
   void progress(qint64 sent, qint64 total);

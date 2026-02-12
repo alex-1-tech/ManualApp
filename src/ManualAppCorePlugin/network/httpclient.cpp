@@ -59,6 +59,59 @@ void HttpClient::postJson(const QUrl& url, const QJsonObject& jsonObject)
 
   handleReply(reply);
 }
+void HttpClient::download(const QUrl& url, const QString& filePath)
+{
+  QNetworkRequest request(url);
+  QNetworkReply* reply = m_manager.get(request);
+
+  QFile* file = new QFile(filePath);
+  if (!file->open(QIODevice::WriteOnly)) {
+    HttpResponse response;
+    response.success = false;
+    response.errorMessage = QString("Cannot open file for writing: %1").arg(filePath);
+    emit finished(response);
+    delete file;
+    reply->deleteLater();
+    return;
+  }
+
+  file->setParent(reply);
+
+  connect(reply, &QNetworkReply::downloadProgress, this, &HttpClient::progress);
+
+  connect(reply, &QNetworkReply::readyRead, this, [reply, file]() { file->write(reply->readAll()); });
+
+  connect(reply, &QNetworkReply::finished, this, [this, reply, filePath, file]() {
+    HttpResponse response;
+    response.statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+    file->write(reply->readAll());
+    file->close();
+
+    if (reply->error() == QNetworkReply::NoError && response.statusCode >= 200 && response.statusCode < 300) {
+      response.success = true;
+      response.errorMessage = QString();
+    } else {
+      response.success = false;
+      response.errorMessage = DjangoErrorParser::parse(reply->readAll());
+      if (response.errorMessage.isEmpty()) {
+        response.errorMessage = reply->errorString();
+      }
+
+      QFile::remove(filePath);
+    }
+
+    emit finished(response);
+    reply->deleteLater();
+  });
+
+  connect(reply, &QNetworkReply::errorOccurred, this,
+          [this, reply, filePath](QNetworkReply::NetworkError code) {
+            Q_UNUSED(code)
+            QFile::remove(filePath);
+            handleNetworkError(reply, reply->error());
+          });
+}
 
 void HttpClient::postFile(const QUrl& url, const QString& filePath)
 {
@@ -125,25 +178,20 @@ void HttpClient::handleReply(QNetworkReply* reply)
     } else {
       response.success = false;
 
-      // Парсим ошибку Django
       response.errorMessage = DjangoErrorParser::parse(response.body);
 
-      // Если не удалось распарсить ошибку Django, используем стандартное сообщение
       if (response.errorMessage.isEmpty()) {
         response.errorMessage = reply->errorString();
       }
 
-      // Выводим детальную информацию об ошибке
       qDebug() << "=== HTTP Error ===";
       qDebug() << "Status code:" << response.statusCode;
       qDebug() << "Network error:" << reply->errorString();
       qDebug() << "Django error:" << response.errorMessage;
 
-      // Для статусов 400-500 выводим дополнительную информацию
       if (response.statusCode >= 400 && response.statusCode <= 599) {
         qDebug() << "HTTP error range:" << response.statusCode / 100 << "xx";
 
-        // Детализация по кодам
         if (response.statusCode == 400)
           qDebug() << "Bad Request";
         else if (response.statusCode == 401)
@@ -190,5 +238,3 @@ void HttpClient::handleNetworkError(QNetworkReply* reply, QNetworkReply::Network
 
   emit finished(response);
 }
-
-// Удаляем старый parseDjangoError, так как используем DjangoErrorParser

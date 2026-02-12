@@ -60,6 +60,8 @@ QString InstallManager::buildInstallerPath(const QString& model) const
     installerName = "/Kalmar.exe";
   } else if (model.toLower() == "phasar32") {
     installerName = "/Phasar.exe";
+  } else if (model.toLower() == "manual_app") {
+    installerName = "/ManualApp.exe";
   } else {
     DEBUG_ERROR_COLORED("InstallManager", "buildInstallerPath", QString("Unknown model: %1").arg(model),
                         COLOR_CYAN, COLOR_CYAN);
@@ -72,9 +74,11 @@ QString InstallManager::buildInstallerPath(const QString& model) const
 QString InstallManager::buildDownloadUrl(const QString& model, const QString& baseUrl) const
 {
   if (model.toLower() == "kalmar32") {
-    return "http://" + baseUrl + "/api/apps/download/kalmar32/";
+    return baseUrl + "/api/apps/download/kalmar32/";
   } else if (model.toLower() == "phasar32") {
-    return "http://" + baseUrl + "/api/apps/download/phasar32/";
+    return baseUrl + "/api/apps/download/phasar32/";
+  } else if (model.toLower() == "manual_app") {
+    return baseUrl + "/api/apps/download/manual_app/";
   } else {
     DEBUG_ERROR_COLORED("InstallManager", "buildDownloadUrl", QString("Unknown model: %1").arg(model),
                         COLOR_CYAN, COLOR_CYAN);
@@ -108,7 +112,6 @@ void InstallManager::downloadInstaller(const QString& model, const QString& base
     return;
   }
 
-  // Build download URL and local path
   QString url = buildDownloadUrl(model, baseUrl);
   QString path = buildInstallerPath(model);
 
@@ -117,7 +120,6 @@ void InstallManager::downloadInstaller(const QString& model, const QString& base
     return;
   }
 
-  // Ensure application data directory exists
   QDir appDataDir(m_reportManager->fileService()->getAppDataPath());
   if (!appDataDir.exists()) {
     appDataDir.mkpath(".");
@@ -127,8 +129,7 @@ void InstallManager::downloadInstaller(const QString& model, const QString& base
   setDownloadProgress(0.0);
   setStatusMessage("Starting download...");
 
-  // Use NetworkService's asynchronous download (but simpler approach)
-  // NetworkService should handle GET request for download, not upload
+
   m_reportManager->networkService()->downloadFile(QUrl(url), path);
 }
 
@@ -340,7 +341,7 @@ void InstallManager::setIsLicenseActivate(bool activating)
 {
   if (m_isLicenseActivate != activating) {
     m_isLicenseActivate = activating;
-    emit isInstallingChanged();
+    emit isLicenseActivateChanged();
   }
 }
 

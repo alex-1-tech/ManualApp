@@ -14,19 +14,23 @@ ScrollView {
     // ====== State ===========================================================
     property string currentModel: SettingsManager.currentModel
     property bool isDownloading: DataManager.installManager().isDownloading
-    property bool isInstallerReady: DataManager.installManager().installerExists
+    property bool isInstallerReady: DataManager.installManager().installerExists(currentModel)
     property bool isActivating: false
     property bool activationSuccessful: DataManager.installManager().isLicenseActivate && SettingsManager.deviceHWID != ""
     property string mode: "control"
     property string tempHostHWID: SettingsManager.hostHWID
     property string tempDeviceHWID: SettingsManager.deviceHWID
     property string tempLicensePassword: ""
-    
-    // ====== App Update State ===============================================
-    property bool isAppUpdateDownloading: false
-    property bool isAppUpdateReady: false
-    property real appUpdateProgress: 0
-    property string appUpdateStatus: ""
+
+    // ManualApp specific properties
+    property bool isManualAppDownloading: false
+    property bool isManualAppInstallerReady: DataManager.installManager().installerExists("manual_app")
+    property string manualAppStatusMessage: ""
+    property double manualAppDownloadProgress: 0.0
+    property string manualAppInstallerPath: ""
+
+    // Track current downloading model
+    property string currentDownloadingModel: ""
 
     contentItem: Flickable {
         id: flick
@@ -56,155 +60,6 @@ ScrollView {
                     color: Theme.colorTextPrimary
                     font.pointSize: 24
                 }
-            }
-
-            // === СЕКЦИЯ ОБНОВЛЕНИЯ ПРИЛОЖЕНИЯ ====================================
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 15
-
-                Text {
-                    text: "ManualApp Update"
-                    color: Theme.colorTextPrimary
-                    font.pointSize: Theme.fontSubtitle
-                    font.bold: true
-                }
-
-                // App Update Status Card
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 140
-                    color: Theme.colorBgMuted
-                    radius: Theme.radiusCard
-                    border.color: Theme.colorBorder
-
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 15
-                        spacing: 5
-
-                        Text {
-                            text: root.appUpdateStatus !== "" ? root.appUpdateStatus : 
-                                  (root.isAppUpdateReady ? "Update ready to install" : "Check for updates")
-                            color: Theme.colorTextPrimary
-                            font.pointSize: Theme.fontBody
-                            Layout.fillWidth: true
-                        }
-
-                        ProgressBar {
-                            id: appUpdateProgress
-                            Layout.fillWidth: true
-                            visible: root.isAppUpdateDownloading
-                            value: root.appUpdateProgress
-                            from: 0
-                            to: 100
-                        }
-
-                        Text {
-                            text: "Current version: " + DataManager.installManager().appVersion
-                            color: Theme.colorTextMuted
-                            font.pointSize: Theme.fontSmall
-                            Layout.fillWidth: true
-                        }
-
-                        Text {
-                            text: "Latest version: " + DataManager.installManager().latestAppVersion
-                            color: Theme.colorTextMuted
-                            font.pointSize: Theme.fontSmall
-                            Layout.fillWidth: true
-                            visible: root.isAppUpdateReady
-                        }
-                    }
-                }
-
-                // App Update Buttons
-                RowLayout {
-                    Layout.alignment: Qt.AlignHCenter
-                    spacing: 15
-
-                    Button {
-                        id: checkAppUpdateButton
-                        Layout.preferredWidth: 200
-                        Layout.preferredHeight: 50
-                        text: "Check for Updates"
-                        enabled: !root.isAppUpdateDownloading && !DataManager.installManager().isAppInstalling
-
-                        background: Rectangle {
-                            color: parent.enabled ? Theme.colorButtonSecondary : Theme.colorButtonDisabled
-                            radius: Theme.radiusButton
-                        }
-
-                        contentItem: Text {
-                            text: checkAppUpdateButton.text
-                            color: Theme.colorTextPrimary
-                            font.pointSize: Theme.fontBody
-                            font.bold: true
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-
-                        onClicked: {
-                            root.appUpdateStatus = "Checking for updates...";
-                            var url = DataManager.djangoBaseUrl();
-                            DataManager.installManager().checkAppUpdate(url);
-                        }
-                    }
-
-                    Button {
-                        id: downloadAppUpdateButton
-                        Layout.preferredWidth: 200
-                        Layout.preferredHeight: 50
-                        text: {
-                            if (root.isAppUpdateDownloading)
-                                "Downloading...";
-                            else if (root.isAppUpdateReady)
-                                "Install Update";
-                            else
-                                "Download Update";
-                        }
-                        enabled: {
-                            if (root.isAppUpdateDownloading || DataManager.installManager().isAppInstalling)
-                                return false;
-                            return root.isAppUpdateReady || DataManager.installManager().isAppUpdateAvailable;
-                        }
-
-                        background: Rectangle {
-                            color: parent.enabled ? Theme.colorButtonPrimary : Theme.colorButtonDisabled
-                            radius: Theme.radiusButton
-                        }
-
-                        contentItem: Text {
-                            text: downloadAppUpdateButton.text
-                            color: Theme.colorTextPrimary
-                            font.pointSize: Theme.fontBody
-                            font.bold: true
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-
-                        onClicked: {
-                            if (root.isAppUpdateReady) {
-                                // Install the downloaded update
-                                DataManager.installManager().installAppUpdate();
-                            } else {
-                                // Download the update
-                                root.isAppUpdateDownloading = true;
-                                root.appUpdateStatus = "Downloading update...";
-                                var url = DataManager.djangoBaseUrl();
-                                DataManager.installManager().downloadAppUpdate(url);
-                            }
-                        }
-                    }
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 1
-                color: Theme.colorBorder
-                opacity: 0.3
-                Layout.topMargin: 10
-                Layout.bottomMargin: 10
             }
 
             // Model Info
@@ -238,7 +93,7 @@ ScrollView {
 
                     Text {
                         text: {
-                            if (root.isDownloading)
+                            if (root.isDownloading && root.currentDownloadingModel === root.currentModel)
                                 "Downloading...";
                             else if (root.isInstallerReady)
                                 "Ready";
@@ -246,7 +101,7 @@ ScrollView {
                                 "Not downloaded";
                         }
                         color: {
-                            if (root.isDownloading)
+                            if (root.isDownloading && root.currentDownloadingModel === root.currentModel)
                                 Theme.colorWarning;
                             else if (root.isInstallerReady)
                                 Theme.colorSuccess;
@@ -284,7 +139,14 @@ ScrollView {
                         spacing: 5
 
                         Text {
-                            text: DataManager.installManager().statusMessage
+                            text: {
+                                if (root.isDownloading && root.currentDownloadingModel === root.currentModel)
+                                    return DataManager.installManager().statusMessage;
+                                else if (root.isInstallerReady)
+                                    return "Ready to install";
+                                else
+                                    return "Not downloaded";
+                            }
                             color: Theme.colorTextPrimary
                             font.pointSize: Theme.fontBody
                             Layout.fillWidth: true
@@ -293,7 +155,7 @@ ScrollView {
                         ProgressBar {
                             id: downloadProgress
                             Layout.fillWidth: true
-                            visible: root.isDownloading
+                            visible: root.isDownloading && root.currentDownloadingModel === root.currentModel
                             value: DataManager.installManager().downloadProgress
                             from: 0
                             to: 100
@@ -307,7 +169,7 @@ ScrollView {
                         }
 
                         Text {
-                            text: "Path: " + DataManager.installManager().installerPath
+                            text: "Path: " + (root.currentModel === "kalmar32" ? DataManager.installManager().buildInstallerPath("kalmar32") : DataManager.installManager().buildInstallerPath("phasar32"))
                             color: Theme.colorTextMuted
                             font.pointSize: Theme.fontSmall
                             Layout.fillWidth: true
@@ -325,14 +187,18 @@ ScrollView {
                         Layout.preferredWidth: 200
                         Layout.preferredHeight: 50
                         text: {
-                            if (root.isDownloading)
+                            if (root.isDownloading && root.currentDownloadingModel === root.currentModel)
                                 "Downloading...";
                             else if (root.isInstallerReady)
                                 "Redownload";
                             else
                                 "Download Installer";
                         }
-                        enabled: !root.isDownloading && !DataManager.installManager().isInstalling
+                        enabled: {
+                            if (root.isDownloading && root.currentDownloadingModel !== root.currentModel)
+                                return false;
+                            return !root.isDownloading && !DataManager.installManager().isInstalling;
+                        }
 
                         background: Rectangle {
                             color: parent.enabled ? Theme.colorButtonSecondary : Theme.colorButtonDisabled
@@ -350,6 +216,7 @@ ScrollView {
 
                         onClicked: {
                             var url = DataManager.djangoBaseUrl();
+                            root.currentDownloadingModel = root.currentModel;
                             DataManager.installManager().downloadInstaller(root.currentModel, url);
                         }
                     }
@@ -382,7 +249,223 @@ ScrollView {
                 }
             }
 
+            // ====== ManualApp Update Section ============================================
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 15
+
+                Text {
+                    text: "Update ManualApp"
+                    color: Theme.colorTextPrimary
+                    font.pointSize: Theme.fontSubtitle
+                    font.bold: true
+                }
+
+                // Status Card
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 140
+                    color: Theme.colorBgMuted
+                    radius: Theme.radiusCard
+                    border.color: Theme.colorBorder
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 15
+                        spacing: 5
+
+                        Text {
+                            id: manualAppStatusText
+                            text: root.manualAppStatusMessage || (root.isManualAppInstallerReady ? "Ready" : "Not downloaded")
+                            color: {
+                                if (root.isManualAppDownloading)
+                                    Theme.colorWarning;
+                                else if (root.isManualAppInstallerReady)
+                                    Theme.colorSuccess;
+                                else
+                                    Theme.colorError;
+                            }
+                            font.pointSize: Theme.fontBody
+                            Layout.fillWidth: true
+                        }
+
+                        ProgressBar {
+                            id: manualAppDownloadProgress
+                            Layout.fillWidth: true
+                            visible: root.isManualAppDownloading
+                            value: root.manualAppDownloadProgress
+                            from: 0
+                            to: 100
+                        }
+
+                        Text {
+                            text: "Installer: ManualApp.exe"
+                            color: Theme.colorTextMuted
+                            font.pointSize: Theme.fontSmall
+                            Layout.fillWidth: true
+                        }
+
+                        Text {
+                            text: "Path: " + DataManager.installManager().buildInstallerPath("manual_app")
+                            color: Theme.colorTextMuted
+                            font.pointSize: Theme.fontSmall
+                            Layout.fillWidth: true
+                        }
+                    }
+                }
+
+                // Download & Install Buttons
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: 15
+
+                    Button {
+                        id: manualAppDownloadButton
+                        Layout.preferredWidth: 200
+                        Layout.preferredHeight: 50
+
+                        text: {
+                            if (root.isManualAppDownloading)
+                                "Downloading...";
+                            else if (root.isManualAppInstallerReady)
+                                "Redownload";
+                            else
+                                "Download ManualApp";
+                        }
+                        enabled: !root.isManualAppDownloading && !DataManager.installManager().isDownloading && !DataManager.installManager().isInstalling
+
+                        background: Rectangle {
+                            color: parent.enabled ? Theme.colorButtonSecondary : Theme.colorButtonDisabled
+                            radius: Theme.radiusButton
+                        }
+
+                        contentItem: Text {
+                            text: manualAppDownloadButton.text
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontBody
+                            font.bold: true
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        onClicked: {
+                            var url = DataManager.djangoBaseUrl();
+                            root.isManualAppDownloading = true;
+                            root.currentDownloadingModel = "manual_app";
+                            root.manualAppStatusMessage = "Starting download...";
+                            root.manualAppDownloadProgress = 0;
+                            DataManager.installManager().downloadInstaller("manual_app", url);
+                        }
+                    }
+
+                    Button {
+                        id: manualAppInstallButton
+                        Layout.preferredWidth: 200
+                        Layout.preferredHeight: 50
+                        text: DataManager.installManager().isInstalling ? "Installing..." : "Run Installer"
+                        enabled: !DataManager.installManager().isInstalling && !root.isManualAppDownloading && !DataManager.installManager().isDownloading && root.isManualAppInstallerReady
+
+                        background: Rectangle {
+                            color: parent.enabled ? Theme.colorButtonPrimary : Theme.colorButtonDisabled
+                            radius: Theme.radiusButton
+                        }
+
+                        contentItem: Text {
+                            text: manualAppInstallButton.text
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontBody
+                            font.bold: true
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        onClicked: {
+                            DataManager.installManager().runInstaller("manual_app");
+                        }
+                    }
+                }
+            }
+
+            Connections {
+                target: DataManager.installManager()
+
+                function onDownloadFinished(success) {
+                    if (root.currentDownloadingModel === root.currentModel) {
+                        root.currentDownloadingModel = "";
+                    }
+
+                    if (root.isManualAppDownloading) {
+                        root.isManualAppDownloading = false;
+                        root.isManualAppInstallerReady = DataManager.installManager().installerExists("manual_app");
+
+                        if (success) {
+                            root.manualAppStatusMessage = "Download completed successfully!";
+                            root.manualAppDownloadProgress = 100;
+                        } else {
+                            root.manualAppStatusMessage = "Download failed!";
+                            root.manualAppDownloadProgress = 0;
+                        }
+                    }
+                }
+
+                function onDownloadProgressChanged() {
+                    if (root.currentDownloadingModel === root.currentModel) {}
+
+                    if (root.isManualAppDownloading) {
+                        root.manualAppDownloadProgress = DataManager.installManager().downloadProgress;
+                        root.manualAppStatusMessage = "Downloading: " + Math.round(DataManager.installManager().downloadProgress) + "%";
+                    }
+                }
+
+                function onIsDownloadingChanged() {
+                    if (!DataManager.installManager().isDownloading) {
+                        if (root.isManualAppDownloading && root.currentDownloadingModel !== "manual_app") {
+                            root.isManualAppDownloading = false;
+                            root.manualAppStatusMessage = "Download stopped";
+                        }
+                        if (root.currentDownloadingModel !== "" && root.currentDownloadingModel !== "manual_app") {
+                            root.currentDownloadingModel = "";
+                        }
+                    }
+                }
+
+                function onInstallationFinished(success) {
+                    root.isInstallerReady = DataManager.installManager().installerExists(root.currentModel);
+                    root.isManualAppInstallerReady = DataManager.installManager().installerExists("manual_app");
+                }
+
+                function onErrorOccurred(error) {
+                    if (root.isManualAppDownloading) {
+                        root.isManualAppDownloading = false;
+                        root.manualAppStatusMessage = "Error: " + error;
+                        root.manualAppDownloadProgress = 0;
+                    }
+                    if (root.currentDownloadingModel !== "") {
+                        root.currentDownloadingModel = "";
+                    }
+                }
+            }
+
+            Connections {
+                target: DataManager.installManager()
+
+                function onInstallerPathChanged() {
+                    root.isInstallerReady = DataManager.installManager().installerExists(root.currentModel);
+                    root.isManualAppInstallerReady = DataManager.installManager().installerExists("manual_app");
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: Theme.colorBorder
+                opacity: 0.3
+                Layout.topMargin: 10
+                Layout.bottomMargin: 10
+            }
+
             // === СЕКЦИЯ АКТИВАЦИИ ================================================
+
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 15
@@ -1080,48 +1163,15 @@ ScrollView {
 
         SettingsManager.hostHWID = root.tempHostHWID.trim();
         SettingsManager.deviceHWID = root.tempDeviceHWID.trim();
-        var licensePassword = root.tempLicensePassword.trim();;
+        var licensePassword = root.tempLicensePassword.trim();
 
         var uploadUrl = DataManager.djangoBaseUrl() + "/api/activate/" + SettingsManager.serialNumber + "/";
 
         DataManager.installManager().activate(root.currentModel, SettingsManager.hostHWID, SettingsManager.deviceHWID, root.mode, uploadUrl, licensePassword);
     }
 
-    // Connections for app update
     Connections {
         target: DataManager.installManager()
-
-        function onAppUpdateCheckFinished(available, latestVersion) {
-            root.appUpdateStatus = available ? "Update available: v" + latestVersion : "Application is up to date";
-            root.isAppUpdateReady = false;
-        }
-
-        function onAppUpdateDownloadProgress(progress) {
-            root.appUpdateProgress = progress;
-            root.appUpdateStatus = "Downloading update... " + Math.round(progress) + "%";
-        }
-
-        function onAppUpdateDownloadFinished(success, filePath) {
-            root.isAppUpdateDownloading = false;
-            if (success) {
-                root.isAppUpdateReady = true;
-                root.appUpdateStatus = "Update downloaded successfully. Click 'Install Update' to install.";
-                root.appUpdateProgress = 100;
-            } else {
-                root.isAppUpdateReady = false;
-                root.appUpdateStatus = "Download failed. Please try again.";
-                root.appUpdateProgress = 0;
-            }
-        }
-
-        function onAppUpdateInstallFinished(success) {
-            if (success) {
-                root.appUpdateStatus = "Update installed successfully. Please restart the application.";
-                root.isAppUpdateReady = false;
-            } else {
-                root.appUpdateStatus = "Installation failed. Please try again.";
-            }
-        }
 
         function onActivationSucceeded() {
             root.isActivating = false;

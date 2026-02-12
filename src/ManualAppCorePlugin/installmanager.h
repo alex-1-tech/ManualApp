@@ -39,6 +39,7 @@ public:
   Q_INVOKABLE void activate(const QString& model, const QString& hostHWID, const QString& deviceHWID,
                             const QString& mode, const QString& url, const QString& licensePassword);
   Q_INVOKABLE void setIsLicenseActivate(bool activating);
+  Q_INVOKABLE QString buildInstallerPath(const QString& model) const;
 signals:
   void statusMessageChanged();
   void isInstallingChanged();
@@ -69,7 +70,7 @@ private:
   void setIsDownloading(bool downloading);
   void setDownloadProgress(double progress);
 
-  QString buildInstallerPath(const QString& model) const;
+
   QString buildDownloadUrl(const QString& model, const QString& baseUrl) const;
   void initializeNetworkService();
 
