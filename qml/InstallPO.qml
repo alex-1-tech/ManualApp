@@ -20,6 +20,13 @@ ScrollView {
     property string mode: "control"
     property string tempHostHWID: SettingsManager.hostHWID
     property string tempDeviceHWID: SettingsManager.deviceHWID
+    property string tempLicensePassword: ""
+    
+    // ====== App Update State ===============================================
+    property bool isAppUpdateDownloading: false
+    property bool isAppUpdateReady: false
+    property real appUpdateProgress: 0
+    property string appUpdateStatus: ""
 
     contentItem: Flickable {
         id: flick
@@ -49,6 +56,155 @@ ScrollView {
                     color: Theme.colorTextPrimary
                     font.pointSize: 24
                 }
+            }
+
+            // === СЕКЦИЯ ОБНОВЛЕНИЯ ПРИЛОЖЕНИЯ ====================================
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 15
+
+                Text {
+                    text: "ManualApp Update"
+                    color: Theme.colorTextPrimary
+                    font.pointSize: Theme.fontSubtitle
+                    font.bold: true
+                }
+
+                // App Update Status Card
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 140
+                    color: Theme.colorBgMuted
+                    radius: Theme.radiusCard
+                    border.color: Theme.colorBorder
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 15
+                        spacing: 5
+
+                        Text {
+                            text: root.appUpdateStatus !== "" ? root.appUpdateStatus : 
+                                  (root.isAppUpdateReady ? "Update ready to install" : "Check for updates")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontBody
+                            Layout.fillWidth: true
+                        }
+
+                        ProgressBar {
+                            id: appUpdateProgress
+                            Layout.fillWidth: true
+                            visible: root.isAppUpdateDownloading
+                            value: root.appUpdateProgress
+                            from: 0
+                            to: 100
+                        }
+
+                        Text {
+                            text: "Current version: " + DataManager.installManager().appVersion
+                            color: Theme.colorTextMuted
+                            font.pointSize: Theme.fontSmall
+                            Layout.fillWidth: true
+                        }
+
+                        Text {
+                            text: "Latest version: " + DataManager.installManager().latestAppVersion
+                            color: Theme.colorTextMuted
+                            font.pointSize: Theme.fontSmall
+                            Layout.fillWidth: true
+                            visible: root.isAppUpdateReady
+                        }
+                    }
+                }
+
+                // App Update Buttons
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: 15
+
+                    Button {
+                        id: checkAppUpdateButton
+                        Layout.preferredWidth: 200
+                        Layout.preferredHeight: 50
+                        text: "Check for Updates"
+                        enabled: !root.isAppUpdateDownloading && !DataManager.installManager().isAppInstalling
+
+                        background: Rectangle {
+                            color: parent.enabled ? Theme.colorButtonSecondary : Theme.colorButtonDisabled
+                            radius: Theme.radiusButton
+                        }
+
+                        contentItem: Text {
+                            text: checkAppUpdateButton.text
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontBody
+                            font.bold: true
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        onClicked: {
+                            root.appUpdateStatus = "Checking for updates...";
+                            var url = DataManager.djangoBaseUrl();
+                            DataManager.installManager().checkAppUpdate(url);
+                        }
+                    }
+
+                    Button {
+                        id: downloadAppUpdateButton
+                        Layout.preferredWidth: 200
+                        Layout.preferredHeight: 50
+                        text: {
+                            if (root.isAppUpdateDownloading)
+                                "Downloading...";
+                            else if (root.isAppUpdateReady)
+                                "Install Update";
+                            else
+                                "Download Update";
+                        }
+                        enabled: {
+                            if (root.isAppUpdateDownloading || DataManager.installManager().isAppInstalling)
+                                return false;
+                            return root.isAppUpdateReady || DataManager.installManager().isAppUpdateAvailable;
+                        }
+
+                        background: Rectangle {
+                            color: parent.enabled ? Theme.colorButtonPrimary : Theme.colorButtonDisabled
+                            radius: Theme.radiusButton
+                        }
+
+                        contentItem: Text {
+                            text: downloadAppUpdateButton.text
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontBody
+                            font.bold: true
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        onClicked: {
+                            if (root.isAppUpdateReady) {
+                                // Install the downloaded update
+                                DataManager.installManager().installAppUpdate();
+                            } else {
+                                // Download the update
+                                root.isAppUpdateDownloading = true;
+                                root.appUpdateStatus = "Downloading update...";
+                                var url = DataManager.djangoBaseUrl();
+                                DataManager.installManager().downloadAppUpdate(url);
+                            }
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: Theme.colorBorder
+                opacity: 0.3
+                Layout.topMargin: 10
+                Layout.bottomMargin: 10
             }
 
             // Model Info
@@ -240,7 +396,7 @@ ScrollView {
 
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: root.currentModel === "kalmar32" ? 280 : 340
+                    Layout.preferredHeight: root.currentModel === "kalmar32" ? 320 : 380
                     color: Theme.colorBgMuted
                     radius: Theme.radiusCard
                     border.color: Theme.colorBorder
@@ -420,6 +576,55 @@ ScrollView {
                             }
                         }
 
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 5
+
+                            Text {
+                                text: "License Password *"
+                                color: Theme.colorTextPrimary
+                                font.pointSize: Theme.fontSmall
+                                font.bold: true
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 40
+                                color: Theme.colorBgPrimary
+                                radius: 6
+                                border.color: Theme.colorBorder
+                                border.width: 1
+
+                                TextInput {
+                                    id: licensePasswordInputField
+                                    anchors.fill: parent
+                                    anchors.margins: 10
+                                    verticalAlignment: Text.AlignVCenter
+                                    color: Theme.colorTextPrimary
+                                    font.pointSize: Theme.fontBody
+                                    text: root.tempLicensePassword
+                                    clip: true
+                                    enabled: !root.activationSuccessful
+                                    echoMode: TextInput.Password
+                                    passwordCharacter: "•"
+
+                                    onTextChanged: {
+                                        root.tempLicensePassword = text;
+                                    }
+
+                                    Label {
+                                        anchors.fill: parent
+                                        verticalAlignment: Text.AlignVCenter
+                                        text: "Enter license password..."
+                                        color: Theme.colorTextMuted
+                                        font.pointSize: Theme.fontBody
+                                        visible: licensePasswordInputField.text === ""
+                                        elide: Text.ElideRight
+                                    }
+                                }
+                            }
+                        }
+
                         Text {
                             text: {
                                 if (root.currentModel === "kalmar32") {
@@ -452,9 +657,9 @@ ScrollView {
                                     return false;
 
                                 if (root.currentModel === "kalmar32") {
-                                    return root.tempDeviceHWID.trim() !== "";
+                                    return root.tempDeviceHWID.trim() !== "" && root.tempLicensePassword.trim() !== "";
                                 } else {
-                                    return root.tempHostHWID.trim() !== "" && root.tempDeviceHWID.trim() !== "";
+                                    return root.tempHostHWID.trim() !== "" && root.tempDeviceHWID.trim() !== "" && root.tempLicensePassword.trim() !== "";
                                 }
                             }
 
@@ -875,14 +1080,48 @@ ScrollView {
 
         SettingsManager.hostHWID = root.tempHostHWID.trim();
         SettingsManager.deviceHWID = root.tempDeviceHWID.trim();
+        var licensePassword = root.tempLicensePassword.trim();;
 
         var uploadUrl = DataManager.djangoBaseUrl() + "/api/activate/" + SettingsManager.serialNumber + "/";
 
-        DataManager.installManager().activate(root.currentModel, SettingsManager.hostHWID, SettingsManager.deviceHWID, root.mode, uploadUrl);
+        DataManager.installManager().activate(root.currentModel, SettingsManager.hostHWID, SettingsManager.deviceHWID, root.mode, uploadUrl, licensePassword);
     }
 
+    // Connections for app update
     Connections {
         target: DataManager.installManager()
+
+        function onAppUpdateCheckFinished(available, latestVersion) {
+            root.appUpdateStatus = available ? "Update available: v" + latestVersion : "Application is up to date";
+            root.isAppUpdateReady = false;
+        }
+
+        function onAppUpdateDownloadProgress(progress) {
+            root.appUpdateProgress = progress;
+            root.appUpdateStatus = "Downloading update... " + Math.round(progress) + "%";
+        }
+
+        function onAppUpdateDownloadFinished(success, filePath) {
+            root.isAppUpdateDownloading = false;
+            if (success) {
+                root.isAppUpdateReady = true;
+                root.appUpdateStatus = "Update downloaded successfully. Click 'Install Update' to install.";
+                root.appUpdateProgress = 100;
+            } else {
+                root.isAppUpdateReady = false;
+                root.appUpdateStatus = "Download failed. Please try again.";
+                root.appUpdateProgress = 0;
+            }
+        }
+
+        function onAppUpdateInstallFinished(success) {
+            if (success) {
+                root.appUpdateStatus = "Update installed successfully. Please restart the application.";
+                root.isAppUpdateReady = false;
+            } else {
+                root.appUpdateStatus = "Installation failed. Please try again.";
+            }
+        }
 
         function onActivationSucceeded() {
             root.isActivating = false;

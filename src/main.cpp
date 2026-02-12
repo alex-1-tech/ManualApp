@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
   app.setWindowIcon(QIcon(":/media/icons/logo.png"));
 
   app.setOrganizationName("technovotum");
-  app.setOrganizationDomain("votum.asuscomm.com");
+  app.setOrganizationDomain("techno.votum");
   app.setApplicationName("ManualApp");
 
   engine.addImportPath("qrc:/qml");
