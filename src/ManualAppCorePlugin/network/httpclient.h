@@ -28,7 +28,7 @@ signals:
 
 private:
   void handleReply(QNetworkReply* reply);
-  QString parseDjangoError(const QByteArray& data) const;
+  void handleNetworkError(QNetworkReply* reply, QNetworkReply::NetworkError code);
 
 private:
   QNetworkAccessManager m_manager;
