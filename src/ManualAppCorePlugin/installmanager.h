@@ -37,7 +37,7 @@ public:
   Q_INVOKABLE void downloadInstaller(const QString& model, const QString& baseUrl);
   Q_INVOKABLE void runInstaller(const QString& model);
   Q_INVOKABLE void activate(const QString& model, const QString& hostHWID, const QString& deviceHWID,
-                            const QString& mode, const QString& url);
+                            const QString& mode, const QString& url, const QString& licensePassword);
   Q_INVOKABLE void setIsLicenseActivate(bool activating);
 signals:
   void statusMessageChanged();

@@ -386,7 +386,7 @@ QString getVersionFromRegistry(const QString& model)
 }
 
 void InstallManager::activate(const QString& model, const QString& hostHWID, const QString& deviceHWID,
-                              const QString& mode, const QString& url)
+                              const QString& mode, const QString& url, const QString& licensePassword)
 {
   if (hostHWID.isEmpty() && deviceHWID.isEmpty()) {
     emit activationFailed("HWID is empty");
@@ -418,6 +418,7 @@ void InstallManager::activate(const QString& model, const QString& hostHWID, con
 
   payload["exp"] = "2100-01-01";
   payload["features"] = features;
+  payload["license_password"] = licensePassword;
 
   QNetworkRequest request(url);
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");

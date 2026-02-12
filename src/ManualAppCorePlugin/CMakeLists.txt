@@ -22,6 +22,7 @@ qt_add_qml_module(ManualAppCorePlugin
         installmanager.h installmanager.cpp
         network/httpclient.h network/httpclient.cpp
         network/synchttpclient.h network/synchttpclient.cpp
+        network/djangoerrorparser.h
 )
 
 target_link_libraries(ManualAppCorePlugin PRIVATE
