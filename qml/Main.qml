@@ -6,7 +6,6 @@ Item {
 
     property bool isSidebarVisible: false
 
-    // Фон для затемнения контента при открытой панели
     Rectangle {
         id: overlay
         anchors.fill: parent
@@ -55,7 +54,6 @@ Item {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
 
-        // Анимация для плавного появления/исчезновения
         x: root.isSidebarVisible ? 0 : -width
         Behavior on x {
             NumberAnimation { duration: 200; easing.type: Easing.InOutQuad }
@@ -123,7 +121,6 @@ Item {
                     aboutLoader.visible = false;
                     installPoLoader.visible = false;
 
-                    // Скрываем панель после выбора пункта
                     root.hideSidebar()
                 }
             }
@@ -173,7 +170,6 @@ Item {
                     reportsLoader.visible = true;
                     reportsLoader.active = true;
 
-                    // Скрываем панель после выбора пункта
                     root.hideSidebar()
                 }
             }
@@ -187,7 +183,7 @@ Item {
             y: 150
 
             Image {
-                source: "qrc:///media/icons/icon-servers.svg" // Замените на подходящую иконку
+                source: "qrc:///media/icons/icon-servers.svg"
                 height: 20
                 width: 20
                 x: 20
@@ -223,7 +219,6 @@ Item {
                     installPoLoader.visible = true;
                     installPoLoader.active = true;
 
-                    // Скрываем панель после выбора пункта
                     root.hideSidebar()
                 }
             }
@@ -269,12 +264,10 @@ Item {
                     installPoLoader.visible = false;
                     aboutLoader.visible = false;
 
-                    // Пересоздаем Settings при каждом переходе
                     settingsLoader.active = false;
                     settingsLoader.visible = true;
                     settingsLoader.active = true;
 
-                    // Скрываем панель после выбора пункта
                     root.hideSidebar()
                 }
             }
@@ -320,12 +313,10 @@ Item {
                     settingsLoader.visible = false;
                     installPoLoader.visible = false;
 
-                    // Пересоздаем About при каждом переходе
                     aboutLoader.active = false;
                     aboutLoader.visible = true;
                     aboutLoader.active = true;
 
-                    // Скрываем панель после выбора пункта
                     root.hideSidebar()
                 }
             }
@@ -339,7 +330,6 @@ Item {
         height: parent.height
         anchors.fill: parent
 
-        // Кнопка меню (три точки)
         Rectangle {
             id: menuButton
             width: 40
@@ -379,7 +369,7 @@ Item {
             anchors.fill: parent
             source: "Dashboard.qml"
             active: true
-            visible: true
+            visible: false
         }
 
         Loader {
@@ -395,14 +385,14 @@ Item {
             anchors.fill: parent
             source: "InstallPO.qml"
             active: true
-            visible: false
+            visible: true
         }
 
         Loader {
             id: settingsLoader
             anchors.fill: parent
             source: "Settings.qml"
-            active: false  // Изменено с true на false
+            active: false
             visible: false
         }
 
@@ -410,7 +400,7 @@ Item {
             id: aboutLoader
             anchors.fill: parent
             source: "About.qml"
-            active: false  // Изменено с true на false
+            active: false
             visible: false
         }
     }
