@@ -688,8 +688,6 @@ ScrollView {
                                     text: root.tempLicensePassword
                                     clip: true
                                     enabled: !root.activationSuccessful
-                                    echoMode: TextInput.Password
-                                    passwordCharacter: "•"
 
                                     onTextChanged: {
                                         root.tempLicensePassword = text;
