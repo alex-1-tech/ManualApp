@@ -16,7 +16,7 @@ ScrollView {
     property bool isActivating: false
     property bool activationSuccessful: DataManager.installManager().isLicenseActivate && SettingsManager.deviceHWID != ""
     property string mode: "control"
-    property string railtTypeMode: "irs52"
+    property string railTypeMode: "irs52"
     property string tempHostHWID: SettingsManager.hostHWID
     property string tempDeviceHWID: SettingsManager.deviceHWID
     property string tempLicensePassword: ""
@@ -111,7 +111,7 @@ ScrollView {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: root.currentModel === "kalmar32" ? 200 : 150
-                    color: Theme.colorBgMuted
+                    color: Theme.colorBgMuted 
                     radius: Theme.radiusCard
                     border.color: Theme.colorBorder
 
@@ -147,7 +147,7 @@ ScrollView {
 
                         // Rail type mode
                         ColumnLayout {
-                            id: railTypeMode
+                            id: railTypeModeSection
                             anchors.margins: 5
                             spacing: 5
                             visible: root.currentModel === "kalmar32"
@@ -168,19 +168,19 @@ ScrollView {
                                     width: 100
                                     height: 30
                                     radius: 4
-                                    color: root.railtTypeMode === "p65" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
-                                    border.color: root.railtTypeMode === "p65" ? Theme.colorButtonPrimary : Theme.colorBorder
+                                    color: root.railTypeMode === "p65" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
+                                    border.color: root.railTypeMode === "p65" ? Theme.colorButtonPrimary : Theme.colorBorder
 
                                     Text {
                                         anchors.centerIn: parent
                                         text: "P65"
-                                        color: root.railtTypeMode === "p65" ? "white" : Theme.colorTextMuted
+                                        color: root.railTypeMode === "p65" ? "white" : Theme.colorTextMuted
                                         font.pointSize: Theme.fontSmall
                                     }
 
                                     MouseArea {
                                         anchors.fill: parent
-                                        onClicked: root.railtTypeMode = "p65"
+                                        onClicked: root.railTypeMode = "p65"
                                     }
                                 }
 
@@ -189,19 +189,19 @@ ScrollView {
                                     width: 100
                                     height: 30
                                     radius: 4
-                                    color: root.railtTypeMode === "irs52" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
-                                    border.color: root.railtTypeMode === "irs52" ? Theme.colorButtonPrimary : Theme.colorBorder
+                                    color: root.railTypeMode === "irs52" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
+                                    border.color: root.railTypeMode === "irs52" ? Theme.colorButtonPrimary : Theme.colorBorder
 
                                     Text {
                                         anchors.centerIn: parent
                                         text: "IRS52"
-                                        color: root.railtTypeMode === "irs52" ? "white" : Theme.colorTextMuted
+                                        color: root.railTypeMode === "irs52" ? "white" : Theme.colorTextMuted
                                         font.pointSize: Theme.fontSmall
                                     }
 
                                     MouseArea {
                                         anchors.fill: parent
-                                        onClicked: root.railtTypeMode = "irs52"
+                                        onClicked: root.railTypeMode = "irs52"
                                     }
                                 }
 
@@ -210,19 +210,19 @@ ScrollView {
                                     width: 100
                                     height: 30
                                     radius: 4
-                                    color: root.railtTypeMode === "uic60" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
-                                    border.color: root.railtTypeMode === "uic60" ? Theme.colorButtonPrimary : Theme.colorBorder
+                                    color: root.railTypeMode === "uic60" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
+                                    border.color: root.railTypeMode === "uic60" ? Theme.colorButtonPrimary : Theme.colorBorder
 
                                     Text {
                                         anchors.centerIn: parent
                                         text: "UCI60"
-                                        color: root.railtTypeMode === "uic60" ? "white" : Theme.colorTextMuted
+                                        color: root.railTypeMode === "uic60" ? "white" : Theme.colorTextMuted
                                         font.pointSize: Theme.fontSmall
                                     }
 
                                     MouseArea {
                                         anchors.fill: parent
-                                        onClicked: root.railtTypeMode = "uic60"
+                                        onClicked: root.railTypeMode = "uic60"
                                     }
                                 }
                             }
@@ -288,7 +288,7 @@ ScrollView {
                             root.mainStatusMessage = "Starting download...";
                             root.mainDownloadProgress = 0;
 
-                            DataManager.installManager().downloadInstaller(root.currentModel, url, root.railtTypeMode);
+                            DataManager.installManager().downloadInstaller(root.currentModel, url, root.railTypeMode);
                         }
                     }
 
@@ -1057,27 +1057,11 @@ ScrollView {
                     uploadProgressPopup.uploadComplete = false;
                     uploadProgressPopup.uploadSuccess = false;
                     uploadProgressPopup.uploadInProgress = true;
-                    resetTimer.start();
                 }
 
                 onClosed: {
-                    resetTimer.stop();
                     retryTimer.stop();
                     uploadProgressPopup.uploadInProgress = false;
-                }
-
-                Timer {
-                    id: resetTimer
-                    interval: 10000
-                    repeat: false
-                    onTriggered: {
-                        if (uploadProgressPopup.uploadInProgress && !uploadProgressPopup.uploadComplete) {
-                            uploadProgressPopup.uploadInProgress = false;
-                            uploadProgressPopup.uploadComplete = true;
-                            uploadProgressPopup.uploadSuccess = false;
-                            retryTimer.start();
-                        }
-                    }
                 }
 
                 Timer {
@@ -1106,7 +1090,6 @@ ScrollView {
                     function onSettingsUploadFinished(success) {
                         if (uploadProgressPopup.uploadInProgress && !uploadProgressPopup.uploadComplete) {
                             uploadProgressPopup.uploadInProgress = false;
-                            resetTimer.stop();
                             uploadProgressPopup.uploadComplete = true;
                             uploadProgressPopup.uploadSuccess = success;
                             retryTimer.start();
