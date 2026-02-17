@@ -13,8 +13,6 @@ ScrollView {
 
     // ====== State ===========================================================
     property string currentModel: SettingsManager.currentModel
-    property bool isDownloading: DataManager.installManager().isDownloading
-    property bool isInstallerReady: DataManager.installManager().installerExists(currentModel)
     property bool isActivating: false
     property bool activationSuccessful: DataManager.installManager().isLicenseActivate && SettingsManager.deviceHWID != ""
     property string mode: "control"
@@ -29,8 +27,11 @@ ScrollView {
     property double manualAppDownloadProgress: 0.0
     property string manualAppInstallerPath: ""
 
-    // Track current downloading model
-    property string currentDownloadingModel: ""
+    // Main model download state
+    property bool isMainDownloading: false
+    property bool isMainInstallerReady: DataManager.installManager().installerExists(currentModel)
+    property double mainDownloadProgress: 0.0
+    property string mainStatusMessage: ""
 
     contentItem: Flickable {
         id: flick
@@ -90,26 +91,6 @@ ScrollView {
                     Item {
                         Layout.fillWidth: true
                     }
-
-                    Text {
-                        text: {
-                            if (root.isDownloading && root.currentDownloadingModel === root.currentModel)
-                                "Downloading...";
-                            else if (root.isInstallerReady)
-                                "Ready";
-                            else
-                                "Not downloaded";
-                        }
-                        color: {
-                            if (root.isDownloading && root.currentDownloadingModel === root.currentModel)
-                                Theme.colorWarning;
-                            else if (root.isInstallerReady)
-                                Theme.colorSuccess;
-                            else
-                                Theme.colorError;
-                        }
-                        font.pointSize: Theme.fontBody
-                    }
                 }
             }
 
@@ -128,35 +109,37 @@ ScrollView {
                 // Status Card
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 140
+                    Layout.preferredHeight: 150
                     color: Theme.colorBgMuted
                     radius: Theme.radiusCard
                     border.color: Theme.colorBorder
 
                     ColumnLayout {
                         anchors.fill: parent
-                        anchors.margins: 15
-                        spacing: 5
+                        anchors.leftMargin: 15
+                        anchors.rightMargin: 15
+                        anchors.topMargin: 15
+                        anchors.bottomMargin: 20
+                        spacing: 2
 
                         Text {
-                            text: {
-                                if (root.isDownloading && root.currentDownloadingModel === root.currentModel)
-                                    return DataManager.installManager().statusMessage;
-                                else if (root.isInstallerReady)
-                                    return "Ready to install";
+                            text: root.mainStatusMessage || (root.isMainInstallerReady ? "Ready to install" : "Not downloaded")
+                            color: {
+                                if (root.isMainDownloading)
+                                    Theme.colorWarning;
+                                else if (root.isMainInstallerReady)
+                                    Theme.colorSuccess;
                                 else
-                                    return "Not downloaded";
+                                    Theme.colorError;
                             }
-                            color: Theme.colorTextPrimary
                             font.pointSize: Theme.fontBody
                             Layout.fillWidth: true
                         }
 
                         ProgressBar {
-                            id: downloadProgress
                             Layout.fillWidth: true
-                            visible: root.isDownloading && root.currentDownloadingModel === root.currentModel
-                            value: DataManager.installManager().downloadProgress
+                            visible: root.isMainDownloading
+                            value: root.mainDownloadProgress
                             from: 0
                             to: 100
                         }
@@ -180,25 +163,25 @@ ScrollView {
                 // Download & Install Buttons
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
-                    spacing: 15
+                    Layout.topMargin: -36
+                    spacing: 12
+                    z: 2
 
                     Button {
                         id: downloadButton
-                        Layout.preferredWidth: 200
-                        Layout.preferredHeight: 50
+                        Layout.preferredWidth: 170
+                        Layout.preferredHeight: 42
+
                         text: {
-                            if (root.isDownloading && root.currentDownloadingModel === root.currentModel)
+                            if (root.isMainDownloading)
                                 "Downloading...";
-                            else if (root.isInstallerReady)
+                            else if (root.isMainInstallerReady)
                                 "Redownload";
                             else
-                                "Download Installer";
+                                "Download";
                         }
-                        enabled: {
-                            if (root.isDownloading && root.currentDownloadingModel !== root.currentModel)
-                                return false;
-                            return !root.isDownloading && !DataManager.installManager().isInstalling;
-                        }
+
+                        enabled: !root.isMainDownloading && !DataManager.installManager().isInstalling && !root.isManualAppDownloading
 
                         background: Rectangle {
                             color: parent.enabled ? Theme.colorButtonSecondary : Theme.colorButtonDisabled
@@ -216,17 +199,22 @@ ScrollView {
 
                         onClicked: {
                             var url = DataManager.djangoBaseUrl();
-                            root.currentDownloadingModel = root.currentModel;
+
+                            root.isMainDownloading = true;
+                            root.mainStatusMessage = "Starting download...";
+                            root.mainDownloadProgress = 0;
+
                             DataManager.installManager().downloadInstaller(root.currentModel, url);
                         }
                     }
 
                     Button {
                         id: installButton
-                        Layout.preferredWidth: 200
-                        Layout.preferredHeight: 50
-                        text: DataManager.installManager().isInstalling ? "Installing..." : "Run Installer"
-                        enabled: !DataManager.installManager().isInstalling && !root.isDownloading && root.isInstallerReady
+                        Layout.preferredWidth: 170
+                        Layout.preferredHeight: 42
+
+                        text: DataManager.installManager().isInstalling ? "Installing..." : "Run"
+                        enabled: !DataManager.installManager().isInstalling && !root.isMainDownloading && root.isMainInstallerReady
 
                         background: Rectangle {
                             color: parent.enabled ? Theme.colorButtonPrimary : Theme.colorButtonDisabled
@@ -271,8 +259,11 @@ ScrollView {
 
                     ColumnLayout {
                         anchors.fill: parent
-                        anchors.margins: 15
-                        spacing: 5
+                        anchors.leftMargin: 15
+                        anchors.rightMargin: 15
+                        anchors.topMargin: 15
+                        anchors.bottomMargin: 20
+                        spacing: 2
 
                         Text {
                             id: manualAppStatusText
@@ -317,12 +308,14 @@ ScrollView {
                 // Download & Install Buttons
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
-                    spacing: 15
+                    Layout.topMargin: -36
+                    spacing: 12
+                    z: 2
 
                     Button {
                         id: manualAppDownloadButton
-                        Layout.preferredWidth: 200
-                        Layout.preferredHeight: 50
+                        Layout.preferredWidth: 170
+                        Layout.preferredHeight: 42
 
                         text: {
                             if (root.isManualAppDownloading)
@@ -330,7 +323,7 @@ ScrollView {
                             else if (root.isManualAppInstallerReady)
                                 "Redownload";
                             else
-                                "Download ManualApp";
+                                "Download";
                         }
                         enabled: !root.isManualAppDownloading && !DataManager.installManager().isDownloading && !DataManager.installManager().isInstalling
 
@@ -360,9 +353,9 @@ ScrollView {
 
                     Button {
                         id: manualAppInstallButton
-                        Layout.preferredWidth: 200
-                        Layout.preferredHeight: 50
-                        text: DataManager.installManager().isInstalling ? "Installing..." : "Run Installer"
+                        Layout.preferredWidth: 170
+                        Layout.preferredHeight: 42
+                        text: DataManager.installManager().isInstalling ? "Installing..." : "Run"
                         enabled: !DataManager.installManager().isInstalling && !root.isManualAppDownloading && !DataManager.installManager().isDownloading && root.isManualAppInstallerReady
 
                         background: Rectangle {
@@ -389,59 +382,62 @@ ScrollView {
             Connections {
                 target: DataManager.installManager()
 
-                function onDownloadFinished(success) {
-                    if (root.currentDownloadingModel === root.currentModel) {
-                        root.currentDownloadingModel = "";
+                function onDownloadProgressChanged() {
+                    if (root.isMainDownloading) {
+                        root.mainDownloadProgress = DataManager.installManager().downloadProgress;
+
+                        root.mainStatusMessage = "Downloading: " + Math.round(root.mainDownloadProgress) + "%";
                     }
 
+                    if (root.isManualAppDownloading) {
+                        root.manualAppDownloadProgress = DataManager.installManager().downloadProgress;
+
+                        root.manualAppStatusMessage = "Downloading: " + Math.round(root.manualAppDownloadProgress) + "%";
+                    }
+                }
+
+                function onDownloadFinished(success) {
+
+                    // ===== MAIN MODEL =====
+                    if (root.isMainDownloading) {
+                        root.isMainDownloading = false;
+                        root.isMainInstallerReady = DataManager.installManager().installerExists(root.currentModel);
+
+                        if (success) {
+                            root.mainDownloadProgress = 100;
+                            root.mainStatusMessage = "Download completed successfully!";
+                        } else {
+                            root.mainDownloadProgress = 0;
+                            root.mainStatusMessage = "Download failed!";
+                        }
+                    }
+
+                    // ===== MANUAL APP =====
                     if (root.isManualAppDownloading) {
                         root.isManualAppDownloading = false;
                         root.isManualAppInstallerReady = DataManager.installManager().installerExists("manual_app");
 
                         if (success) {
-                            root.manualAppStatusMessage = "Download completed successfully!";
                             root.manualAppDownloadProgress = 100;
+                            root.manualAppStatusMessage = "Download completed successfully!";
                         } else {
-                            root.manualAppStatusMessage = "Download failed!";
                             root.manualAppDownloadProgress = 0;
+                            root.manualAppStatusMessage = "Download failed!";
                         }
                     }
-                }
-
-                function onDownloadProgressChanged() {
-                    if (root.currentDownloadingModel === root.currentModel) {}
-
-                    if (root.isManualAppDownloading) {
-                        root.manualAppDownloadProgress = DataManager.installManager().downloadProgress;
-                        root.manualAppStatusMessage = "Downloading: " + Math.round(DataManager.installManager().downloadProgress) + "%";
-                    }
-                }
-
-                function onIsDownloadingChanged() {
-                    if (!DataManager.installManager().isDownloading) {
-                        if (root.isManualAppDownloading && root.currentDownloadingModel !== "manual_app") {
-                            root.isManualAppDownloading = false;
-                            root.manualAppStatusMessage = "Download stopped";
-                        }
-                        if (root.currentDownloadingModel !== "" && root.currentDownloadingModel !== "manual_app") {
-                            root.currentDownloadingModel = "";
-                        }
-                    }
-                }
-
-                function onInstallationFinished(success) {
-                    root.isInstallerReady = DataManager.installManager().installerExists(root.currentModel);
-                    root.isManualAppInstallerReady = DataManager.installManager().installerExists("manual_app");
                 }
 
                 function onErrorOccurred(error) {
+                    if (root.isMainDownloading) {
+                        root.isMainDownloading = false;
+                        root.mainDownloadProgress = 0;
+                        root.mainStatusMessage = "Error: " + error;
+                    }
+
                     if (root.isManualAppDownloading) {
                         root.isManualAppDownloading = false;
-                        root.manualAppStatusMessage = "Error: " + error;
                         root.manualAppDownloadProgress = 0;
-                    }
-                    if (root.currentDownloadingModel !== "") {
-                        root.currentDownloadingModel = "";
+                        root.manualAppStatusMessage = "Error: " + error;
                     }
                 }
             }
