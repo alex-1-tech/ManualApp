@@ -428,7 +428,6 @@ ScrollView {
                         onClicked: {
                             var url = DataManager.djangoBaseUrl();
                             root.isManualAppDownloading = true;
-                            root.currentDownloadingModel = "manual_app";
                             root.manualAppStatusMessage = "Starting download...";
                             root.manualAppDownloadProgress = 0;
                             DataManager.installManager().downloadInstaller("manual_app", url, "");
