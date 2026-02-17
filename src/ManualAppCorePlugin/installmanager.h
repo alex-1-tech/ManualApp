@@ -34,7 +34,8 @@ public:
   double downloadProgress() const { return m_downloadProgress; }
 
   Q_INVOKABLE bool installerExists(const QString& model) const;
-  Q_INVOKABLE void downloadInstaller(const QString& model, const QString& baseUrl);
+  Q_INVOKABLE void downloadInstaller(const QString& model, const QString& baseUrl,
+                                     const QString& railTypeMode);
   Q_INVOKABLE void runInstaller(const QString& model);
   Q_INVOKABLE void activate(const QString& model, const QString& hostHWID, const QString& deviceHWID,
                             const QString& mode, const QString& url, const QString& licensePassword);
@@ -71,7 +72,7 @@ private:
   void setDownloadProgress(double progress);
 
 
-  QString buildDownloadUrl(const QString& model, const QString& baseUrl) const;
+  QString buildDownloadUrl(const QString& model, const QString& baseUrl, const QString& railTypeMode) const;
   void initializeNetworkService();
 
   QString m_statusMessage;

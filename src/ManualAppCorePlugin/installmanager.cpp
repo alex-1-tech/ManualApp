@@ -71,10 +71,17 @@ QString InstallManager::buildInstallerPath(const QString& model) const
   return appDataDir + installerName;
 }
 
-QString InstallManager::buildDownloadUrl(const QString& model, const QString& baseUrl) const
+QString InstallManager::buildDownloadUrl(const QString& model, const QString& baseUrl,
+                                         const QString& railTypeMode) const
 {
   if (model.toLower() == "kalmar32") {
-    return baseUrl + "/api/apps/download/kalmar32/";
+    QUrl url(baseUrl + "/api/apps/download/kalmar32/");
+    QUrlQuery query;
+    if (!railTypeMode.isEmpty()) {
+      query.addQueryItem("rail_type", railTypeMode.toUpper().trimmed());
+    }
+    url.setQuery(query);
+    return url.toString();
   } else if (model.toLower() == "phasar32") {
     return baseUrl + "/api/apps/download/phasar32/";
   } else if (model.toLower() == "manual_app") {
@@ -101,7 +108,8 @@ bool InstallManager::installerExists(const QString& model) const
   return exists;
 }
 
-void InstallManager::downloadInstaller(const QString& model, const QString& baseUrl)
+void InstallManager::downloadInstaller(const QString& model, const QString& baseUrl,
+                                       const QString& railTypeMode)
 {
   DEBUG_COLORED("InstallManager", "downloadInstaller", QString("Starting download for model: %1").arg(model),
                 COLOR_CYAN, COLOR_CYAN);
@@ -112,7 +120,7 @@ void InstallManager::downloadInstaller(const QString& model, const QString& base
     return;
   }
 
-  QString url = buildDownloadUrl(model, baseUrl);
+  QString url = buildDownloadUrl(model, baseUrl, railTypeMode);
   QString path = buildInstallerPath(model);
 
   if (url.isEmpty() || path.isEmpty()) {

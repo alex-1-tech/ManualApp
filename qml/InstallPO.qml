@@ -16,6 +16,7 @@ ScrollView {
     property bool isActivating: false
     property bool activationSuccessful: DataManager.installManager().isLicenseActivate && SettingsManager.deviceHWID != ""
     property string mode: "control"
+    property string railtTypeMode: "irs52"
     property string tempHostHWID: SettingsManager.hostHWID
     property string tempDeviceHWID: SettingsManager.deviceHWID
     property string tempLicensePassword: ""
@@ -82,7 +83,7 @@ ScrollView {
                     }
 
                     Text {
-                        text: root.currentModel === "kalmar32" ? "KALMAR-32" : "PHAZAR-32"
+                        text: root.currentModel === "kalmar32" ? "KALMAR-32" : "PHASAR-32"
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSubtitle
                         font.bold: true
@@ -109,7 +110,7 @@ ScrollView {
                 // Status Card
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 150
+                    Layout.preferredHeight: root.currentModel === "kalmar32" ? 200 : 150
                     color: Theme.colorBgMuted
                     radius: Theme.radiusCard
                     border.color: Theme.colorBorder
@@ -142,6 +143,89 @@ ScrollView {
                             value: root.mainDownloadProgress
                             from: 0
                             to: 100
+                        }
+
+                        // Rail type mode
+                        ColumnLayout {
+                            id: railTypeMode
+                            anchors.margins: 5
+                            spacing: 5
+                            visible: root.currentModel === "kalmar32"
+
+                            Text {
+                                text: "Rail type: "
+                                color: Theme.colorTextMuted
+                                font.pointSize: Theme.fontSmall
+                                font.bold: true
+                            }
+
+                            RowLayout {
+                                spacing: 10
+                                Layout.alignment: Qt.AlignLeft
+
+                                Rectangle {
+                                    id: p65RailTypeButton
+                                    width: 100
+                                    height: 30
+                                    radius: 4
+                                    color: root.railtTypeMode === "p65" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
+                                    border.color: root.railtTypeMode === "p65" ? Theme.colorButtonPrimary : Theme.colorBorder
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "P65"
+                                        color: root.railtTypeMode === "p65" ? "white" : Theme.colorTextMuted
+                                        font.pointSize: Theme.fontSmall
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: root.railtTypeMode = "p65"
+                                    }
+                                }
+
+                                Rectangle {
+                                    id: irs52RailTypeButton
+                                    width: 100
+                                    height: 30
+                                    radius: 4
+                                    color: root.railtTypeMode === "irs52" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
+                                    border.color: root.railtTypeMode === "irs52" ? Theme.colorButtonPrimary : Theme.colorBorder
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "IRS52"
+                                        color: root.railtTypeMode === "irs52" ? "white" : Theme.colorTextMuted
+                                        font.pointSize: Theme.fontSmall
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: root.railtTypeMode = "irs52"
+                                    }
+                                }
+
+                                Rectangle {
+                                    id: uic60RailTypeButton
+                                    width: 100
+                                    height: 30
+                                    radius: 4
+                                    color: root.railtTypeMode === "uic60" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
+                                    border.color: root.railtTypeMode === "uic60" ? Theme.colorButtonPrimary : Theme.colorBorder
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "UCI60"
+                                        color: root.railtTypeMode === "uic60" ? "white" : Theme.colorTextMuted
+                                        font.pointSize: Theme.fontSmall
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: root.railtTypeMode = "uic60"
+                                    }
+                                }
+                            }
                         }
 
                         Text {
@@ -204,7 +288,7 @@ ScrollView {
                             root.mainStatusMessage = "Starting download...";
                             root.mainDownloadProgress = 0;
 
-                            DataManager.installManager().downloadInstaller(root.currentModel, url);
+                            DataManager.installManager().downloadInstaller(root.currentModel, url, root.railtTypeMode);
                         }
                     }
 
@@ -347,7 +431,7 @@ ScrollView {
                             root.currentDownloadingModel = "manual_app";
                             root.manualAppStatusMessage = "Starting download...";
                             root.manualAppDownloadProgress = 0;
-                            DataManager.installManager().downloadInstaller("manual_app", url);
+                            DataManager.installManager().downloadInstaller("manual_app", url, "");
                         }
                     }
 
@@ -707,7 +791,7 @@ ScrollView {
                                 if (root.currentModel === "kalmar32") {
                                     "Note: Device HWID is required for KALMAR-32 activation.";
                                 } else {
-                                    "Note: Both Host HWID and Device HWID are required for PHAZAR-32 activation.";
+                                    "Note: Both Host HWID and Device HWID are required for PHASAR-32 activation.";
                                 }
                             }
                             color: Theme.colorTextMuted
