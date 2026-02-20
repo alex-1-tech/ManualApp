@@ -35,6 +35,8 @@ QtObject {
     property color colorError: "#F87171"
     property color colorWarning: "#FBBF24"
     property color colorNeutral: "#9e9e9e"
+
+    property color colorUpdate: "#ff6b8e"
     // ==== Pills ====
     property color colorPillBg: "#3F5A72"
     property color colorPillText: "#FFFFFF"

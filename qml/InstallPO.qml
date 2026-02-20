@@ -207,7 +207,7 @@ ScrollView {
 
                     Rectangle {
                         visible: root.mainUpdateStatus === "new_version_available"
-                        color: Theme.colorWarning
+                        color: Theme.colorUpdate
                         radius: 4
                         height: 24
                         width: 160
@@ -261,9 +261,9 @@ ScrollView {
                                 text: root.mainStatusMessage || (root.isMainInstallerReady ? "Installer ready" : "Not downloaded")
                                 color: {
                                     if (root.isMainDownloading)
-                                        Theme.colorWarning;
+                                        Theme.colorUpdate;
                                     else if (root.mainUpdateStatus === "new_version_available")
-                                        Theme.colorWarning;
+                                        Theme.colorUpdate;
                                     else if (root.isMainInstallerReady)
                                         Theme.colorSuccess;
                                     else
@@ -305,7 +305,7 @@ ScrollView {
 
                             Text {
                                 text: root.mainLastVersionDate > new Date(0) ? Qt.formatDate(root.mainLastVersionDate, "yyyy-MM-dd") : "Never"
-                                color: root.mainLastVersionDate < root.mainLatestServerDate ? Theme.colorWarning : Theme.colorTextPrimary
+                                color: root.mainLastVersionDate < root.mainLatestServerDate ? Theme.colorUpdate : Theme.colorTextPrimary
                                 font.pointSize: Theme.fontSmall
                                 font.bold: root.mainLastVersionDate < root.mainLatestServerDate
                             }
@@ -414,7 +414,7 @@ ScrollView {
                                 if (!parent.enabled)
                                     return Theme.colorButtonDisabled;
                                 if (root.mainUpdateStatus === "new_version_available")
-                                    return Theme.colorWarning;
+                                    return Theme.colorUpdate;
                                 return Theme.colorButtonSecondary;
                             }
                             radius: Theme.radiusButton
@@ -454,7 +454,7 @@ ScrollView {
                         enabled: !DataManager.installManager().isInstalling && !root.isMainDownloading && !DataManager.installManager().isDownloading && root.isMainInstallerReady
 
                         background: Rectangle {
-                            color: parent.enabled ? (root.mainUpdateStatus === "new_version_available" ? Theme.colorWarning : Theme.colorButtonPrimary) : Theme.colorButtonDisabled
+                            color: parent.enabled ? (root.mainUpdateStatus === "new_version_available" ? Theme.colorUpdate : Theme.colorButtonPrimary) : Theme.colorButtonDisabled
                             radius: Theme.radiusButton
                         }
 
@@ -502,7 +502,7 @@ ScrollView {
 
                     Rectangle {
                         visible: root.manualAppUpdateStatus === "new_version_available"
-                        color: Theme.colorWarning
+                        color: Theme.colorUpdate
                         radius: 4
                         height: 24
                         width: 160
@@ -566,9 +566,9 @@ ScrollView {
 
                                 color: {
                                     if (root.isManualAppDownloading)
-                                        return Theme.colorWarning;
+                                        return Theme.colorUpdate;
                                     if (root.manualAppUpdateStatus === "new_version_available")
-                                        return Theme.colorWarning;
+                                        return Theme.colorUpdate;
                                     if (root.isManualAppInstallerReady)
                                         return Theme.colorSuccess;
                                     return Theme.colorError;
@@ -606,7 +606,7 @@ ScrollView {
 
                             Text {
                                 text: root.manualAppLastVersionDate > new Date(0) ? Qt.formatDate(root.manualAppLastVersionDate, "yyyy-MM-dd") : "Never"
-                                color: root.manualAppLastVersionDate < root.manualAppLatestServerDate ? Theme.colorWarning : Theme.colorTextPrimary
+                                color: root.manualAppLastVersionDate < root.manualAppLatestServerDate ? Theme.colorUpdate : Theme.colorTextPrimary
                                 font.pointSize: Theme.fontSmall
                                 font.bold: root.manualAppLastVersionDate < root.manualAppLatestServerDate
                             }
@@ -666,7 +666,7 @@ ScrollView {
                                 if (!parent.enabled)
                                     return Theme.colorButtonDisabled;
                                 if (root.manualAppUpdateStatus === "new_version_available")
-                                    return Theme.colorWarning;
+                                    return Theme.colorUpdate;
                                 return Theme.colorButtonSecondary;
                             }
                             radius: Theme.radiusButton
@@ -706,7 +706,7 @@ ScrollView {
                         enabled: !DataManager.installManager().isInstalling && !root.isManualAppDownloading && !DataManager.installManager().isDownloading && root.isManualAppInstallerReady
 
                         background: Rectangle {
-                            color: parent.enabled ? (root.manualAppUpdateStatus === "new_version_available" ? Theme.colorWarning : Theme.colorButtonPrimary) : Theme.colorButtonDisabled
+                            color: parent.enabled ? (root.manualAppUpdateStatus === "new_version_available" ? Theme.colorUpdate : Theme.colorButtonPrimary) : Theme.colorButtonDisabled
                             radius: Theme.radiusButton
                         }
 
