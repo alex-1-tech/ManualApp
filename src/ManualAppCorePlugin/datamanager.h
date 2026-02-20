@@ -53,6 +53,7 @@ public:
   Q_INVOKABLE void uploadReportToDjango(const QUrl& apiUrl);
   Q_INVOKABLE void syncReportsWithServer();
   Q_INVOKABLE void syncSettingsWithServer();
+
   // Q_INVOKABLE methods - Settings Operations
   Q_INVOKABLE QString createSettingsJsonFile(const QString& filePath);
   Q_INVOKABLE bool deleteSettingsJsonFile(const QString& filePath);
@@ -63,9 +64,11 @@ public:
   Q_INVOKABLE void setStepStatus(int index, Step::CompletionStatus status);
   Q_INVOKABLE void setDefectDetails(int index, const QString& description, const QString& repairMethod,
                                     Step::DefectDetails::FixStatus fixStatus);
+
   // Q_INVOKABLE methods - Config Operations
   Q_INVOKABLE QString djangoBaseUrl() const { return ConfigManager::instance().djangoBaseUrl(); };
   Q_INVOKABLE QString appVersion() const { return ConfigManager::instance().appVersion(); };
+
   // Q_INVOKABLE methods - TO Operations
   Q_INVOKABLE void setCurrentNumberTO(const QString& numberTO);
   Q_INVOKABLE QString currentNumberTO();
@@ -75,6 +78,7 @@ public:
   {
     return m_reportManager->findReportPdf(categoryKey, dateIso);
   };
+
   // Q_INVOKABLE methods - Utility
   Q_INVOKABLE QStringList getFixStatusOptions() const;
   Q_INVOKABLE bool createArchive(const QString& folderPath, const QString& mode);
@@ -105,6 +109,7 @@ public:
   // Dir getters
   Q_INVOKABLE QString applicationDirPath() { return QCoreApplication::applicationDirPath(); }
 signals:
+
   // Property change signals
   void titleChanged();
   void settingsManagerChanged();
