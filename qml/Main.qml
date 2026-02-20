@@ -82,7 +82,7 @@ Item {
 
         Rectangle {
             id: navDashboard
-            color: Theme.colorNavActive
+            color: Theme.colorNavInactive
             width: parent.width
             height: 40
             y: 60
@@ -113,12 +113,14 @@ Item {
                     navAbout.color = Theme.colorNavInactive;
                     navReports.color = Theme.colorNavInactive;
                     navInstallPO.color = Theme.colorNavInactive;
+                    navActivate.color = Theme.colorNavInactive;
                     navDashboard.color = Theme.colorNavActive;
 
                     dashboardLoader.visible = true;
                     reportsLoader.visible = false;
                     settingsLoader.visible = false;
                     aboutLoader.visible = false;
+                    activateLoader.visible = false;
                     installPoLoader.visible = false;
 
                     root.hideSidebar()
@@ -160,11 +162,13 @@ Item {
                     navReports.color = Theme.colorNavActive;
                     navDashboard.color = Theme.colorNavInactive;
                     navInstallPO.color = Theme.colorNavInactive;
+                    navActivate.color = Theme.colorNavInactive;
 
                     dashboardLoader.visible = false;
                     settingsLoader.visible = false;
                     aboutLoader.visible = false;
                     installPoLoader.visible = false;
+                    activateLoader.visible = false;
 
                     reportsLoader.active = false;
                     reportsLoader.visible = true;
@@ -177,7 +181,7 @@ Item {
 
         Rectangle {
             id: navInstallPO
-            color: Theme.colorNavInactive
+            color: Theme.colorNavActive
             width: parent.width
             height: 40
             y: 150
@@ -209,11 +213,13 @@ Item {
                     navReports.color = Theme.colorNavInactive;
                     navDashboard.color = Theme.colorNavInactive;
                     navInstallPO.color = Theme.colorNavActive;
+                    navActivate.color = Theme.colorNavInactive;
 
                     dashboardLoader.visible = false;
                     reportsLoader.visible = false;
                     settingsLoader.visible = false;
                     aboutLoader.visible = false;
+                    activateLoader.visible = false;
 
                     installPoLoader.active = false;
                     installPoLoader.visible = true;
@@ -225,11 +231,59 @@ Item {
         }
 
         Rectangle {
-            id: navSettings
+            id: navActivate
             color: Theme.colorNavInactive
             width: parent.width
             height: 40
             y: 195
+
+            Image {
+                source: "qrc:///media/icons/icon-activate.svg"
+                height: 20
+                width: 20
+                x: 20
+                y: 10
+            }
+
+            Text {
+                color: Theme.colorTextPrimary
+                text: qsTr("Activate")
+                font.pointSize: 12
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            MouseArea {
+                id: mouseAreaActivate
+                width: parent.width
+                height: parent.height
+
+                onClicked: function () {
+                    navSettings.color = Theme.colorNavInactive;
+                    navAbout.color = Theme.colorNavInactive;
+                    navReports.color = Theme.colorNavInactive;
+                    navDashboard.color = Theme.colorNavInactive;
+                    navInstallPO.color = Theme.colorNavInactive;
+                    navActivate.color = Theme.colorNavActive;
+
+                    dashboardLoader.visible = false;
+                    reportsLoader.visible = false;
+                    settingsLoader.visible = false;
+                    aboutLoader.visible = false;
+                    activateLoader.visible = true;
+                    installPoLoader.visible = false;
+
+                    root.hideSidebar()
+                }
+            }
+        }
+
+        Rectangle {
+            id: navSettings
+            color: Theme.colorNavInactive
+            width: parent.width
+            height: 40
+            y: 240
 
             Image {
                 source: "qrc:///media/icons/icon-settings.svg"
@@ -258,11 +312,13 @@ Item {
                     navReports.color = Theme.colorNavInactive;
                     navDashboard.color = Theme.colorNavInactive;
                     navInstallPO.color = Theme.colorNavInactive;
+                    navActivate.color = Theme.colorNavInactive;
 
                     dashboardLoader.visible = false;
                     reportsLoader.visible = false;
                     installPoLoader.visible = false;
                     aboutLoader.visible = false;
+                    activateLoader.visible = false;
 
                     settingsLoader.active = false;
                     settingsLoader.visible = true;
@@ -278,7 +334,7 @@ Item {
             color: Theme.colorNavInactive
             width: parent.width
             height: 40
-            y: 240
+            y: 285
 
             Image {
                 source: "qrc:///media/icons/icon-about.svg"
@@ -307,11 +363,13 @@ Item {
                     navReports.color = Theme.colorNavInactive;
                     navDashboard.color = Theme.colorNavInactive;
                     navInstallPO.color = Theme.colorNavInactive;
+                    navActivate.color = Theme.colorNavInactive;
 
                     dashboardLoader.visible = false;
                     reportsLoader.visible = false;
                     settingsLoader.visible = false;
                     installPoLoader.visible = false;
+                    activateLoader.visible = false;
 
                     aboutLoader.active = false;
                     aboutLoader.visible = true;
@@ -386,6 +444,14 @@ Item {
             source: "InstallPO.qml"
             active: true
             visible: true
+        }
+
+        Loader {
+            id: activateLoader
+            anchors.fill: parent
+            source: "Activate.qml"
+            active: true
+            visible: false
         }
 
         Loader {
