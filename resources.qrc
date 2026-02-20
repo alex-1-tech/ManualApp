@@ -9,6 +9,7 @@
         <!-- main -->
         <file>qml/Main.qml</file>
         <file>qml/About.qml</file>
+        <file>qml/Activate.qml</file>
         <file>qml/Dashboard.qml</file>
         <file>qml/Reports.qml</file>
         <file>qml/Settings.qml</file>
@@ -51,9 +52,10 @@
         <file>media/icons/icon-rules.svg</file>
         <file>media/icons/icon-reports.svg</file>
         <file>media/icons/icon-checkmark.svg</file>
+        <file>media/icons/icon-activate.svg</file>
         <file>media/icons/app.png</file>
         <file>media/icons/logo.png</file>
-
+        
         <!-- js -->
         <file>qml/utils/Utils.js</file>
         <file>qml/utils/DateUtils.js</file>
