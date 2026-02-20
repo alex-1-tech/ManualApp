@@ -13,26 +13,109 @@ ScrollView {
 
     // ====== State ===========================================================
     property string currentModel: SettingsManager.currentModel
-    property bool isActivating: false
-    property bool activationSuccessful: DataManager.installManager().isLicenseActivate && SettingsManager.deviceHWID != ""
-    property string mode: "control"
     property string railTypeMode: "irs52"
-    property string tempHostHWID: SettingsManager.hostHWID
-    property string tempDeviceHWID: SettingsManager.deviceHWID
-    property string tempLicensePassword: ""
-
-    // ManualApp specific properties
-    property bool isManualAppDownloading: false
-    property bool isManualAppInstallerReady: DataManager.installManager().installerExists("manual_app")
-    property string manualAppStatusMessage: ""
-    property double manualAppDownloadProgress: 0.0
-    property string manualAppInstallerPath: ""
+    property bool isInitialized: false
 
     // Main model download state
     property bool isMainDownloading: false
     property bool isMainInstallerReady: DataManager.installManager().installerExists(currentModel)
+    property bool isMainInstalled: false
     property double mainDownloadProgress: 0.0
     property string mainStatusMessage: ""
+    property string mainUpdateStatus: "" // "new_version_available", "up_to_date", "not_downloaded"
+    property date mainLastVersionDate: new Date(0)
+    property date mainLatestServerDate: new Date(0)
+
+    // ManualApp specific properties
+    property bool isManualAppDownloading: false
+    property bool isManualAppInstallerReady: DataManager.installManager().installerExists("manual_app")
+    property bool isManualAppInstalled: false
+    property string manualAppStatusMessage: ""
+    property double manualAppDownloadProgress: 0.0
+    property string manualAppUpdateStatus: "" // "new_version_available", "up_to_date", "not_downloaded"
+    property date manualAppLastVersionDate: SettingsManager.lastUpdateManualAppDate
+    property date manualAppLatestServerDate: new Date(0)
+
+    property bool isLoadingDates: false
+
+    // ====== Functions ======================================================
+    function isValidDate(date) {
+        return date instanceof Date && !isNaN(date.getTime());
+    }
+
+    function checkForUpdates() {
+        if (root.currentModel === "" || root.railTypeMode === "")
+            return;
+
+        root.isLoadingDates = true;
+
+        var mainServerDateStr = DataManager.installManager().getLastUpdateDate(DataManager.djangoBaseUrl(), root.currentModel, root.railTypeMode);
+        var mainServerDate = mainServerDateStr ? new Date(mainServerDateStr) : new Date(0);
+
+        root.mainLatestServerDate = mainServerDate;
+        root.mainLastVersionDate = SettingsManager.lastUpdateSoftwareDate;
+
+        const needMainUpdate = !root.isMainInstallerReady || !isValidDate(root.mainLastVersionDate) || root.mainLastVersionDate < root.mainLatestServerDate;
+        root.mainUpdateStatus = needMainUpdate ? (root.isMainInstallerReady ? "new_version_available" : "not_downloaded") : "up_to_date";
+
+        var manualServerDateStr = DataManager.installManager().getLastUpdateDate(DataManager.djangoBaseUrl(), "manual_app", "");
+        var manualServerDate = manualServerDateStr ? new Date(manualServerDateStr) : new Date(0);
+
+        root.manualAppLatestServerDate = manualServerDate;
+        root.manualAppLastVersionDate = SettingsManager.lastUpdateManualAppDate;
+
+        const needManualAppUpdate = !root.isManualAppInstallerReady || !isValidDate(root.manualAppLastVersionDate) || root.manualAppLastVersionDate < root.manualAppLatestServerDate;
+        root.manualAppUpdateStatus = needManualAppUpdate ? (root.isManualAppInstallerReady ? "new_version_available" : "not_downloaded") : "up_to_date";
+
+        root.isLoadingDates = false;
+    }
+
+    function saveRailTypeForCurrentModel() {
+        if (root.currentModel === "kalmar32") {
+            SettingsManager.railType = root.railTypeMode;
+        }
+    }
+
+    function loadRailTypeForCurrentModel() {
+        if (root.currentModel === "kalmar32") {
+            var savedType = SettingsManager.railType;
+            if (savedType) {
+                root.railTypeMode = savedType;
+            }
+        }
+    }
+
+    function resetMainDownloadState() {
+        root.isMainDownloading = false;
+        root.mainDownloadProgress = 0;
+        root.isMainInstallerReady = DataManager.installManager().installerExists(root.currentModel);
+        root.checkForUpdates();
+    }
+
+    function resetManualAppDownloadState() {
+        root.isManualAppDownloading = false;
+        root.manualAppDownloadProgress = 0;
+        root.isManualAppInstallerReady = DataManager.installManager().installerExists("manual_app");
+        root.checkForUpdates();
+    }
+
+    Component.onCompleted: {
+        loadRailTypeForCurrentModel();
+        isInitialized = true;
+        checkForUpdates();
+    }
+
+    onCurrentModelChanged: {
+        loadRailTypeForCurrentModel();
+        if (isInitialized) checkForUpdates();
+    }
+
+    onRailTypeModeChanged: {
+        if (root.currentModel === "kalmar32") {
+            saveRailTypeForCurrentModel();
+        }
+        if (isInitialized) checkForUpdates();
+    }
 
     contentItem: Flickable {
         id: flick
@@ -92,6 +175,14 @@ ScrollView {
                     Item {
                         Layout.fillWidth: true
                     }
+
+                    // Индикатор загрузки
+                    BusyIndicator {
+                        visible: root.isLoadingDates
+                        running: visible
+                        width: 20
+                        height: 20
+                    }
                 }
             }
 
@@ -100,18 +191,58 @@ ScrollView {
                 Layout.fillWidth: true
                 spacing: 15
 
-                Text {
-                    text: "Download & Install Software"
-                    color: Theme.colorTextPrimary
-                    font.pointSize: Theme.fontSubtitle
-                    font.bold: true
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    Text {
+                        text: "Download & Install Software"
+                        color: Theme.colorTextPrimary
+                        font.pointSize: Theme.fontSubtitle
+                        font.bold: true
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                    }
+
+                    Rectangle {
+                        visible: root.mainUpdateStatus === "new_version_available"
+                        color: Theme.colorWarning
+                        radius: 4
+                        height: 24
+                        width: 160
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Update Available!"
+                            color: "white"
+                            font.pointSize: Theme.fontSmall
+                            font.bold: true
+                        }
+                    }
+
+                    Rectangle {
+                        visible: root.mainUpdateStatus === "up_to_date"
+                        color: Theme.colorSuccess
+                        radius: 4
+                        height: 24
+                        width: 100
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Up to Date"
+                            color: "white"
+                            font.pointSize: Theme.fontSmall
+                            font.bold: true
+                        }
+                    }
                 }
 
                 // Status Card
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: root.currentModel === "kalmar32" ? 200 : 150
-                    color: Theme.colorBgMuted 
+                    Layout.preferredHeight: root.currentModel === "kalmar32" ? 250 : 200
+                    color: Theme.colorBgMuted
                     radius: Theme.radiusCard
                     border.color: Theme.colorBorder
 
@@ -123,18 +254,61 @@ ScrollView {
                         anchors.bottomMargin: 20
                         spacing: 2
 
-                        Text {
-                            text: root.mainStatusMessage || (root.isMainInstallerReady ? "Ready to install" : "Not downloaded")
-                            color: {
-                                if (root.isMainDownloading)
-                                    Theme.colorWarning;
-                                else if (root.isMainInstallerReady)
-                                    Theme.colorSuccess;
-                                else
-                                    Theme.colorError;
-                            }
-                            font.pointSize: Theme.fontBody
+                        RowLayout {
                             Layout.fillWidth: true
+
+                            Text {
+                                text: root.mainStatusMessage || (root.isMainInstallerReady ? "Installer ready" : "Not downloaded")
+                                color: {
+                                    if (root.isMainDownloading)
+                                        Theme.colorWarning;
+                                    else if (root.mainUpdateStatus === "new_version_available")
+                                        Theme.colorWarning;
+                                    else if (root.isMainInstallerReady)
+                                        Theme.colorSuccess;
+                                    else
+                                        Theme.colorError;
+                                }
+                                font.pointSize: Theme.fontBody
+                                font.bold: root.mainUpdateStatus === "new_version_available"
+                            }
+
+                            Item {
+                                Layout.fillWidth: true
+                            }
+                        }
+
+                        GridLayout {
+                            columns: 2
+                            columnSpacing: 20
+                            rowSpacing: 5
+                            Layout.fillWidth: true
+
+                            Text {
+                                text: "Latest server version:"
+                                color: Theme.colorTextMuted
+                                font.pointSize: Theme.fontSmall
+                            }
+
+                            Text {
+                                text: root.mainLatestServerDate > new Date(0) ? Qt.formatDate(root.mainLatestServerDate, "yyyy-MM-dd") : "Not available"
+                                color: Theme.colorTextPrimary
+                                font.pointSize: Theme.fontSmall
+                                font.bold: root.mainLastVersionDate < root.mainLatestServerDate
+                            }
+
+                            Text {
+                                text: "Downloaded version:"
+                                color: Theme.colorTextMuted
+                                font.pointSize: Theme.fontSmall
+                            }
+
+                            Text {
+                                text: root.mainLastVersionDate > new Date(0) ? Qt.formatDate(root.mainLastVersionDate, "yyyy-MM-dd") : "Never"
+                                color: root.mainLastVersionDate < root.mainLatestServerDate ? Theme.colorWarning : Theme.colorTextPrimary
+                                font.pointSize: Theme.fontSmall
+                                font.bold: root.mainLastVersionDate < root.mainLatestServerDate
+                            }
                         }
 
                         ProgressBar {
@@ -163,66 +337,32 @@ ScrollView {
                                 spacing: 10
                                 Layout.alignment: Qt.AlignLeft
 
-                                Rectangle {
-                                    id: p65RailTypeButton
-                                    width: 100
-                                    height: 30
-                                    radius: 4
-                                    color: root.railTypeMode === "p65" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
-                                    border.color: root.railTypeMode === "p65" ? Theme.colorButtonPrimary : Theme.colorBorder
+                                Repeater {
+                                    model: ["p65", "irs52", "uic60"]
 
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "P65"
-                                        color: root.railTypeMode === "p65" ? "white" : Theme.colorTextMuted
-                                        font.pointSize: Theme.fontSmall
-                                    }
+                                    Rectangle {
+                                        id: railTypeCard
+                                        required property var modelData
 
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: root.railTypeMode = "p65"
-                                    }
-                                }
+                                        width: 100
+                                        height: 30
+                                        radius: 4
+                                        color: root.railTypeMode === modelData ? Theme.colorButtonPrimary : Theme.colorBgPrimary
+                                        border.color: root.railTypeMode === modelData ? Theme.colorButtonPrimary : Theme.colorBorder
 
-                                Rectangle {
-                                    id: irs52RailTypeButton
-                                    width: 100
-                                    height: 30
-                                    radius: 4
-                                    color: root.railTypeMode === "irs52" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
-                                    border.color: root.railTypeMode === "irs52" ? Theme.colorButtonPrimary : Theme.colorBorder
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: railTypeCard.modelData.toUpperCase()
+                                            color: root.railTypeMode === railTypeCard.modelData ? "white" : Theme.colorTextMuted
+                                            font.pointSize: Theme.fontSmall
+                                        }
 
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "IRS52"
-                                        color: root.railTypeMode === "irs52" ? "white" : Theme.colorTextMuted
-                                        font.pointSize: Theme.fontSmall
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: root.railTypeMode = "irs52"
-                                    }
-                                }
-
-                                Rectangle {
-                                    id: uic60RailTypeButton
-                                    width: 100
-                                    height: 30
-                                    radius: 4
-                                    color: root.railTypeMode === "uic60" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
-                                    border.color: root.railTypeMode === "uic60" ? Theme.colorButtonPrimary : Theme.colorBorder
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "UCI60"
-                                        color: root.railTypeMode === "uic60" ? "white" : Theme.colorTextMuted
-                                        font.pointSize: Theme.fontSmall
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: root.railTypeMode = "uic60"
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            onClicked: {
+                                                root.railTypeMode = railTypeCard.modelData;
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -259,6 +399,8 @@ ScrollView {
                         text: {
                             if (root.isMainDownloading)
                                 "Downloading...";
+                            else if (root.mainUpdateStatus === "new_version_available")
+                                "Update Now";
                             else if (root.isMainInstallerReady)
                                 "Redownload";
                             else
@@ -268,13 +410,19 @@ ScrollView {
                         enabled: !root.isMainDownloading && !DataManager.installManager().isInstalling && !root.isManualAppDownloading
 
                         background: Rectangle {
-                            color: parent.enabled ? Theme.colorButtonSecondary : Theme.colorButtonDisabled
+                            color: {
+                                if (!parent.enabled)
+                                    return Theme.colorButtonDisabled;
+                                if (root.mainUpdateStatus === "new_version_available")
+                                    return Theme.colorWarning;
+                                return Theme.colorButtonSecondary;
+                            }
                             radius: Theme.radiusButton
                         }
 
                         contentItem: Text {
                             text: downloadButton.text
-                            color: Theme.colorTextPrimary
+                            color: "white"
                             font.pointSize: Theme.fontBody
                             font.bold: true
                             horizontalAlignment: Text.AlignHCenter
@@ -297,17 +445,22 @@ ScrollView {
                         Layout.preferredWidth: 170
                         Layout.preferredHeight: 42
 
-                        text: DataManager.installManager().isInstalling ? "Installing..." : "Run"
-                        enabled: !DataManager.installManager().isInstalling && !root.isMainDownloading && root.isMainInstallerReady
+                        text: {
+                            if (DataManager.installManager().isInstalling)
+                                return "Installing...";
+                            return "Run Installer";
+                        }
+
+                        enabled: !DataManager.installManager().isInstalling && !root.isMainDownloading && !DataManager.installManager().isDownloading && root.isMainInstallerReady
 
                         background: Rectangle {
-                            color: parent.enabled ? Theme.colorButtonPrimary : Theme.colorButtonDisabled
+                            color: parent.enabled ? (root.mainUpdateStatus === "new_version_available" ? Theme.colorWarning : Theme.colorButtonPrimary) : Theme.colorButtonDisabled
                             radius: Theme.radiusButton
                         }
 
                         contentItem: Text {
                             text: installButton.text
-                            color: Theme.colorTextPrimary
+                            color: "white"
                             font.pointSize: Theme.fontBody
                             font.bold: true
                             horizontalAlignment: Text.AlignHCenter
@@ -316,6 +469,13 @@ ScrollView {
 
                         onClicked: {
                             DataManager.installManager().runInstaller(root.currentModel);
+
+                            if (root.mainUpdateStatus === "new_version_available") {
+                                SettingsManager.lastUpdateSoftwareDate = root.mainLatestServerDate.toLocaleDateString(Qt.ISODate);
+
+                                root.mainLastVersionDate = root.mainLatestServerDate;
+                                root.checkForUpdates();
+                            }
                         }
                     }
                 }
@@ -326,17 +486,57 @@ ScrollView {
                 Layout.fillWidth: true
                 spacing: 15
 
-                Text {
-                    text: "Update ManualApp"
-                    color: Theme.colorTextPrimary
-                    font.pointSize: Theme.fontSubtitle
-                    font.bold: true
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    Text {
+                        text: "Update ManualApp"
+                        color: Theme.colorTextPrimary
+                        font.pointSize: Theme.fontSubtitle
+                        font.bold: true
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                    }
+
+                    Rectangle {
+                        visible: root.manualAppUpdateStatus === "new_version_available"
+                        color: Theme.colorWarning
+                        radius: 4
+                        height: 24
+                        width: 160
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Update Available!"
+                            color: "white"
+                            font.pointSize: Theme.fontSmall
+                            font.bold: true
+                        }
+                    }
+
+                    Rectangle {
+                        visible: root.manualAppUpdateStatus === "up_to_date"
+                        color: Theme.colorSuccess
+                        radius: 4
+                        height: 24
+                        width: 100
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Up to Date"
+                            color: "white"
+                            font.pointSize: Theme.fontSmall
+                            font.bold: true
+                        }
+                    }
                 }
 
                 // Status Card
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 140
+                    Layout.preferredHeight: 180
                     color: Theme.colorBgMuted
                     radius: Theme.radiusCard
                     border.color: Theme.colorBorder
@@ -349,19 +549,67 @@ ScrollView {
                         anchors.bottomMargin: 20
                         spacing: 2
 
-                        Text {
-                            id: manualAppStatusText
-                            text: root.manualAppStatusMessage || (root.isManualAppInstallerReady ? "Ready" : "Not downloaded")
-                            color: {
-                                if (root.isManualAppDownloading)
-                                    Theme.colorWarning;
-                                else if (root.isManualAppInstallerReady)
-                                    Theme.colorSuccess;
-                                else
-                                    Theme.colorError;
-                            }
-                            font.pointSize: Theme.fontBody
+                        RowLayout {
                             Layout.fillWidth: true
+
+                            Text {
+                                id: manualAppStatusText
+                                text: {
+                                    if (root.manualAppStatusMessage)
+                                        return root.manualAppStatusMessage;
+                                    if (root.manualAppUpdateStatus === "new_version_available")
+                                        return "Update available";
+                                    if (root.isManualAppInstallerReady)
+                                        return "Installer ready";
+                                    return "Not downloaded";
+                                }
+
+                                color: {
+                                    if (root.isManualAppDownloading)
+                                        return Theme.colorWarning;
+                                    if (root.manualAppUpdateStatus === "new_version_available")
+                                        return Theme.colorWarning;
+                                    if (root.isManualAppInstallerReady)
+                                        return Theme.colorSuccess;
+                                    return Theme.colorError;
+                                }
+                                font.pointSize: Theme.fontBody
+                                font.bold: root.manualAppUpdateStatus === "new_version_available"
+                                Layout.fillWidth: true
+                            }
+                        }
+
+                        GridLayout {
+                            columns: 2
+                            columnSpacing: 20
+                            rowSpacing: 5
+                            Layout.fillWidth: true
+
+                            Text {
+                                text: "Latest server version:"
+                                color: Theme.colorTextMuted
+                                font.pointSize: Theme.fontSmall
+                            }
+
+                            Text {
+                                text: root.manualAppLatestServerDate > new Date(0) ? Qt.formatDate(root.manualAppLatestServerDate, "yyyy-MM-dd") : "Not available"
+                                color: Theme.colorTextPrimary
+                                font.pointSize: Theme.fontSmall
+                                font.bold: root.manualAppLastVersionDate < root.manualAppLatestServerDate
+                            }
+
+                            Text {
+                                text: "Installed version:"
+                                color: Theme.colorTextMuted
+                                font.pointSize: Theme.fontSmall
+                            }
+
+                            Text {
+                                text: root.manualAppLastVersionDate > new Date(0) ? Qt.formatDate(root.manualAppLastVersionDate, "yyyy-MM-dd") : "Never"
+                                color: root.manualAppLastVersionDate < root.manualAppLatestServerDate ? Theme.colorWarning : Theme.colorTextPrimary
+                                font.pointSize: Theme.fontSmall
+                                font.bold: root.manualAppLastVersionDate < root.manualAppLatestServerDate
+                            }
                         }
 
                         ProgressBar {
@@ -403,22 +651,30 @@ ScrollView {
 
                         text: {
                             if (root.isManualAppDownloading)
-                                "Downloading...";
-                            else if (root.isManualAppInstallerReady)
-                                "Redownload";
-                            else
-                                "Download";
+                                return "Downloading...";
+                            if (root.manualAppUpdateStatus === "new_version_available")
+                                return "Update Now";
+                            if (root.isManualAppInstallerReady)
+                                return "Redownload";
+                            return "Download";
                         }
+
                         enabled: !root.isManualAppDownloading && !DataManager.installManager().isDownloading && !DataManager.installManager().isInstalling
 
                         background: Rectangle {
-                            color: parent.enabled ? Theme.colorButtonSecondary : Theme.colorButtonDisabled
+                            color: {
+                                if (!parent.enabled)
+                                    return Theme.colorButtonDisabled;
+                                if (root.manualAppUpdateStatus === "new_version_available")
+                                    return Theme.colorWarning;
+                                return Theme.colorButtonSecondary;
+                            }
                             radius: Theme.radiusButton
                         }
 
                         contentItem: Text {
                             text: manualAppDownloadButton.text
-                            color: Theme.colorTextPrimary
+                            color: "white"
                             font.pointSize: Theme.fontBody
                             font.bold: true
                             horizontalAlignment: Text.AlignHCenter
@@ -438,17 +694,25 @@ ScrollView {
                         id: manualAppInstallButton
                         Layout.preferredWidth: 170
                         Layout.preferredHeight: 42
-                        text: DataManager.installManager().isInstalling ? "Installing..." : "Run"
+
+                        text: {
+                            if (DataManager.installManager().isInstalling)
+                                return "Installing...";
+                            if (root.manualAppUpdateStatus === "new_version_available" && root.isManualAppInstallerReady)
+                                return "Install Update";
+                            return "Run Installer";
+                        }
+
                         enabled: !DataManager.installManager().isInstalling && !root.isManualAppDownloading && !DataManager.installManager().isDownloading && root.isManualAppInstallerReady
 
                         background: Rectangle {
-                            color: parent.enabled ? Theme.colorButtonPrimary : Theme.colorButtonDisabled
+                            color: parent.enabled ? (root.manualAppUpdateStatus === "new_version_available" ? Theme.colorWarning : Theme.colorButtonPrimary) : Theme.colorButtonDisabled
                             radius: Theme.radiusButton
                         }
 
                         contentItem: Text {
                             text: manualAppInstallButton.text
-                            color: Theme.colorTextPrimary
+                            color: "white"
                             font.pointSize: Theme.fontBody
                             font.bold: true
                             horizontalAlignment: Text.AlignHCenter
@@ -457,6 +721,10 @@ ScrollView {
 
                         onClicked: {
                             DataManager.installManager().runInstaller("manual_app");
+
+                            if (root.manualAppUpdateStatus === "new_version_available") {
+                                root.checkForUpdates();
+                            }
                         }
                     }
                 }
@@ -468,19 +736,16 @@ ScrollView {
                 function onDownloadProgressChanged() {
                     if (root.isMainDownloading) {
                         root.mainDownloadProgress = DataManager.installManager().downloadProgress;
-
                         root.mainStatusMessage = "Downloading: " + Math.round(root.mainDownloadProgress) + "%";
                     }
 
                     if (root.isManualAppDownloading) {
                         root.manualAppDownloadProgress = DataManager.installManager().downloadProgress;
-
                         root.manualAppStatusMessage = "Downloading: " + Math.round(root.manualAppDownloadProgress) + "%";
                     }
                 }
 
                 function onDownloadFinished(success) {
-
                     // ===== MAIN MODEL =====
                     if (root.isMainDownloading) {
                         root.isMainDownloading = false;
@@ -489,10 +754,16 @@ ScrollView {
                         if (success) {
                             root.mainDownloadProgress = 100;
                             root.mainStatusMessage = "Download completed successfully!";
+
+                            if (root.mainLatestServerDate > new Date(0)) {
+                                SettingsManager.saveDateIso("lastUpdateSoftwareDate", root.mainLatestServerDate.toISOString());
+                            }
                         } else {
                             root.mainDownloadProgress = 0;
                             root.mainStatusMessage = "Download failed!";
                         }
+
+                        root.checkForUpdates();
                     }
 
                     // ===== MANUAL APP =====
@@ -503,23 +774,27 @@ ScrollView {
                         if (success) {
                             root.manualAppDownloadProgress = 100;
                             root.manualAppStatusMessage = "Download completed successfully!";
+
+                            if (root.manualAppLatestServerDate > new Date(0)) {
+                                SettingsManager.saveDateIso("lastUpdateManualAppDate", root.manualAppLatestServerDate.toISOString());
+                            }
                         } else {
                             root.manualAppDownloadProgress = 0;
                             root.manualAppStatusMessage = "Download failed!";
                         }
+
+                        root.checkForUpdates();
                     }
                 }
 
                 function onErrorOccurred(error) {
                     if (root.isMainDownloading) {
-                        root.isMainDownloading = false;
-                        root.mainDownloadProgress = 0;
+                        root.resetMainDownloadState();
                         root.mainStatusMessage = "Error: " + error;
                     }
 
                     if (root.isManualAppDownloading) {
-                        root.isManualAppDownloading = false;
-                        root.manualAppDownloadProgress = 0;
+                        root.resetManualAppDownloadState();
                         root.manualAppStatusMessage = "Error: " + error;
                     }
                 }
@@ -529,8 +804,9 @@ ScrollView {
                 target: DataManager.installManager()
 
                 function onInstallerPathChanged() {
-                    root.isInstallerReady = DataManager.installManager().installerExists(root.currentModel);
+                    root.isMainInstallerReady = DataManager.installManager().installerExists(root.currentModel);
                     root.isManualAppInstallerReady = DataManager.installManager().installerExists("manual_app");
+                    root.checkForUpdates();
                 }
             }
 
@@ -541,317 +817,6 @@ ScrollView {
                 opacity: 0.3
                 Layout.topMargin: 10
                 Layout.bottomMargin: 10
-            }
-
-            // === СЕКЦИЯ АКТИВАЦИИ ================================================
-
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 15
-
-                Text {
-                    text: "Software Activation"
-                    color: Theme.colorTextPrimary
-                    font.pointSize: Theme.fontSubtitle
-                    font.bold: true
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: root.currentModel === "kalmar32" ? 320 : 380
-                    color: Theme.colorBgMuted
-                    radius: Theme.radiusCard
-                    border.color: Theme.colorBorder
-
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.margins: 15
-                        spacing: 15
-
-                        // Software Mode
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 5
-
-                            Text {
-                                text: "Software Mode"
-                                color: Theme.colorTextPrimary
-                                font.pointSize: Theme.fontSmall
-                                font.bold: true
-                            }
-
-                            RowLayout {
-                                spacing: 10
-                                Layout.alignment: Qt.AlignLeft
-
-                                Rectangle {
-                                    id: controlModeBtn
-                                    width: 100
-                                    height: 30
-                                    radius: 4
-                                    color: root.mode === "control" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
-                                    border.color: root.mode === "control" ? Theme.colorButtonPrimary : Theme.colorBorder
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "Control"
-                                        color: root.mode === "control" ? "white" : Theme.colorTextPrimary
-                                        font.pointSize: Theme.fontSmall
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: root.mode = "control"
-                                    }
-                                }
-
-                                Rectangle {
-                                    id: analysisModeBtn
-                                    width: 100
-                                    height: 30
-                                    radius: 4
-                                    color: root.mode === "analysis" ? Theme.colorButtonPrimary : Theme.colorBgPrimary
-                                    border.color: root.mode === "analysis" ? Theme.colorButtonPrimary : Theme.colorBorder
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "Analysis"
-                                        color: root.mode === "analysis" ? "white" : Theme.colorTextPrimary
-                                        font.pointSize: Theme.fontSmall
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: root.mode = "analysis"
-                                    }
-                                }
-                            }
-                        }
-
-                        Rectangle {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 1
-                            color: Theme.colorBorder
-                            opacity: 0.3
-                        }
-
-                        // HWID Input Fields
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 15
-
-                            // Host HWID (только для phasar32)
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 5
-                                visible: root.currentModel === "phasar32"
-
-                                Text {
-                                    text: "Host HWID *"
-                                    color: Theme.colorTextPrimary
-                                    font.pointSize: Theme.fontSmall
-                                    font.bold: true
-                                }
-
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    Layout.preferredHeight: 40
-                                    color: Theme.colorBgPrimary
-                                    radius: 6
-                                    border.color: Theme.colorBorder
-                                    border.width: 1
-
-                                    TextInput {
-                                        id: hostHwidInputField
-                                        anchors.fill: parent
-                                        anchors.margins: 10
-                                        verticalAlignment: Text.AlignVCenter
-                                        color: Theme.colorTextPrimary
-                                        font.pointSize: Theme.fontBody
-                                        text: root.tempHostHWID
-                                        clip: true
-                                        enabled: !root.activationSuccessful
-
-                                        onTextChanged: {
-                                            root.tempHostHWID = text;
-                                        }
-
-                                        Label {
-                                            anchors.fill: parent
-                                            verticalAlignment: Text.AlignVCenter
-                                            text: "Enter Host HWID (required)..."
-                                            color: Theme.colorTextMuted
-                                            font.pointSize: Theme.fontBody
-                                            visible: hostHwidInputField.text === ""
-                                            elide: Text.ElideRight
-                                        }
-                                    }
-                                }
-                            }
-
-                            // Device HWID (для обеих моделей)
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 5
-
-                                Text {
-                                    text: "Device HWID *"
-                                    color: Theme.colorTextPrimary
-                                    font.pointSize: Theme.fontSmall
-                                    font.bold: true
-                                }
-
-                                Rectangle {
-                                    Layout.fillWidth: true
-                                    Layout.preferredHeight: 40
-                                    color: Theme.colorBgPrimary
-                                    radius: 6
-                                    border.color: Theme.colorBorder
-                                    border.width: 1
-
-                                    TextInput {
-                                        id: deviceHwidInputField
-                                        anchors.fill: parent
-                                        anchors.margins: 10
-                                        verticalAlignment: Text.AlignVCenter
-                                        color: Theme.colorTextPrimary
-                                        font.pointSize: Theme.fontBody
-                                        text: root.tempDeviceHWID
-                                        clip: true
-                                        enabled: !root.activationSuccessful
-
-                                        onTextChanged: {
-                                            root.tempDeviceHWID = text;
-                                        }
-
-                                        Label {
-                                            anchors.fill: parent
-                                            verticalAlignment: Text.AlignVCenter
-                                            text: "Enter Device HWID (required)..."
-                                            color: Theme.colorTextMuted
-                                            font.pointSize: Theme.fontBody
-                                            visible: deviceHwidInputField.text === ""
-                                            elide: Text.ElideRight
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: 5
-
-                            Text {
-                                text: "License Password *"
-                                color: Theme.colorTextPrimary
-                                font.pointSize: Theme.fontSmall
-                                font.bold: true
-                            }
-
-                            Rectangle {
-                                Layout.fillWidth: true
-                                Layout.preferredHeight: 40
-                                color: Theme.colorBgPrimary
-                                radius: 6
-                                border.color: Theme.colorBorder
-                                border.width: 1
-
-                                TextInput {
-                                    id: licensePasswordInputField
-                                    anchors.fill: parent
-                                    anchors.margins: 10
-                                    verticalAlignment: Text.AlignVCenter
-                                    color: Theme.colorTextPrimary
-                                    font.pointSize: Theme.fontBody
-                                    text: root.tempLicensePassword
-                                    clip: true
-                                    enabled: !root.activationSuccessful
-
-                                    onTextChanged: {
-                                        root.tempLicensePassword = text;
-                                    }
-
-                                    Label {
-                                        anchors.fill: parent
-                                        verticalAlignment: Text.AlignVCenter
-                                        text: "Enter license password..."
-                                        color: Theme.colorTextMuted
-                                        font.pointSize: Theme.fontBody
-                                        visible: licensePasswordInputField.text === ""
-                                        elide: Text.ElideRight
-                                    }
-                                }
-                            }
-                        }
-
-                        Text {
-                            text: {
-                                if (root.currentModel === "kalmar32") {
-                                    "Note: Device HWID is required for KALMAR-32 activation.";
-                                } else {
-                                    "Note: Both Host HWID and Device HWID are required for PHASAR-32 activation.";
-                                }
-                            }
-                            color: Theme.colorTextMuted
-                            font.pointSize: 9
-                            wrapMode: Text.WordWrap
-                            Layout.fillWidth: true
-                        }
-
-                        Button {
-                            id: activateButton
-                            Layout.preferredWidth: 200
-                            Layout.preferredHeight: 40
-                            Layout.alignment: Qt.AlignHCenter
-                            text: {
-                                if (root.isActivating)
-                                    "Activating...";
-                                else if (root.activationSuccessful)
-                                    "Already Activated";
-                                else
-                                    "Activate Software";
-                            }
-                            enabled: {
-                                if (root.isActivating || root.activationSuccessful)
-                                    return false;
-
-                                if (root.currentModel === "kalmar32") {
-                                    return root.tempDeviceHWID.trim() !== "" && root.tempLicensePassword.trim() !== "";
-                                } else {
-                                    return root.tempHostHWID.trim() !== "" && root.tempDeviceHWID.trim() !== "" && root.tempLicensePassword.trim() !== "";
-                                }
-                            }
-
-                            background: Rectangle {
-                                color: {
-                                    if (root.activationSuccessful)
-                                        Theme.colorSuccess;
-                                    else if (parent.enabled)
-                                        Theme.colorButtonPrimary;
-                                    else
-                                        Theme.colorButtonDisabled;
-                                }
-                                radius: Theme.radiusButton
-                            }
-
-                            contentItem: Text {
-                                text: activateButton.text
-                                color: root.activationSuccessful ? "white" : (parent.enabled ? Theme.colorTextPrimary : Theme.colorTextMuted)
-                                font.pointSize: Theme.fontBody
-                                font.bold: true
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
-
-                            onClicked: {
-                                if (!root.activationSuccessful) {
-                                    root.activateSoftware();
-                                }
-                            }
-                        }
-                    }
-                }
             }
 
             ColumnLayout {
@@ -885,7 +850,19 @@ ScrollView {
                         }
 
                         Text {
-                            text: "• Click 'Download Installer' to download the software"
+                            text: "• Check for updates automatically when model or rail type changes"
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        Text {
+                            text: "• Yellow 'Update Available' indicator shows when new version exists"
+                            color: Theme.colorTextPrimary
+                            font.pointSize: Theme.fontSmall
+                        }
+
+                        Text {
+                            text: "• Click 'Download' or 'Update Now' to get the latest version"
                             color: Theme.colorTextPrimary
                             font.pointSize: Theme.fontSmall
                         }
@@ -897,25 +874,13 @@ ScrollView {
                         }
 
                         Text {
-                            text: "• Click 'Run Installer' to start installation"
+                            text: "• Click 'Run Installer' or 'Install Update' to start installation"
                             color: Theme.colorTextPrimary
                             font.pointSize: Theme.fontSmall
                         }
 
                         Text {
-                            text: "• Follow the installation steps in the opened window"
-                            color: Theme.colorTextPrimary
-                            font.pointSize: Theme.fontSmall
-                        }
-
-                        Text {
-                            text: "• Copy 'Hardware ID' (HWID)"
-                            color: Theme.colorTextPrimary
-                            font.pointSize: Theme.fontSmall
-                        }
-
-                        Text {
-                            text: "• Restart this application after installation"
+                            text: "• After installation, the date is updated and status changes to 'Up to Date'"
                             color: Theme.colorTextPrimary
                             font.pointSize: Theme.fontSmall
                         }
@@ -926,322 +891,6 @@ ScrollView {
             Item {
                 Layout.fillHeight: true
             }
-
-            Popup {
-                id: confirmDialog
-                modal: true
-                focus: true
-                width: 400
-                height: 180
-                anchors.centerIn: Overlay.overlay
-                closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-
-                background: Rectangle {
-                    color: Theme.colorBgPrimary
-                    radius: 8
-                    border.color: Theme.colorBorder
-                    border.width: 1
-                }
-
-                contentItem: ColumnLayout {
-                    spacing: 20
-
-                    Label {
-                        text: qsTr("Save confirmation")
-                        font.bold: true
-                        font.pointSize: Theme.fontSubtitle
-                        color: Theme.colorTextPrimary
-                        Layout.fillWidth: true
-                    }
-
-                    Label {
-                        text: qsTr("Are you sure you want to save the settings?\nAfter saving, some of them cannot be changed.")
-                        wrapMode: Text.WordWrap
-                        color: Theme.colorTextSecondary
-                        Layout.fillWidth: true
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 10
-
-                        Button {
-                            id: cancelButton
-                            text: "Cancel"
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 35
-
-                            background: Rectangle {
-                                color: cancelButton.pressed ? Theme.colorButtonSecondaryHover : Theme.colorButtonSecondary
-                                radius: Theme.radiusButton
-                            }
-
-                            contentItem: Text {
-                                text: cancelButton.text
-                                color: Theme.colorTextPrimary
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                                font.pointSize: Theme.fontSmall
-                            }
-
-                            onClicked: confirmDialog.close()
-                        }
-
-                        Button {
-                            id: okButton
-                            text: "OK"
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 35
-
-                            background: Rectangle {
-                                color: okButton.pressed ? Theme.colorButtonPrimaryHover : Theme.colorButtonPrimary
-                                radius: Theme.radiusButton
-                            }
-
-                            contentItem: Text {
-                                text: okButton.text
-                                color: "white"
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                                font.pointSize: Theme.fontSmall
-                            }
-
-                            onClicked: {
-                                confirmDialog.close();
-
-                                uploadProgressPopup.open();
-                                uploadProgressPopup.uploadInProgress = true;
-
-                                SettingsManager.saveModelSettings();
-
-                                var uploadUrl = "";
-                                if (SettingsManager.currentModel == "kalmar32") {
-                                    uploadUrl = DataManager.djangoBaseUrl() + "/api/kalmar32/";
-                                } else {
-                                    uploadUrl = DataManager.djangoBaseUrl() + "/api/phasar32/";
-                                }
-
-                                DataManager.uploadSettingsToDjango(uploadUrl);
-                            }
-                        }
-                    }
-                }
-            }
-
-            Popup {
-                id: uploadProgressPopup
-                modal: true
-                focus: true
-                width: 400
-                height: 220
-                anchors.centerIn: Overlay.overlay
-                closePolicy: Popup.NoAutoClose
-
-                background: Rectangle {
-                    color: Theme.colorBgPrimary
-                    radius: 8
-                    border.color: Theme.colorBorder
-                    border.width: 1
-                }
-
-                property bool uploadComplete: false
-                property bool uploadSuccess: false
-                property bool uploadInProgress: false
-
-                onOpened: {
-                    if (uploadProgressPopup.uploadComplete) {
-                        retryTimer.start();
-                        return;
-                    }
-
-                    uploadProgressPopup.uploadComplete = false;
-                    uploadProgressPopup.uploadSuccess = false;
-                    uploadProgressPopup.uploadInProgress = true;
-                }
-
-                onClosed: {
-                    retryTimer.stop();
-                    uploadProgressPopup.uploadInProgress = false;
-                }
-
-                Timer {
-                    id: retryTimer
-                    interval: 3000
-                    repeat: false
-                    onTriggered: {
-                        uploadProgressPopup.close();
-                    }
-                }
-
-                Connections {
-                    target: DataManager
-
-                    function onErrorOccurred(errorMsg) {
-                        if (uploadProgressPopup.uploadInProgress && !uploadProgressPopup.uploadComplete) {
-                            uploadProgressPopup.uploadInProgress = false;
-                            uploadProgressPopup.uploadComplete = true;
-                            uploadProgressPopup.uploadSuccess = false;
-                            retryTimer.start();
-                        } else {
-                            console.log("QML: ignoring errorOccurred (not current upload or already completed)");
-                        }
-                    }
-
-                    function onSettingsUploadFinished(success) {
-                        if (uploadProgressPopup.uploadInProgress && !uploadProgressPopup.uploadComplete) {
-                            uploadProgressPopup.uploadInProgress = false;
-                            uploadProgressPopup.uploadComplete = true;
-                            uploadProgressPopup.uploadSuccess = success;
-                            retryTimer.start();
-                        } else {
-                            if (!uploadProgressPopup.uploadComplete) {
-                                uploadProgressPopup.uploadComplete = true;
-                                uploadProgressPopup.uploadSuccess = success;
-                            } else {
-                                console.log("QML: settingsUploadFinished ignored (already completed)");
-                            }
-                        }
-                    }
-
-                    function onLoadingChanged() {
-                    }
-                }
-
-                contentItem: ColumnLayout {
-                    spacing: 20
-
-                    Label {
-                        text: uploadProgressPopup.uploadComplete ? (uploadProgressPopup.uploadSuccess ? qsTr("Upload Successful") : qsTr("Upload Failed")) : qsTr("Uploading Settings")
-                        font.bold: true
-                        font.pointSize: Theme.fontSubtitle
-                        color: uploadProgressPopup.uploadComplete ? (uploadProgressPopup.uploadSuccess ? Theme.colorSuccess : Theme.colorError) : Theme.colorTextPrimary
-                        Layout.fillWidth: true
-                        horizontalAlignment: Text.AlignHCenter
-                    }
-
-                    ProgressBar {
-                        id: progressBar
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 8
-                        visible: !uploadProgressPopup.uploadComplete
-                        indeterminate: true
-
-                        background: Rectangle {
-                            color: Theme.colorTextSecondary
-                            radius: 4
-                        }
-
-                        contentItem: Item {
-                            implicitHeight: 8
-
-                            Rectangle {
-                                width: progressBar.visualPosition * parent.width
-                                height: parent.height
-                                radius: 4
-                                color: Theme.colorButtonPrimary
-
-                                SequentialAnimation on opacity {
-                                    loops: Animation.Infinite
-                                    running: progressBar.visible
-                                    NumberAnimation {
-                                        from: 0.3
-                                        to: 1.0
-                                        duration: 800
-                                        easing.type: Easing.InOutQuad
-                                    }
-                                    NumberAnimation {
-                                        from: 1.0
-                                        to: 0.3
-                                        duration: 800
-                                        easing.type: Easing.InOutQuad
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    Item {
-                        Layout.preferredWidth: 60
-                        Layout.preferredHeight: 60
-                        Layout.alignment: Qt.AlignHCenter
-                        visible: uploadProgressPopup.uploadComplete
-
-                        Rectangle {
-                            anchors.fill: parent
-                            radius: width / 2
-                            color: uploadProgressPopup.uploadSuccess ? Theme.colorSuccess : Theme.colorError
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: uploadProgressPopup.uploadSuccess ? "✓" : "!"
-                                color: "white"
-                                font.pointSize: 24
-                                font.bold: true
-                            }
-                        }
-                    }
-
-                    Label {
-                        text: uploadProgressPopup.uploadComplete ? (uploadProgressPopup.uploadSuccess ? qsTr("Settings have been successfully uploaded to the server.") : qsTr("Failed to upload settings. Please check your connection and try again.")) : qsTr("Please wait while settings are being uploaded...")
-                        wrapMode: Text.WordWrap
-                        color: Theme.colorTextSecondary
-                        Layout.fillWidth: true
-                        horizontalAlignment: Text.AlignHCenter
-                    }
-
-                    Button {
-                        id: closeStatusButton
-                        text: uploadProgressPopup.uploadComplete ? "Close" : "Cancel"
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 35
-                        visible: uploadProgressPopup.uploadComplete || !DataManager.isLoading
-
-                        background: Rectangle {
-                            color: closeStatusButton.pressed ? Theme.colorButtonPrimaryHover : Theme.colorButtonPrimary
-                            radius: Theme.radiusButton
-                        }
-
-                        contentItem: Text {
-                            text: closeStatusButton.text
-                            color: "white"
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                            font.pointSize: Theme.fontSmall
-                        }
-
-                        onClicked: uploadProgressPopup.close()
-                    }
-                }
-            }
-        }
-    }
-
-    function activateSoftware() {
-        if (root.isActivating || root.activationSuccessful)
-            return;
-        root.isActivating = true;
-
-        SettingsManager.hostHWID = root.tempHostHWID.trim();
-        SettingsManager.deviceHWID = root.tempDeviceHWID.trim();
-        var licensePassword = root.tempLicensePassword.trim();
-
-        var uploadUrl = DataManager.djangoBaseUrl() + "/api/activate/" + SettingsManager.serialNumber + "/";
-
-        DataManager.installManager().activate(root.currentModel, SettingsManager.hostHWID, SettingsManager.deviceHWID, root.mode, uploadUrl, licensePassword);
-    }
-
-    Connections {
-        target: DataManager.installManager()
-
-        function onActivationSucceeded() {
-            root.isActivating = false;
-            root.activationSuccessful = true;
-            DataManager.installManager().setIsLicenseActivate(true);
-        }
-
-        function onActivationFailed(error) {
-            root.isActivating = false;
-            root.activationSuccessful = false;
         }
     }
 }
