@@ -178,20 +178,21 @@ void SettingsManager::completeFirstRun()
   DEBUG_COLORED("SettingsManager", "completeFirstRun", "Initial setup completed - first run flag cleared",
                 COLOR_GREEN, COLOR_GREEN);
   m_settings.setValue("isFirstRun", false);
+  updateLastManualAppDate();
 }
 
 void SettingsManager::saveModelSettings()
 {
-  DEBUG_COLORED("SettingsManager", "saveModelSettings", "Saving model-specific settings", COLOR_CYAN,
-                COLOR_CYAN);
+  DEBUG_COLORED("SettingsManager", "saveModelSettings", "Saving model-specific settings", COLOR_GREEN,
+                COLOR_GREEN);
   m_kalmarSettings->saveToSettings(m_settings);
   m_phasarSettings->saveToSettings(m_settings);
 }
 
 void SettingsManager::saveAllSettings()
 {
-  DEBUG_COLORED("SettingsManager", "saveAllSettings", "Saving all settings to persistent storage", COLOR_BLUE,
-                COLOR_BLUE);
+  DEBUG_COLORED("SettingsManager", "saveAllSettings", "Saving all settings to persistent storage",
+                COLOR_GREEN, COLOR_GREEN);
 
   const QMetaObject* meta = this->metaObject();
   for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
@@ -213,7 +214,7 @@ void SettingsManager::saveAllSettings()
 void SettingsManager::loadAllSettings()
 {
   DEBUG_COLORED("SettingsManager", "loadAllSettings", "Loading all settings from persistent storage",
-                COLOR_BLUE, COLOR_BLUE);
+                COLOR_GREEN, COLOR_GREEN);
 
   const QMetaObject* meta = this->metaObject();
   for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i) {
@@ -300,8 +301,7 @@ QJsonObject SettingsManager::toJsonForDjango() const
 
 void SettingsManager::fromJson(const QJsonObject& obj)
 {
-  DEBUG_COLORED("SettingsManager", "fromJson", "Loading settings from JSON object", COLOR_MAGENTA,
-                COLOR_MAGENTA);
+  DEBUG_COLORED("SettingsManager", "fromJson", "Loading settings from JSON object", COLOR_GREEN, COLOR_GREEN);
 
   const QMetaObject* meta = this->metaObject();
   const QHash<QString, QString>& specialRev = specialSnakeToCamel();
@@ -385,31 +385,31 @@ void SettingsManager::fromJson(const QJsonObject& obj)
   QString newModel = m_settings.value("currentModel").toString();
 
   if (newModel == "kalmar32") {
-    DEBUG_COLORED("SettingsManager", "fromJson", "Loading Kalmar32 model-specific settings", COLOR_CYAN,
-                  COLOR_CYAN);
+    DEBUG_COLORED("SettingsManager", "fromJson", "Loading Kalmar32 model-specific settings", COLOR_GREEN,
+                  COLOR_GREEN);
     m_kalmarSettings->fromJson(obj);
     m_kalmarSettings->saveToSettings(m_settings);
   } else if (newModel == "phasar32") {
-    DEBUG_COLORED("SettingsManager", "fromJson", "Loading Phasar32 model-specific settings", COLOR_CYAN,
-                  COLOR_CYAN);
+    DEBUG_COLORED("SettingsManager", "fromJson", "Loading Phasar32 model-specific settings", COLOR_GREEN,
+                  COLOR_GREEN);
     m_phasarSettings->fromJson(obj);
     m_phasarSettings->saveToSettings(m_settings);
   } else {
     if (obj.contains("water_tank_with_tap")) {
-      DEBUG_COLORED("SettingsManager", "fromJson", "Auto-detected Phasar32 from JSON data", COLOR_YELLOW,
-                    COLOR_YELLOW);
+      DEBUG_COLORED("SettingsManager", "fromJson", "Auto-detected Phasar32 from JSON data", COLOR_GREEN,
+                    COLOR_GREEN);
       m_phasarSettings->fromJson(obj);
       m_phasarSettings->saveToSettings(m_settings);
       m_settings.setValue("currentModel", "phasar32");
     } else if (obj.contains("pc_tablet_dell_7230")) {
-      DEBUG_COLORED("SettingsManager", "fromJson", "Auto-detected Kalmar32 from JSON data", COLOR_YELLOW,
-                    COLOR_YELLOW);
+      DEBUG_COLORED("SettingsManager", "fromJson", "Auto-detected Kalmar32 from JSON data", COLOR_GREEN,
+                    COLOR_GREEN);
       m_kalmarSettings->fromJson(obj);
       m_kalmarSettings->saveToSettings(m_settings);
       m_settings.setValue("currentModel", "kalmar32");
     } else {
-      DEBUG_COLORED("SettingsManager", "fromJson", "Could not detect model type from JSON", COLOR_RED,
-                    COLOR_RED);
+      DEBUG_ERROR_COLORED("SettingsManager", "fromJson", "Could not detect model type from JSON", COLOR_GREEN,
+                          COLOR_GREEN);
     }
   }
 
@@ -487,7 +487,7 @@ Q_INVOKABLE void SettingsManager::saveLicense(const QJsonObject& license)
 #ifdef Q_OS_WIN
   if (product == "Phasar") {
     DEBUG_COLORED("SettingsManager", "saveLicense", "Writing Phasar32 license to Windows registry",
-                  COLOR_YELLOW, COLOR_YELLOW);
+                  COLOR_GREEN, COLOR_GREEN);
     QString keyPath = "HKEY_CURRENT_USER\\Software\\Technovotum\\Phasar";
     QSettings registry(keyPath, QSettings::NativeFormat);
     registry.setValue("ProductKey", licenseKey);
@@ -502,7 +502,8 @@ Q_INVOKABLE void SettingsManager::saveLicense(const QJsonObject& license)
 
 Q_INVOKABLE void SettingsManager::clearLicense()
 {
-  DEBUG_COLORED("SettingsManager", "clearLicense", "Clearing license from settings", COLOR_RED, COLOR_RED);
+  DEBUG_ERROR_COLORED("SettingsManager", "clearLicense", "Clearing license from settings", COLOR_GREEN,
+                      COLOR_GREEN);
 
   m_settings.beginGroup("license");
   for (const QString& k : m_settings.childKeys()) {
@@ -515,23 +516,26 @@ Q_INVOKABLE void SettingsManager::clearLicense()
 bool SettingsManager::verifyLicense()
 {
 #ifdef Q_OS_LINUX
-  DEBUG_COLORED("SettingsManager", "verifyLicense", "Starting license verification", COLOR_BLUE, COLOR_BLUE);
+  DEBUG_COLORED("SettingsManager", "verifyLicense", "Starting license verification", COLOR_GREEN,
+                COLOR_GREEN);
 
   if (!hasLicense()) {
-    DEBUG_COLORED("SettingsManager", "verifyLicense", "No license found in settings", COLOR_RED, COLOR_RED);
+    DEBUG_ERROR_COLORED("SettingsManager", "verifyLicense", "No license found in settings", COLOR_GREEN,
+                        COLOR_GREEN);
     return false;
   }
 
   const QString licenseKey = license().value("license_key").toString();
   if (licenseKey.isEmpty()) {
-    DEBUG_COLORED("SettingsManager", "verifyLicense", "License key is empty", COLOR_RED, COLOR_RED);
+    DEBUG_ERROR_COLORED("SettingsManager", "verifyLicense", "License key is empty", COLOR_GREEN, COLOR_GREEN);
     return false;
   }
 
   const QStringList parts = licenseKey.split('.');
   if (parts.size() != 2) {
-    DEBUG_COLORED("SettingsManager", "verifyLicense",
-                  "Invalid license_key format - expected two parts separated by dot", COLOR_RED, COLOR_RED);
+    DEBUG_ERROR_COLORED("SettingsManager", "verifyLicense",
+                        "Invalid license_key format - expected two parts separated by dot", COLOR_GREEN,
+                        COLOR_GREEN);
     return false;
   }
 
@@ -539,15 +543,16 @@ bool SettingsManager::verifyLicense()
   QByteArray signatureRaw = lenientBase64Decode(parts[1].toLatin1());
 
   if (canonicalRaw.isEmpty() || signatureRaw.isEmpty()) {
-    DEBUG_COLORED("SettingsManager", "verifyLicense", "Failed to decode license parts from base64", COLOR_RED,
-                  COLOR_RED);
+    DEBUG_ERROR_COLORED("SettingsManager", "verifyLicense", "Failed to decode license parts from base64",
+                        COLOR_GREEN, COLOR_GREEN);
     return false;
   }
 
   QByteArray canonicalized = canonicalizeJson(canonicalRaw);
   QJsonDocument doc = QJsonDocument::fromJson(canonicalized);
   if (!doc.isObject()) {
-    DEBUG_COLORED("SettingsManager", "verifyLicense", "Invalid license payload JSON", COLOR_RED, COLOR_RED);
+    DEBUG_ERROR_COLORED("SettingsManager", "verifyLicense", "Invalid license payload JSON", COLOR_GREEN,
+                        COLOR_GREEN);
     return false;
   }
 
@@ -555,8 +560,8 @@ bool SettingsManager::verifyLicense()
   QStringList requiredFields = {"ver", "product", "company_name", "host_hwid", "exp"};
   for (const QString& field : requiredFields) {
     if (!payload.contains(field)) {
-      DEBUG_COLORED("SettingsManager", "verifyLicense", QString("Missing required field: %1").arg(field),
-                    COLOR_RED, COLOR_RED);
+      DEBUG_ERROR_COLORED("SettingsManager", "verifyLicense",
+                          QString("Missing required field: %1").arg(field), COLOR_GREEN, COLOR_GREEN);
       return false;
     }
   }
@@ -564,15 +569,15 @@ bool SettingsManager::verifyLicense()
   const QString expStr = payload.value("exp").toString();
   const QDate expDate = QDate::fromString(expStr, Qt::ISODate);
   if (expDate.isValid() && expDate < QDate::currentDate()) {
-    DEBUG_COLORED("SettingsManager", "verifyLicense", QString("License expired on %1").arg(expStr), COLOR_RED,
-                  COLOR_RED);
+    DEBUG_ERROR_COLORED("SettingsManager", "verifyLicense", QString("License expired on %1").arg(expStr),
+                        COLOR_GREEN, COLOR_GREEN);
     return false;
   }
 
   EVP_PKEY* pubkey = loadPublicKey();
   if (!pubkey) {
-    DEBUG_COLORED("SettingsManager", "verifyLicense", "Failed to load public key for verification", COLOR_RED,
-                  COLOR_RED);
+    DEBUG_ERROR_COLORED("SettingsManager", "verifyLicense", "Failed to load public key for verification",
+                        COLOR_GREEN, COLOR_GREEN);
     return false;
   }
 
@@ -583,15 +588,41 @@ bool SettingsManager::verifyLicense()
     DEBUG_COLORED("SettingsManager", "verifyLicense", "License verification SUCCESS", COLOR_GREEN,
                   COLOR_GREEN);
   } else {
-    DEBUG_COLORED("SettingsManager", "verifyLicense", "License verification FAILED - signature invalid",
-                  COLOR_RED, COLOR_RED);
+    DEBUG_ERROR_COLORED("SettingsManager", "verifyLicense", "License verification FAILED - signature invalid",
+                        COLOR_GREEN, COLOR_GREEN);
   }
 
   return valid;
 #else
   DEBUG_COLORED("SettingsManager", "verifyLicense",
-                "License verification not supported on this platform, returning true", COLOR_YELLOW,
-                COLOR_YELLOW);
+                "License verification not supported on this platform, returning true", COLOR_GREEN,
+                COLOR_GREEN);
   return true;
 #endif
+}
+
+void SettingsManager::saveDateIso(const QString& key, const QString& dateStr)
+{
+  if (key.isEmpty()) return;
+
+  QDate date;
+
+  date = QDate::fromString(dateStr, Qt::ISODate);
+
+  if (!date.isValid()) date = QLocale().toDate(dateStr, QLocale::ShortFormat);
+
+  if (!date.isValid()) date = QDate::fromString(dateStr, "M/d/yy");
+
+  if (!date.isValid()) {
+    bool ok = false;
+    qint64 ts = dateStr.toLongLong(&ok);
+    if (ok) date = QDateTime::fromSecsSinceEpoch(ts).date();
+  }
+
+  if (!date.isValid()) {
+    DEBUG_ERROR_COLORED("SettingsManager", "saveDateIso", "invalid date:", COLOR_GREEN, COLOR_GREEN);
+    return;
+  }
+
+  m_settings.setValue(key, date.toString(Qt::ISODate));
 }

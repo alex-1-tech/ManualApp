@@ -1,5 +1,6 @@
 #pragma once
 
+#include <qtmetamacros.h>
 #ifdef Q_OS_LINUX
 #include <openssl/ec.h>
 #include <openssl/ecdsa.h>
@@ -75,8 +76,12 @@ class SettingsManager : public QObject
   DEFINE_SETTING(QString, windowsPassword, QString())
   DEFINE_SETTING(QString, notes, QString())
 
+  DEFINE_SETTING(bool, isLicenseActivate, false)
+  DEFINE_DATE_SETTING(lastUpdateManualAppDate)
+  DEFINE_DATE_SETTING(lastUpdateSoftwareDate)
   DEFINE_SETTING(QString, deviceHWID, QString())
   DEFINE_SETTING(QString, hostHWID, QString())
+  DEFINE_SETTING(QString, railType, QString())
   DEFINE_SETTING(bool, isFirstRun, true)
 public:
   explicit SettingsManager(QObject* parent = nullptr);
@@ -99,6 +104,11 @@ public:
   Q_INVOKABLE void saveLicense(const QJsonObject& license);
   Q_INVOKABLE void clearLicense();
   Q_INVOKABLE bool verifyLicense();
+  Q_INVOKABLE void licenseActivationSucceeded() { setisLicenseActivate(true); };
+  Q_INVOKABLE void updateLastManualAppDate() { setlastUpdateManualAppDate(QDate::currentDate()); }
+  Q_INVOKABLE void updateLastSoftwareDate() { setlastUpdateSoftwareDate(QDate::currentDate()); }
+  Q_INVOKABLE void saveDateIso(const QString& key, const QString& dateStr);
+
 
   [[nodiscard]] QJsonObject toJsonForDjango() const;
   void fromJson(const QJsonObject& obj);
