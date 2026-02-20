@@ -20,8 +20,6 @@ class InstallManager : public QObject
   Q_PROPERTY(QString installerPath READ installerPath NOTIFY installerPathChanged)
   Q_PROPERTY(bool isDownloading READ isDownloading NOTIFY isDownloadingChanged)
   Q_PROPERTY(double downloadProgress READ downloadProgress NOTIFY downloadProgressChanged)
-  Q_PROPERTY(bool isLicenseActivate READ isLicenseActivate NOTIFY isLicenseActivateChanged)
-
 public:
   explicit InstallManager(QObject* parent = nullptr, ReportManager* reportManager = nullptr);
   ~InstallManager();
@@ -30,7 +28,6 @@ public:
   bool isInstalling() const { return m_isInstalling; }
   QString installerPath() const { return m_installerPath; }
   bool isDownloading() const { return m_isDownloading; }
-  bool isLicenseActivate() const { return m_isLicenseActivate; }
   double downloadProgress() const { return m_downloadProgress; }
 
   Q_INVOKABLE bool installerExists(const QString& model) const;
@@ -39,8 +36,10 @@ public:
   Q_INVOKABLE void runInstaller(const QString& model);
   Q_INVOKABLE void activate(const QString& model, const QString& hostHWID, const QString& deviceHWID,
                             const QString& mode, const QString& url, const QString& licensePassword);
-  Q_INVOKABLE void setIsLicenseActivate(bool activating);
   Q_INVOKABLE QString buildInstallerPath(const QString& model) const;
+  Q_INVOKABLE QString getLastUpdateDate(const QString& baseUrl, const QString& model,
+                                        const QString& railTypeMode);
+
 signals:
   void statusMessageChanged();
   void isInstallingChanged();
@@ -72,14 +71,14 @@ private:
   void setDownloadProgress(double progress);
 
 
-  QString buildDownloadUrl(const QString& model, const QString& baseUrl, const QString& railTypeMode) const;
+  QString buildDownloadUrl(const QString& model, const QString& baseUrl, const QString& railTypeMode,
+                           const QString& apiUrl) const;
   void initializeNetworkService();
 
   QString m_statusMessage;
   bool m_isInstalling;
   QString m_installerPath;
   bool m_isDownloading;
-  bool m_isLicenseActivate;
   double m_downloadProgress;
 
   QProcess* m_process;

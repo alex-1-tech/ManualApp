@@ -72,10 +72,10 @@ QString InstallManager::buildInstallerPath(const QString& model) const
 }
 
 QString InstallManager::buildDownloadUrl(const QString& model, const QString& baseUrl,
-                                         const QString& railTypeMode) const
+                                         const QString& railTypeMode, const QString& apiUrl) const
 {
   if (model.toLower() == "kalmar32") {
-    QUrl url(baseUrl + "/api/apps/download/kalmar32/");
+    QUrl url(baseUrl + "/" + apiUrl + "/kalmar32/");
     QUrlQuery query;
     if (!railTypeMode.isEmpty()) {
       query.addQueryItem("rail_type", railTypeMode.toUpper().trimmed());
@@ -83,9 +83,9 @@ QString InstallManager::buildDownloadUrl(const QString& model, const QString& ba
     url.setQuery(query);
     return url.toString();
   } else if (model.toLower() == "phasar32") {
-    return baseUrl + "/api/apps/download/phasar32/";
+    return baseUrl + "/" + apiUrl + "/phasar32/";
   } else if (model.toLower() == "manual_app") {
-    return baseUrl + "/api/apps/download/manual_app/";
+    return baseUrl + "/" + apiUrl + "/manual_app/";
   } else {
     DEBUG_ERROR_COLORED("InstallManager", "buildDownloadUrl", QString("Unknown model: %1").arg(model),
                         COLOR_CYAN, COLOR_CYAN);
@@ -120,7 +120,7 @@ void InstallManager::downloadInstaller(const QString& model, const QString& base
     return;
   }
 
-  QString url = buildDownloadUrl(model, baseUrl, railTypeMode);
+  QString url = buildDownloadUrl(model, baseUrl, railTypeMode, "/api/apps/download");
   QString path = buildInstallerPath(model);
 
   if (url.isEmpty() || path.isEmpty()) {
@@ -139,6 +139,65 @@ void InstallManager::downloadInstaller(const QString& model, const QString& base
 
 
   m_reportManager->networkService()->downloadFile(QUrl(url), path);
+}
+
+QString InstallManager::getLastUpdateDate(const QString& baseUrl, const QString& model,
+                                          const QString& railTypeMode)
+{
+  DEBUG_COLORED("InstallManager", "getLastUpdateDate",
+                QString("Requesting last update date: %1").arg(baseUrl), COLOR_CYAN, COLOR_CYAN);
+
+  QString url = buildDownloadUrl(model, baseUrl, railTypeMode, "api/apps/last_version");
+
+  if (url.isEmpty()) {
+    setStatusMessage("Invalid update url path");
+    return QString();
+  }
+
+  QString result;
+  QEventLoop loop;
+  bool timeout = false;
+
+  QTimer timeoutTimer;
+  timeoutTimer.setSingleShot(true);
+  QObject::connect(&timeoutTimer, &QTimer::timeout, [&]() {
+    timeout = true;
+    loop.quit();
+    setStatusMessage("Request timeout while getting update date");
+    DEBUG_ERROR_COLORED("InstallManager", "getLastUpdateDate", "Request timeout", COLOR_CYAN, COLOR_CYAN);
+  });
+
+  m_reportManager->networkService()->getJsonFromDjango(
+      QUrl(url),
+      [&](const QJsonObject& json) {
+        if (json.contains("date") && json["date"].isString()) {
+          result = json["date"].toString();
+          DEBUG_COLORED("InstallManager", "getLastUpdateDate",
+                        QString("Server date received: %1").arg(result), COLOR_CYAN, COLOR_CYAN);
+        } else {
+          DEBUG_ERROR_COLORED(
+              "InstallManager", "getLastUpdateDate",
+              QString("Invalid response format: %1").arg(QString::fromUtf8(QJsonDocument(json).toJson())),
+              COLOR_CYAN, COLOR_CYAN);
+          setStatusMessage("Invalid server response format");
+        }
+        loop.quit();
+      },
+      [&](const QString& error) {
+        DEBUG_ERROR_COLORED("InstallManager", "getLastUpdateDate",
+                            QString("Failed to get update date: %1").arg(error), COLOR_CYAN, COLOR_CYAN);
+        setStatusMessage(QString("Failed to get update date: %1").arg(error));
+        loop.quit();
+      });
+
+  timeoutTimer.start(30000);
+  loop.exec();
+
+  if (timeout) {
+    return QString();
+  }
+
+  return result;
 }
 
 void InstallManager::onDownloadProgress(qint64 bytesSent, qint64 bytesTotal)
@@ -345,13 +404,6 @@ void InstallManager::setIsInstalling(bool installing)
   }
 }
 
-void InstallManager::setIsLicenseActivate(bool activating)
-{
-  if (m_isLicenseActivate != activating) {
-    m_isLicenseActivate = activating;
-    emit isLicenseActivateChanged();
-  }
-}
 
 void InstallManager::setInstallerPath(const QString& path)
 {
