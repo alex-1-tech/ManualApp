@@ -195,10 +195,6 @@ ScrollView {
                         "value": SettingsManager.phasarSettings.pcTabletDell7230
                     },
                     {
-                        "label": qsTr("Personalised name tag"),
-                        "value": SettingsManager.phasarSettings.personalisedNameTag
-                    },
-                    {
                         "label": qsTr("AC/DC Power adapter for Dell 7230"),
                         "value": SettingsManager.phasarSettings.acDcPowerAdapterDell
                     },
