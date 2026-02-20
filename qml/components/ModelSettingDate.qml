@@ -11,7 +11,7 @@ RowLayout {
     property string label: ""
     property string placeholder: "ДД.ММ.ГГГГ"
     property string settingName: ""
-    property var modelSettings: SettingsManager // по умолчанию общие настройки
+    property var modelSettings: SettingsManager
     property date initialDate: new Date()
 
     Layout.fillWidth: true
@@ -30,7 +30,6 @@ RowLayout {
 
         Layout.fillWidth: true
 
-        // Связываем текст с настройками
         text: {
             if (!root.modelSettings || !root.settingName)
                 return internal.formatDate(root.initialDate);

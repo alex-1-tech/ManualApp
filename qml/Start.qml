@@ -22,7 +22,6 @@ ApplicationWindow {
 
         firstRun = SettingsManager.isFirstRun
         if (firstRun) {
-            // При первом запуске показываем выбор модели
             contentLoader.sourceComponent = modelSelectionComponent
         } else {
             DataManager.syncReportsWithServer();
@@ -32,8 +31,6 @@ ApplicationWindow {
     }
 
     onClosing: function () {
-        // if(DataManager.startTime != "" && DataManager.startTime != null)
-        //     DataManager.save(false);
         DataManager.setStartTime(null);
     }
 
