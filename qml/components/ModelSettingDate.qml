@@ -32,13 +32,13 @@ RowLayout {
 
         text: {
             if (!root.modelSettings || !root.settingName)
-                return internal.formatDate(root.initialDate);
+                return internal.formatDate(root.initialDate)
 
-            var dateValue = root.modelSettings[root.settingName];
+            var dateValue = root.modelSettings[root.settingName]
             if (dateValue && dateValue instanceof Date) {
-                return internal.formatDate(dateValue);
+                return internal.formatDate(dateValue)
             }
-            return internal.formatDate(root.initialDate);
+            return internal.formatDate(root.initialDate)
         }
 
         placeholderText: root.placeholder
@@ -49,15 +49,23 @@ RowLayout {
         font.pointSize: Theme.fontSmall
         padding: 7
 
-        validator: RegularExpressionValidator {
-            regularExpression: /^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[012])\.(19|20)\d\d$/
+        property bool valid: isValidDate(text)
+
+        function isValidDate(t) {
+            var regex = /^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[012])\.(19|20)\d\d$/
+            return regex.test(t)
         }
+
+        onTextChanged: valid = isValidDate(text)
 
         background: Rectangle {
             implicitWidth: 200
             implicitHeight: 30
             color: Theme.colorBgPrimary
-            border.color: dateField.activeFocus ? Theme.colorButtonPrimary : Theme.colorBorder
+
+            border.color: dateField.activeFocus ?
+                              (dateField.valid ? Theme.colorButtonPrimary : "red") :
+                              (dateField.valid ? Theme.colorBorder : "red")
             border.width: 1
             radius: 4
         }
@@ -67,45 +75,38 @@ RowLayout {
 
             function formatDate(date) {
                 if (!date || isNaN(date.getTime()))
-                    return "";
+                    return ""
 
-                var day = String(date.getDate()).padStart(2, '0');
-                var month = String((date.getMonth() + 1)).padStart(2, '0');
-                var year = date.getFullYear();
-                return day + "." + month + "." + year;
+                var day = String(date.getDate()).padStart(2, '0')
+                var month = String((date.getMonth() + 1)).padStart(2, '0')
+                var year = date.getFullYear()
+                return day + "." + month + "." + year
             }
 
             function parseDate(dateString) {
-                var parts = dateString.split(".");
+                var parts = dateString.split(".")
                 if (parts.length === 3) {
-                    var day = parseInt(parts[0]);
-                    var month = parseInt(parts[1]) - 1;
-                    var year = parseInt(parts[2]);
-                    return new Date(year, month, day);
+                    var day = parseInt(parts[0])
+                    var month = parseInt(parts[1]) - 1
+                    var year = parseInt(parts[2])
+                    return new Date(year, month, day)
                 }
-                return new Date();
+                return new Date()
             }
         }
 
         onEditingFinished: {
-            if (text && acceptableInput) {
-                var newDate = internal.parseDate(text);
+            if (valid && text) {
+                var newDate = internal.parseDate(text)
 
                 if (root.modelSettings && root.settingName)
-                        root.modelSettings[root.settingName] = newDate;
-                root.initialDate = newDate;
+                    root.modelSettings.setValue(root.settingName, newDate)
+                root.initialDate = newDate
             }
         }
 
         Component.onCompleted: {
-            if (root.modelSettings && root.settingName) {
-                var dateValue = root.modelSettings[root.settingName];
-                if (dateValue && dateValue instanceof Date) {
-                    text = internal.formatDate(dateValue);
-                }
-            } else {
-                text = internal.formatDate(root.initialDate);
-            }
+            valid = isValidDate(text)
         }
     }
 }

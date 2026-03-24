@@ -26,7 +26,6 @@ RowLayout {
         border.width: root.checked ? 0 : 1
         color: root.checked ? Theme.colorButtonPrimary : Theme.colorBgPrimary
 
-        // Галочка
         Image {
             anchors.centerIn: parent
             width: 16
@@ -35,7 +34,6 @@ RowLayout {
             visible: root.checked
         }
 
-        // Эффект при наведении
         Rectangle {
             anchors.fill: parent
             radius: parent.radius
@@ -61,7 +59,6 @@ RowLayout {
             }
         }
 
-        // Анимации
         Behavior on scale {
             NumberAnimation {
                 duration: 150

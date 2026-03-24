@@ -36,13 +36,13 @@ RowLayout {
         TextField {
             id: textField
             placeholderText: root.placeholder
-            text: root.modelSettings ? (root.modelSettings[root.settingName] || "") : ""
+            text: root.modelSettings && root.modelSettings.getValue ? root.modelSettings.getValue(root.settingName) : ""
+            
 
             onTextChanged: {
                 if (root.modelSettings && root.settingName && textField.activeFocus)
-                        root.modelSettings[root.settingName] = text;
+                    root.modelSettings.setValue(root.settingName, text);
             }
-
 
             color: Theme.colorTextPrimary
             placeholderTextColor: Theme.colorTextPlaceholder
@@ -67,11 +67,11 @@ RowLayout {
         TextArea {
             id: textArea
             placeholderText: root.placeholder
-            text: root.modelSettings ? (root.modelSettings[root.settingName] || "") : ""
+            text: root.modelSettings && root.modelSettings.getValue ? root.modelSettings.getValue(root.settingName) : ""
 
             onTextChanged: {
                 if (root.modelSettings && root.settingName && textArea.activeFocus)
-                        root.modelSettings[root.settingName] = text;
+                    root.modelSettings.setValue(root.settingName, text);
             }
             color: Theme.colorTextPrimary
             placeholderTextColor: Theme.colorTextPlaceholder
