@@ -64,8 +64,11 @@ ScrollView {
         root.manualAppLatestServerDate = manualServerDate;
         root.manualAppLastVersionDate = SettingsManager.lastUpdateManualAppDate;
 
-        const needManualAppUpdate = !root.isManualAppInstallerReady || !isValidDate(root.manualAppLastVersionDate) || root.manualAppLastVersionDate < root.manualAppLatestServerDate;
-        root.manualAppUpdateStatus = needManualAppUpdate ? (root.isManualAppInstallerReady ? "new_version_available" : "not_downloaded") : "up_to_date";
+        if (!isValidDate(root.manualAppLastVersionDate) || root.manualAppLastVersionDate < root.manualAppLatestServerDate) {
+            root.manualAppUpdateStatus = "new_version_available";
+        } else {
+            root.manualAppUpdateStatus = "up_to_date";
+        }
 
         root.isLoadingDates = false;
     }
@@ -107,14 +110,16 @@ ScrollView {
 
     onCurrentModelChanged: {
         loadRailTypeForCurrentModel();
-        if (isInitialized) checkForUpdates();
+        if (isInitialized)
+            checkForUpdates();
     }
 
     onRailTypeModeChanged: {
         if (root.currentModel === "kalmar32") {
             saveRailTypeForCurrentModel();
         }
-        if (isInitialized) checkForUpdates();
+        if (isInitialized)
+            checkForUpdates();
     }
 
     contentItem: Flickable {
@@ -166,7 +171,7 @@ ScrollView {
                     }
 
                     Text {
-                        text: root.currentModel === "kalmar32" ? "KALMAR-32" : "PHASAR-32"
+                        text: SettingsManager.getCurrentSettings().modelTitle
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSubtitle
                         font.bold: true
@@ -369,14 +374,14 @@ ScrollView {
                         }
 
                         Text {
-                            text: "Installer: " + (root.currentModel === "kalmar32" ? "kalmar.exe" : "phasar.exe")
+                            text: "Installer: " + SettingsManager.getCurrentSettings().modelInstallerPath;
                             color: Theme.colorTextMuted
                             font.pointSize: Theme.fontSmall
                             Layout.fillWidth: true
                         }
 
                         Text {
-                            text: "Path: " + (root.currentModel === "kalmar32" ? DataManager.installManager().buildInstallerPath("kalmar32") : DataManager.installManager().buildInstallerPath("phasar32"))
+                            text: "Path: " + DataManager.installManager().buildInstallerPath(SettingsManager.currentModel)
                             color: Theme.colorTextMuted
                             font.pointSize: Theme.fontSmall
                             Layout.fillWidth: true
@@ -560,8 +565,8 @@ ScrollView {
                                     if (root.manualAppUpdateStatus === "new_version_available")
                                         return "Update available";
                                     if (root.isManualAppInstallerReady)
-                                        return "Installer ready";
-                                    return "Not downloaded";
+                                        return "Ready to run";
+                                    return "The new version is not found";
                                 }
 
                                 color: {
@@ -571,7 +576,7 @@ ScrollView {
                                         return Theme.colorUpdate;
                                     if (root.isManualAppInstallerReady)
                                         return Theme.colorSuccess;
-                                    return Theme.colorError;
+                                    return Theme.colorTextMuted;
                                 }
                                 font.pointSize: Theme.fontBody
                                 font.bold: root.manualAppUpdateStatus === "new_version_available"
@@ -599,13 +604,13 @@ ScrollView {
                             }
 
                             Text {
-                                text: "Installed version:"
+                                text: "Current version date:"
                                 color: Theme.colorTextMuted
                                 font.pointSize: Theme.fontSmall
                             }
 
                             Text {
-                                text: root.manualAppLastVersionDate > new Date(0) ? Qt.formatDate(root.manualAppLastVersionDate, "yyyy-MM-dd") : "Never"
+                                text: root.manualAppLastVersionDate > new Date(0) ? Qt.formatDate(root.manualAppLastVersionDate, "yyyy-MM-dd") : "Unknown"
                                 color: root.manualAppLastVersionDate < root.manualAppLatestServerDate ? Theme.colorUpdate : Theme.colorTextPrimary
                                 font.pointSize: Theme.fontSmall
                                 font.bold: root.manualAppLastVersionDate < root.manualAppLatestServerDate
@@ -622,7 +627,7 @@ ScrollView {
                         }
 
                         Text {
-                            text: "Installer: ManualApp.exe"
+                            text: "Executable: ManualApp.exe"
                             color: Theme.colorTextMuted
                             font.pointSize: Theme.fontSmall
                             Layout.fillWidth: true
@@ -654,8 +659,6 @@ ScrollView {
                                 return "Downloading...";
                             if (root.manualAppUpdateStatus === "new_version_available")
                                 return "Update Now";
-                            if (root.isManualAppInstallerReady)
-                                return "Redownload";
                             return "Download";
                         }
 
@@ -700,10 +703,10 @@ ScrollView {
                                 return "Installing...";
                             if (root.manualAppUpdateStatus === "new_version_available" && root.isManualAppInstallerReady)
                                 return "Install Update";
-                            return "Run Installer";
+                            return "Run Application";
                         }
 
-                        enabled: !DataManager.installManager().isInstalling && !root.isManualAppDownloading && !DataManager.installManager().isDownloading && root.isManualAppInstallerReady
+                        enabled: root.isManualAppInstallerReady && !DataManager.installManager().isInstalling && !root.isManualAppDownloading && !DataManager.installManager().isDownloading
 
                         background: Rectangle {
                             color: parent.enabled ? (root.manualAppUpdateStatus === "new_version_available" ? Theme.colorUpdate : Theme.colorButtonPrimary) : Theme.colorButtonDisabled
