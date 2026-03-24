@@ -5,11 +5,13 @@
 #include <QNetworkRequest>
 
 #include "datamanager.h"
-#include "fileservice.h"
-#include "loger.h"
+#include "file/fileservice.h"
+#include "file/loger.h"
 #include "reportmanager.h"
+#include "settings/settingsmanager.h"
+#include "software/licensehandler.h"
 
-InstallManager::InstallManager(QObject* parent, ReportManager* reportManager)
+InstallManager::InstallManager(QObject* parent, ReportManager* reportManager, LicenseHandler* licenseHandler)
     : QObject(parent)
     , m_statusMessage("Ready to download and install")
     , m_isInstalling(false)
@@ -21,6 +23,7 @@ InstallManager::InstallManager(QObject* parent, ReportManager* reportManager)
 {
   DEBUG_COLORED("InstallManager", "Constructor", "InstallManager initialized", COLOR_CYAN, COLOR_CYAN);
   m_reportManager = reportManager;
+  m_licenseHandler = licenseHandler;
   initializeNetworkService();
 }
 
@@ -56,16 +59,10 @@ QString InstallManager::buildInstallerPath(const QString& model) const
   QString appDataDir = m_reportManager->fileService()->getAppDataPath();
   QString installerName;
 
-  if (model.toLower() == "kalmar32") {
-    installerName = "/Kalmar.exe";
-  } else if (model.toLower() == "phasar32") {
-    installerName = "/Phasar.exe";
-  } else if (model.toLower() == "manual_app") {
+  if (model.toLower() == "manual_app") {
     installerName = "/ManualApp.exe";
   } else {
-    DEBUG_ERROR_COLORED("InstallManager", "buildInstallerPath", QString("Unknown model: %1").arg(model),
-                        COLOR_CYAN, COLOR_CYAN);
-    return QString();
+    installerName = "/" + SettingsManager().getCurrentSettings()->modelInstallerPath();
   }
 
   return appDataDir + installerName;
@@ -82,14 +79,10 @@ QString InstallManager::buildDownloadUrl(const QString& model, const QString& ba
     }
     url.setQuery(query);
     return url.toString();
-  } else if (model.toLower() == "phasar32") {
-    return baseUrl + "/" + apiUrl + "/phasar32/";
   } else if (model.toLower() == "manual_app") {
     return baseUrl + "/" + apiUrl + "/manual_app/";
   } else {
-    DEBUG_ERROR_COLORED("InstallManager", "buildDownloadUrl", QString("Unknown model: %1").arg(model),
-                        COLOR_CYAN, COLOR_CYAN);
-    return QString();
+    return baseUrl + "/" + apiUrl + "/" + model.toLower() + "/";
   }
 }
 
@@ -431,19 +424,7 @@ void InstallManager::setDownloadProgress(double progress)
 
 QString getVersionFromRegistry(const QString& model)
 {
-  QString keyPath;
-
-  if (model.toLower() == "phasar32") {
-    keyPath = "HKEY_LOCAL_MACHINE\\Software\\Technovotum\\Phasar";
-  } else if (model.toLower() == "kalmar32") {
-    keyPath = "HKEY_LOCAL_MACHINE\\Software\\Technovotum\\Kalmar";
-    return "";
-  } else {
-    return "";
-  }
-
-  QSettings registry(keyPath, QSettings::NativeFormat);
-  return registry.value("LicenseVer", "").toString();
+  return "";
 }
 
 void InstallManager::activate(const QString& model, const QString& hostHWID, const QString& deviceHWID,
@@ -462,10 +443,7 @@ void InstallManager::activate(const QString& model, const QString& hostHWID, con
 
   QJsonObject payload;
   payload["ver"] = getVersionFromRegistry(model);
-  if (model == "phasar32")
-    payload["product"] = "Phasar";
-  else if (model == "kalmar32")
-    payload["product"] = "Kalmar";
+  payload["product"] = model;
 
   payload["company_name"] = "technovotum";
 
@@ -521,8 +499,8 @@ void InstallManager::handleActivationResponse(const QByteArray& response)
     return;
   }
 
-  m_reportManager->settingsManager()->saveLicense(license);
-  if (!m_reportManager->settingsManager()->hasLicense()) {
+  m_licenseHandler->saveLicense(license);
+  if (!m_licenseHandler->hasLicense()) {
     emit activationFailed("Failed to save license to settings");
     return;
   }
