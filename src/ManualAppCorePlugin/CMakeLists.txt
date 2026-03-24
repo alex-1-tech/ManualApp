@@ -2,27 +2,37 @@ qt_add_qml_module(ManualAppCorePlugin
     URI ManualAppCorePlugin
     VERSION 1.0
     DEPENDENCIES
-        QtQuick
-        QtQml
-        QtCore
+    QtQuick
+    QtQml
+    QtCore
     SOURCES
-        datamanager.cpp datamanager.h
-        settingsmanager.cpp settingsmanager.h
-        stepmodel.cpp stepmodel.h
-        fileservice.cpp fileservice.h
-        networkservice.cpp networkservice.h
-        pdfexporter.cpp pdfexporter.h
-        reportmanager.cpp reportmanager.h
-        configmanager.cpp configmanager.h
-        step.h
-        loger.h
-        settingsbase.h
-        kalmar32settings.h kalmar32settings.cpp
-        phasar32settings.h phasar32settings.cpp
-        installmanager.h installmanager.cpp
-        network/httpclient.h network/httpclient.cpp
-        network/synchttpclient.h network/synchttpclient.cpp
-        network/djangoerrorparser.h
+    datamanager.cpp datamanager.h
+    reportmanager.cpp reportmanager.h
+    installmanager.h installmanager.cpp
+
+    # models
+    models/stepmodel.cpp models/stepmodel.h
+    models/step.h
+
+    # files 
+    file/fileservice.cpp file/fileservice.h
+    file/pdfexporter.cpp file/pdfexporter.h
+    file/loger.h
+    file/configmanager.cpp file/configmanager.h
+
+    # settings
+    settings/settingsmanager.cpp settings/settingsmanager.h
+    settings/modelsettings.cpp settings/modelsettings.h
+
+    # license
+    software/licensehandler.h software/licensehandler.cpp
+    
+
+    # networks
+    networkservice.cpp networkservice.h
+    network/httpclient.h network/httpclient.cpp
+    network/synchttpclient.h network/synchttpclient.cpp
+    network/djangoerrorparser.h
 )
 
 target_link_libraries(ManualAppCorePlugin PRIVATE
