@@ -1,0 +1,902 @@
+{
+    "models": {
+        "kalmar32": {
+            "fields": {
+                "title": "KALMAR-32",
+                "description": "phased array rails welding joints",
+                "installer_path": "Kalmar32.exe"
+            },
+            "sections": [
+                {
+                    "title": "Registration data",
+                    "fields": [
+                        {
+                            "name": "serialNumber",
+                            "label": "Serial number",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "visibleInInitialMode": true,
+                            "json_key": "serial_number",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "shipmentDate",
+                            "label": "Shipment date",
+                            "type": "date",
+                            "visibleInInitialMode": true,
+                            "json_key": "shipment_date",
+                            "default": "",
+                            "cpptype": "QDate"
+                        },
+                        {
+                            "name": "invoice",
+                            "label": "Invoice",
+                            "placeholder": "Invoice number",
+                            "type": "text",
+                            "json_key": "invoice",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "packetList",
+                            "label": "Packet list",
+                            "placeholder": "Document number",
+                            "type": "text",
+                            "json_key": "packet_list",
+                            "default": "",
+                            "cpptype": "QString"
+                        }
+                    ]
+                },
+                {
+                    "title": "PC Tablet Components",
+                    "fields": [
+                        {
+                            "name": "pcTabletDell7230",
+                            "label": "PC tablet Latitude Dell 7230",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "pc_tablet_dell_7230",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "acDcPowerAdapterDell",
+                            "label": "AC/DC Power adapter for Dell 7230",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "ac_dc_power_adapter_dell",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "dcChargerAdapterBattery",
+                            "label": "DC Charger adapter for Dell 7230 from battery",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "dc_charger_adapter_battery",
+                            "default": "",
+                            "cpptype": "QString"
+                        }
+                    ]
+                },
+                {
+                    "title": "Ultrasonic Equipment",
+                    "fields": [
+                        {
+                            "name": "ultrasonicPhasedArrayPulsar",
+                            "label": "Ultrasonic phased array PULSAR OEM 16/64 established",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "ultrasonic_phased_array_pulsar",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "leftProbs",
+                            "label": "Left probs PA2.25L16 1.1x10-17",
+                            "placeholder": "0000 MM.YEAR",
+                            "type": "text",
+                            "json_key": "left_probs",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "rightProbs",
+                            "label": "Right probs PA2.25L16 1.1x10-17",
+                            "placeholder": "0000 MM.YEAR",
+                            "type": "text",
+                            "json_key": "right_probs",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "manualProbs",
+                            "label": "Manual probs PA2.25L16 0.9x10-17",
+                            "placeholder": "0000 MM.YEAR",
+                            "type": "text",
+                            "json_key": "manual_probs",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "straightProbs",
+                            "label": "Straight probs PA5.0L16 0.6x10-12",
+                            "placeholder": "0000 MM.YEAR",
+                            "type": "text",
+                            "json_key": "straight_probs",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "hasDcCableBattery",
+                            "label": "DC Cable from Battery",
+                            "type": "checkbox",
+                            "checkboxText": "Included",
+                            "visibleInInitialMode": true,
+                            "json_key": "has_dc_cable_battery",
+                            "default": false,
+                            "cpptype": "bool"
+                        },
+                        {
+                            "name": "hasEthernetCables",
+                            "label": "Ethernet Cables",
+                            "type": "checkbox",
+                            "checkboxText": "Included",
+                            "visibleInInitialMode": true,
+                            "json_key": "has_ethernet_cables",
+                            "default": false,
+                            "cpptype": "bool"
+                        }
+                    ]
+                },
+                {
+                    "title": "Battery and Charging",
+                    "fields": [
+                        {
+                            "name": "dcBatteryBox",
+                            "label": "DC Battery box established",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "dc_battery_box",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "hasAcDcChargerAdapterBattery",
+                            "label": "AC/DC Charger adapter for battery",
+                            "type": "checkbox",
+                            "checkboxText": "Included",
+                            "visibleInInitialMode": true,
+                            "json_key": "has_ac_dc_charger_adapter_battery",
+                            "default": false,
+                            "cpptype": "bool"
+                        }
+                    ]
+                },
+                {
+                    "title": "Calibration and Tools",
+                    "fields": [
+                        {
+                            "name": "calibrationBlockSo3r",
+                            "label": "Calibration bloc SO-3R",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "calibration_block_so_3r",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "hasRepairToolBag",
+                            "label": "Small repair tool witch bag",
+                            "type": "checkbox",
+                            "checkboxText": "Included",
+                            "visibleInInitialMode": true,
+                            "json_key": "has_repair_tool_bag",
+                            "default": false,
+                            "cpptype": "bool"
+                        }
+                    ]
+                },
+                {
+                    "title": "Network settings",
+                    "fields": [
+                        {
+                            "name": "wifiRouterAddress",
+                            "label": "Wifi router address",
+                            "placeholder": "IP or hostname of the router",
+                            "type": "text",
+                            "json_key": "wifi_router_address",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "windowsPassword",
+                            "label": "Windows password",
+                            "placeholder": "Enter Windows user password",
+                            "type": "text",
+                            "json_key": "windows_password",
+                            "default": "",
+                            "cpptype": "QString"
+                        }
+                    ]
+                },
+                {
+                    "title": "Additional Information",
+                    "fields": [
+                        {
+                            "name": "notes",
+                            "label": "Notes",
+                            "placeholder": "Additional notes and comments",
+                            "type": "textarea",
+                            "json_key": "notes",
+                            "default": "",
+                            "cpptype": "QString"
+                        }
+                    ]
+                }
+            ]
+        },
+        "phasar01": {
+            "fields": {
+                "title": "PHASAR-01",
+                "description": "rail double-stranded phased arrays",
+                "installer_path": "Phasar01.exe"
+            },
+            "sections": [
+                {
+                    "title": "Registration data",
+                    "fields": [
+                        {
+                            "name": "serialNumber",
+                            "label": "Serial number",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "visibleInInitialMode": true,
+                            "json_key": "serial_number",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "shipmentDate",
+                            "label": "Shipment date",
+                            "type": "date",
+                            "visibleInInitialMode": true,
+                            "json_key": "shipment_date",
+                            "default": "",
+                            "cpptype": "QDate"
+                        },
+                        {
+                            "name": "invoice",
+                            "label": "Invoice",
+                            "placeholder": "Invoice number",
+                            "type": "text",
+                            "json_key": "invoice",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "packetList",
+                            "label": "Packet list",
+                            "placeholder": "Document number",
+                            "type": "text",
+                            "json_key": "packet_list",
+                            "default": "",
+                            "cpptype": "QString"
+                        }
+                    ]
+                },
+                {
+                    "title": "PC Tablet Components",
+                    "fields": [
+                        {
+                            "name": "pcTabletDell7230",
+                            "label": "PC tablet Latitude Dell 7230",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "pc_tablet_dell_7230",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "acDcPowerAdapterDell",
+                            "label": "AC/DC Power adapter for Dell 7230",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "ac_dc_power_adapter_dell",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "dcChargerAdapterBattery",
+                            "label": "DC Charger adapter for Dell 7230 from battery",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "dc_charger_adapter_battery",
+                            "default": "",
+                            "cpptype": "QString"
+                        }
+                    ]
+                },
+                {
+                    "title": "Ultrasonic Equipment",
+                    "fields": [
+                        {
+                            "name": "ultrasonicPhasedArrayPulsar",
+                            "label": "Ultrasonic phased array PULSAR OEM 16/128 established",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "ultrasonic_phased_array_pulsar",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "dcn",
+                            "label": "DCN P112-2,5-F",
+                            "placeholder": "0000 MM.YEAR",
+                            "type": "text",
+                            "json_key": "dcn",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "abBack",
+                            "label": "AB-back PA2,5L16 1,1x10-17-F",
+                            "placeholder": "0000 MM.YEAR",
+                            "type": "text",
+                            "json_key": "ab_back",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "gfCombo",
+                            "label": "GF combo 2PA2,5L16 0,6x10-10-F",
+                            "placeholder": "0000 MM.YEAR",
+                            "type": "text",
+                            "json_key": "gf_combo",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "ffCombo",
+                            "label": "FF combo 2PA2,5L16 0,6x10-10-F",
+                            "placeholder": "0000 MM.YEAR",
+                            "type": "text",
+                            "json_key": "ff_combo",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "abFront",
+                            "label": "AB-front PA2,5L16 1,1x10-17-F",
+                            "placeholder": "0000 MM.YEAR",
+                            "type": "text",
+                            "json_key": "ab_front",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "flange50",
+                            "label": "Flange 50 P112-0,6-50-F",
+                            "placeholder": "0000 MM.YEAR",
+                            "type": "text",
+                            "json_key": "flange_50",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "manualProbs",
+                            "label": "Manual probs PA2.25L16 0.9x10-17",
+                            "placeholder": "0000 MM.YEAR",
+                            "type": "text",
+                            "json_key": "manual_probs",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "hasDcCableBattery",
+                            "label": "DC Cable from Battery",
+                            "type": "checkbox",
+                            "checkboxText": "Included",
+                            "visibleInInitialMode": true,
+                            "json_key": "has_dc_cable_battery",
+                            "default": false,
+                            "cpptype": "bool"
+                        },
+                        {
+                            "name": "hasEthernetCables",
+                            "label": "Ethernet Cables",
+                            "type": "checkbox",
+                            "checkboxText": "Included",
+                            "visibleInInitialMode": true,
+                            "json_key": "has_ethernet_cables",
+                            "default": false,
+                            "cpptype": "bool"
+                        }
+                    ]
+                },
+                {
+                    "title": "Additional Equipment",
+                    "fields": [
+                        {
+                            "name": "waterTankWithTap",
+                            "label": "Water tank with a tap",
+                            "placeholder": "Water tank details",
+                            "type": "text",
+                            "json_key": "water_tank_with_tap",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "dcBatteryBox",
+                            "label": "DC Battery box established",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "dc_battery_box",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "hasAcDcChargerAdapterBattery",
+                            "label": "AC/DC Charger adapter for battery",
+                            "type": "checkbox",
+                            "checkboxText": "Included",
+                            "json_key": "has_ac_dc_charger_adapter_battery",
+                            "default": false,
+                            "cpptype": "bool"
+                        }
+                    ]
+                },
+                {
+                    "title": "Calibration and Tools",
+                    "fields": [
+                        {
+                            "name": "calibrationBlockSo3r",
+                            "label": "Calibration bloc SO-3R",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "visibleInInitialMode": true,
+                            "json_key": "calibration_block_so_3r",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "hasRepairToolBag",
+                            "label": "Small repair tool with bag",
+                            "type": "checkbox",
+                            "checkboxText": "Included",
+                            "visibleInInitialMode": true,
+                            "json_key": "has_repair_tool_bag",
+                            "default": false,
+                            "cpptype": "bool"
+                        },
+                        {
+                            "name": "hasInstalledNameplate",
+                            "label": "Installed nameplate with serial number",
+                            "type": "checkbox",
+                            "checkboxText": "Installed",
+                            "visibleInInitialMode": true,
+                            "json_key": "has_installed_nameplate",
+                            "default": false,
+                            "cpptype": "bool"
+                        }
+                    ]
+                },
+                {
+                    "title": "Network settings",
+                    "fields": [
+                        {
+                            "name": "wifiRouterAddress",
+                            "label": "Wifi router address",
+                            "placeholder": "IP or hostname of the router",
+                            "type": "text",
+                            "json_key": "wifi_router_address",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "windowsPassword",
+                            "label": "Windows password",
+                            "placeholder": "Enter Windows user password",
+                            "type": "text",
+                            "json_key": "windows_password",
+                            "default": "",
+                            "cpptype": "QString"
+                        }
+                    ]
+                },
+                {
+                    "title": "Additional Information",
+                    "fields": [
+                        {
+                            "name": "notes",
+                            "label": "Notes",
+                            "placeholder": "Additional notes and comments",
+                            "type": "textarea",
+                            "json_key": "notes",
+                            "default": "",
+                            "cpptype": "QString"
+                        }
+                    ]
+                }
+            ]
+        },
+        "phasar02": {
+            "fields": {
+                "title": "PHASAR-02",
+                "description": "rail double-stranded phased arrays (dual version)",
+                "installer_path": "Phasar02.exe"
+            },
+            "sections": [
+                {
+                    "title": "Registration data",
+                    "fields": [
+                        {
+                            "name": "serialNumber",
+                            "label": "Serial number",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "visibleInInitialMode": true,
+                            "json_key": "serial_number",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "shipmentDate",
+                            "label": "Shipment date",
+                            "type": "date",
+                            "visibleInInitialMode": true,
+                            "json_key": "shipment_date",
+                            "default": "",
+                            "cpptype": "QDate"
+                        },
+                        {
+                            "name": "invoice",
+                            "label": "Invoice",
+                            "placeholder": "Invoice number",
+                            "type": "text",
+                            "json_key": "invoice",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "packetList",
+                            "label": "Packet list",
+                            "placeholder": "Document number",
+                            "type": "text",
+                            "json_key": "packet_list",
+                            "default": "",
+                            "cpptype": "QString"
+                        }
+                    ]
+                },
+                {
+                    "title": "PC Tablet Components",
+                    "fields": [
+                        {
+                            "name": "pcTabletDell7230",
+                            "label": "PC tablet Latitude Dell 7230",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "pc_tablet_dell_7230",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "acDcPowerAdapterDell",
+                            "label": "AC/DC Power adapter for Dell 7230",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "ac_dc_power_adapter_dell",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "dcChargerAdapterBattery",
+                            "label": "DC Charger adapter for Dell 7230 from battery",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "dc_charger_adapter_battery",
+                            "default": "",
+                            "cpptype": "QString"
+                        }
+                    ]
+                },
+                {
+                    "title": "Ultrasonic Equipment",
+                    "fields": [
+                        {
+                            "name": "ultrasonicPhasedArrayPulsarLeft",
+                            "label": "Ultrasonic phased array PULSAR OEM 16/128 established (LEFT)",
+                            "placeholder": "Serial number LEFT",
+                            "type": "text",
+                            "json_key": "ultrasonic_phased_array_pulsar_left",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "ultrasonicPhasedArrayPulsarRight",
+                            "label": "Ultrasonic phased array PULSAR OEM 16/128 established (RIGHT)",
+                            "placeholder": "Serial number RIGHT",
+                            "type": "text",
+                            "json_key": "ultrasonic_phased_array_pulsar_right",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "dcnLeft",
+                            "label": "DCN P112-2,5-F (LEFT)",
+                            "placeholder": "0000 MM.YEAR LEFT",
+                            "type": "text",
+                            "json_key": "dcn_left",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "dcnRight",
+                            "label": "DCN P112-2,5-F (RIGHT)",
+                            "placeholder": "0000 MM.YEAR RIGHT",
+                            "type": "text",
+                            "json_key": "dcn_right",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "abBackLeft",
+                            "label": "AB-back PA2,5L16 1,1x10-17-F (LEFT)",
+                            "placeholder": "0000 MM.YEAR LEFT",
+                            "type": "text",
+                            "json_key": "ab_back_left",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "abBackRight",
+                            "label": "AB-back PA2,5L16 1,1x10-17-F (RIGHT)",
+                            "placeholder": "0000 MM.YEAR RIGHT",
+                            "type": "text",
+                            "json_key": "ab_back_right",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "gfComboLeft",
+                            "label": "GF combo 2PA2,5L16 0,6x10-10-F (LEFT)",
+                            "placeholder": "0000 MM.YEAR LEFT",
+                            "type": "text",
+                            "json_key": "gf_combo_left",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "gfComboRight",
+                            "label": "GF combo 2PA2,5L16 0,6x10-10-F (RIGHT)",
+                            "placeholder": "0000 MM.YEAR RIGHT",
+                            "type": "text",
+                            "json_key": "gf_combo_right",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "ffComboLeft",
+                            "label": "FF combo 2PA2,5L16 0,6x10-10-F (LEFT)",
+                            "placeholder": "0000 MM.YEAR LEFT",
+                            "type": "text",
+                            "json_key": "ff_combo_left",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "ffComboRight",
+                            "label": "FF combo 2PA2,5L16 0,6x10-10-F (RIGHT)",
+                            "placeholder": "0000 MM.YEAR RIGHT",
+                            "type": "text",
+                            "json_key": "ff_combo_right",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "abFrontLeft",
+                            "label": "AB-front PA2,5L16 1,1x10-17-F (LEFT)",
+                            "placeholder": "0000 MM.YEAR LEFT",
+                            "type": "text",
+                            "json_key": "ab_front_left",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "abFrontRight",
+                            "label": "AB-front PA2,5L16 1,1x10-17-F (RIGHT)",
+                            "placeholder": "0000 MM.YEAR RIGHT",
+                            "type": "text",
+                            "json_key": "ab_front_right",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "flange50Left",
+                            "label": "Flange 50 P112-0,6-50-F (LEFT)",
+                            "placeholder": "0000 MM.YEAR LEFT",
+                            "type": "text",
+                            "json_key": "flange_50_left",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "flange50Right",
+                            "label": "Flange 50 P112-0,6-50-F (RIGHT)",
+                            "placeholder": "0000 MM.YEAR RIGHT",
+                            "type": "text",
+                            "json_key": "flange_50_right",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "manualProbsLeft",
+                            "label": "Manual probs PA2.25L16 0.9x10-17 (LEFT)",
+                            "placeholder": "0000 MM.YEAR LEFT",
+                            "type": "text",
+                            "json_key": "manual_probs_left",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "manualProbsRight",
+                            "label": "Manual probs PA2.25L16 0.9x10-17 (RIGHT)",
+                            "placeholder": "0000 MM.YEAR RIGHT",
+                            "type": "text",
+                            "json_key": "manual_probs_right",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "hasDcCableBatteryLeft",
+                            "label": "DC Cable from Battery (LEFT)",
+                            "type": "checkbox",
+                            "checkboxText": "Included",
+                            "visibleInInitialMode": true,
+                            "json_key": "has_dc_cable_battery_left",
+                            "default": false,
+                            "cpptype": "bool"
+                        },
+                        {
+                            "name": "hasDcCableBatteryRight",
+                            "label": "DC Cable from Battery (RIGHT)",
+                            "type": "checkbox",
+                            "checkboxText": "Included",
+                            "visibleInInitialMode": true,
+                            "json_key": "has_dc_cable_battery_right",
+                            "default": false,
+                            "cpptype": "bool"
+                        },
+                        {
+                            "name": "hasEthernetCablesLeft",
+                            "label": "Ethernet Cables (LEFT)",
+                            "type": "checkbox",
+                            "checkboxText": "Included",
+                            "visibleInInitialMode": true,
+                            "json_key": "has_ethernet_cables_left",
+                            "default": false,
+                            "cpptype": "bool"
+                        },
+                        {
+                            "name": "hasEthernetCablesRight",
+                            "label": "Ethernet Cables (RIGHT)",
+                            "type": "checkbox",
+                            "checkboxText": "Included",
+                            "visibleInInitialMode": true,
+                            "json_key": "has_ethernet_cables_right",
+                            "default": false,
+                            "cpptype": "bool"
+                        }
+                    ]
+                },
+                {
+                    "title": "Additional Equipment",
+                    "fields": [
+                        {
+                            "name": "waterTankWithTap",
+                            "label": "Water tank with a tap",
+                            "placeholder": "Water tank details",
+                            "type": "text",
+                            "json_key": "water_tank_with_tap",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "dcBatteryBox",
+                            "label": "DC Battery box established",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "json_key": "dc_battery_box",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "hasAcDcChargerAdapterBattery",
+                            "label": "AC/DC Charger adapter for battery",
+                            "type": "checkbox",
+                            "checkboxText": "Included",
+                            "json_key": "has_ac_dc_charger_adapter_battery",
+                            "default": false,
+                            "cpptype": "bool"
+                        }
+                    ]
+                },
+                {
+                    "title": "Calibration and Tools",
+                    "fields": [
+                        {
+                            "name": "calibrationBlockSo3r",
+                            "label": "Calibration bloc SO-3R",
+                            "placeholder": "Serial number",
+                            "type": "text",
+                            "visibleInInitialMode": true,
+                            "json_key": "calibration_block_so_3r",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "hasRepairToolBag",
+                            "label": "Small repair tool with bag",
+                            "type": "checkbox",
+                            "checkboxText": "Included",
+                            "visibleInInitialMode": true,
+                            "json_key": "has_repair_tool_bag",
+                            "default": false,
+                            "cpptype": "bool"
+                        },
+                        {
+                            "name": "hasInstalledNameplate",
+                            "label": "Installed nameplate with serial number",
+                            "type": "checkbox",
+                            "checkboxText": "Installed",
+                            "visibleInInitialMode": true,
+                            "json_key": "has_installed_nameplate",
+                            "default": false,
+                            "cpptype": "bool"
+                        }
+                    ]
+                },
+                {
+                    "title": "Network settings",
+                    "fields": [
+                        {
+                            "name": "wifiRouterAddress",
+                            "label": "Wifi router address",
+                            "placeholder": "IP or hostname of the router",
+                            "type": "text",
+                            "json_key": "wifi_router_address",
+                            "default": "",
+                            "cpptype": "QString"
+                        },
+                        {
+                            "name": "windowsPassword",
+                            "label": "Windows password",
+                            "placeholder": "Enter Windows user password",
+                            "type": "text",
+                            "json_key": "windows_password",
+                            "default": "",
+                            "cpptype": "QString"
+                        }
+                    ]
+                },
+                {
+                    "title": "Additional Information",
+                    "fields": [
+                        {
+                            "name": "notes",
+                            "label": "Notes",
+                            "placeholder": "Additional notes and comments",
+                            "type": "textarea",
+                            "json_key": "notes",
+                            "default": "",
+                            "cpptype": "QString"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}
