@@ -89,10 +89,8 @@ Item {
             script: {
                 if (!uploadProcess.hasError) {
                     statusText.text = qsTr("Uploading settings to server...");
-                    if(SettingsManager.currentModel == "kalmar32")
-                        DataManager.uploadSettingsToDjango(DataManager.djangoBaseUrl() + "/api/kalmar32/");
-                    else
-                        DataManager.uploadSettingsToDjango(DataManager.djangoBaseUrl() + "/api/phasar32/");
+                    var uploadUrl = DataManager.djangoBaseUrl() + "/api/" + SettingsManager.currentModel + "/";
+                    DataManager.uploadSettingsToDjango(uploadUrl);
                     uploadProgress.value = 2;
                 }
             }

@@ -53,11 +53,6 @@ ApplicationWindow {
         id: settingsComponent
         SettingsForm {
             onSettingsCompleted: {
-                SettingsManager.completeFirstRun();
-                if(SettingsManager.currentModel == "kalmar32")
-                    DataManager.uploadSettingsToDjango(DataManager.djangoBaseUrl() + "/api/kalmar32/");
-                else
-                    DataManager.uploadSettingsToDjango(DataManager.djangoBaseUrl() + "/api/phasar32/");
                 contentLoader.sourceComponent = mainComponent
             }
         }
