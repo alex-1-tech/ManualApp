@@ -1,8 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <!-- test -->
-        <file>qml/Test.qml</file>
-
         <!-- first start -->
         <file>qml/Start.qml</file>
 
@@ -15,6 +12,10 @@
         <file>qml/Settings.qml</file>
         <file>qml/InstallPO.qml</file>
 
+        <!-- models -->
+        <file>qml/models/DynamicFormRenderer.qml</file>
+        <file>qml/models/AboutRenderer.qml</file>
+    
         <!-- dasboard -->
         <file>qml/SelectTO.qml</file>
         <file>qml/Services.qml</file>
@@ -34,6 +35,8 @@
         <file>qml/components/Constants.qml</file>
         <file>qml/components/ModelSettingCheckBox.qml</file>
         <file>qml/components/ModelSettingDate.qml</file>
+        <file>qml/components/SettingsUploadPopup.qml</file>
+        <file>qml/components/ConfirmSavePopup.qml</file>
 
         <!-- styles -->
         <file>qml/styles/qmldir</file>
@@ -43,6 +46,7 @@
         <file>media/jsons/TO1.json</file>
         <file>media/jsons/TO2.json</file>
         <file>media/jsons/TO3.json</file>
+        <file>media/jsons/models.json</file>
 
         <!-- icons -->
         <file>media/icons/icon-settings.svg</file>
