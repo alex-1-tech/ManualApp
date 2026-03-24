@@ -204,6 +204,12 @@ if(WIN32)
     include(CPack)
 endif()
 
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/media"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/media"
+    COMMENT "Copying entire media folder to build directory"
+)
 
 configure_file(
     ${CMAKE_SOURCE_DIR}/.config.ini
