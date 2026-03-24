@@ -14,7 +14,7 @@ ScrollView {
     // ====== State ===========================================================
     property string currentModel: SettingsManager.currentModel
     property bool isActivating: false
-    property bool activationSuccessful: SettingsManager.isLicenseActivate && SettingsManager.deviceHWID != ""
+    property bool activationSuccessful: DataManager.licenseHandler().isLicenseActivate && SettingsManager.deviceHWID != ""
     property string mode: "control"
     property string tempHostHWID: SettingsManager.hostHWID
     property string tempDeviceHWID: SettingsManager.deviceHWID
@@ -69,7 +69,7 @@ ScrollView {
                     }
 
                     Text {
-                        text: root.currentModel === "kalmar32" ? "KALMAR-32" : "PHASAR-32"
+                        text: SettingsManager.getCurrentSettings().modelTitle
                         color: Theme.colorTextPrimary
                         font.pointSize: Theme.fontSubtitle
                         font.bold: true
@@ -111,7 +111,7 @@ ScrollView {
 
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: root.currentModel === "kalmar32" ? 295 : 400
+                    Layout.preferredHeight: root.currentModel === "kalmar32" ? 295 : 490
                     color: Theme.colorBgMuted
                     radius: Theme.radiusCard
                     border.color: Theme.colorBorder
@@ -126,7 +126,7 @@ ScrollView {
                         ColumnLayout {
                             Layout.fillWidth: true
                             spacing: 8
-                            visible: root.currentModel == "phasar32"
+                            visible: root.currentModel == "phasar01"
 
                             Text {
                                 text: "Software Mode"
@@ -197,11 +197,11 @@ ScrollView {
                             Layout.fillWidth: true
                             spacing: 15
 
-                            // Host HWID (только для phasar32)
+                            // Host HWID (только для phasar01)
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 8
-                                visible: root.currentModel === "phasar32"
+                                visible: root.currentModel === "phasar01"
 
                                 Text {
                                     text: "Host HWID *"
@@ -350,7 +350,7 @@ ScrollView {
                                 if (root.currentModel === "kalmar32") {
                                     "Note: Device HWID is required for KALMAR-32 activation. You can find HWID in the installed software.";
                                 } else {
-                                    "Note: Both Host HWID and Device HWID are required for PHASAR-32 activation. You can find these in the installed software.";
+                                    "Note: Both Host HWID and Device HWID are required for PHASAR-01 activation. You can find these in the installed software.";
                                 }
                             }
                             color: Theme.colorTextMuted
@@ -516,7 +516,7 @@ ScrollView {
         function onActivationSucceeded() {
             root.isActivating = false;
             root.activationSuccessful = true;
-            SettingsManager.licenseActivationSucceeded();
+            DataManager.licenseHandler().licenseActivationSucceeded();
         }
 
         function onActivationFailed(error) {
