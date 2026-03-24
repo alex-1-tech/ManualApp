@@ -7,11 +7,13 @@
 #include <QObject>
 #include <QQmlEngine>
 #include <QQueue>
+#include <memory>
 
-#include "configmanager.h"
+#include "file/configmanager.h"
 #include "installmanager.h"
+#include "models/stepmodel.h"
 #include "reportmanager.h"
-#include "stepmodel.h"
+#include "software/licensehandler.h"
 
 
 class NetworkService;
@@ -95,6 +97,7 @@ public:
   FileService* fileService() const { return m_reportManager->fileService(); }
   NetworkService* networkService() const { return m_reportManager->networkService(); }
   Q_INVOKABLE InstallManager* installManager() const { return m_installManager.get(); };
+  Q_INVOKABLE LicenseHandler* licenseHandler() const { return m_licenseHandler.get(); };
 
   // Property setters
   Q_INVOKABLE void setStartTime(const QString& time);
@@ -141,6 +144,7 @@ private:
   // Core components
   std::unique_ptr<ReportManager> m_reportManager;
   std::unique_ptr<InstallManager> m_installManager;
+  std::unique_ptr<LicenseHandler> m_licenseHandler;
 
   // Upload queue management
   QQueue<QList<QString>> m_pendingReports;

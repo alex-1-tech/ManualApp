@@ -7,12 +7,13 @@
 #include <QJsonObject>
 #include <QTimer>
 
-#include "fileservice.h"
+#include "file/fileservice.h"
+#include "file/loger.h"
 #include "installmanager.h"
-#include "loger.h"
 #include "networkservice.h"
 #include "reportmanager.h"
-#include "settingsmanager.h"
+#include "settings/settingsmanager.h"
+#include "software/licensehandler.h"
 
 
 DataManager::DataManager(QObject* parent)
@@ -22,7 +23,9 @@ DataManager::DataManager(QObject* parent)
   NetworkService* networkService = new NetworkService(fileService, nullptr, this);
   m_reportManager = std::make_unique<ReportManager>(fileService, networkService, this);
   networkService->setReportManager(m_reportManager.get());
-  m_installManager = std::make_unique<InstallManager>(this, m_reportManager.get());
+  m_licenseHandler = std::make_unique<LicenseHandler>(this);
+  m_installManager = std::make_unique<InstallManager>(this, m_reportManager.get(), m_licenseHandler.get());
+
 
   DEBUG_COLORED("DataManager", "Constructor", "DataManager initialized", COLOR_CYAN, COLOR_CYAN);
 
