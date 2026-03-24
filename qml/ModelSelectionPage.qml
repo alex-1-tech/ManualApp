@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import ManualAppCorePlugin 1.0
 import "styles"
 
 Page {
@@ -30,24 +31,29 @@ Page {
             spacing: 20
             Layout.fillWidth: true
 
-            ModelSelectionCard {
-                title: qsTr("KALMAR-32")
-                description: qsTr("phased array rails welding joints")
-                modelType: "kalmar32"
-                onSelected: function(modelType) {
-                    root.modelSelected(modelType)
-                }
-                Layout.fillWidth: true
-            }
+            Repeater {
+                id: modelRepeater
+                model: SettingsManager.availableModels
 
-            ModelSelectionCard {
-                title: qsTr("PHAZAR-32")
-                description: qsTr("rail double-stranded phased array")
-                modelType: "phasar32"
-                onSelected: function(modelType) {
-                    root.modelSelected(modelType)
+                delegate: ModelSelectionCard {
+                    required property string modelData
+                    
+                    title: {
+                        var settings = SettingsManager.getSettings(modelData)
+                        return settings ? settings.modelTitle : modelData
+                    }
+                    description: {
+                        var settings = SettingsManager.getSettings(modelData)
+                        return settings ? settings.modelDescription : ""
+                    }
+                    modelType: modelData
+                    
+                    onSelected: function(modelType) {
+                        root.modelSelected(modelType)
+                    }
+                    
+                    Layout.fillWidth: true
                 }
-                Layout.fillWidth: true
             }
         }
     }
