@@ -15,10 +15,10 @@
 #include <QJsonObject>
 #include <QRegularExpression>
 
-#include "fileservice.h"
-#include "loger.h"
+#include "file/fileservice.h"
+#include "file/loger.h"
+#include "file/pdfexporter.h"
 #include "networkservice.h"
-#include "pdfexporter.h"
 
 
 ReportManager::ReportManager(FileService* fileService, NetworkService* networkService, QObject* parent)
@@ -41,6 +41,7 @@ QString ReportManager::getReportDirPath() const
 {
   return m_fileService->ensureAppDataDirectory() + "/reports/";
 }
+
 QVariantMap ReportManager::performedTOs() const
 {
   QVariantMap result;

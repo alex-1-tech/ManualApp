@@ -5,8 +5,8 @@
 #include <QObject>
 #include <QVariant>
 
-#include "settingsmanager.h"
-#include "stepmodel.h"
+#include "models/stepmodel.h"
+#include "settings/settingsmanager.h"
 
 
 class NetworkService;
@@ -20,8 +20,6 @@ class ReportManager : public QObject
   // Property declarations
   Q_PROPERTY(QString title READ title NOTIFY titleChanged)
   Q_PROPERTY(QString startTime READ startTime WRITE setStartTime NOTIFY startTimeChanged)
-  Q_PROPERTY(SettingsManager* settingsManager READ settingsManager WRITE setSettingsManager NOTIFY
-                 settingsManagerChanged)
 
 public:
   // Construction/Destruction

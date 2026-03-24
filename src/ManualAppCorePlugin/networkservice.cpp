@@ -10,12 +10,12 @@
 #include <QTimer>
 #include <QUrlQuery>
 
-#include "fileservice.h"
-#include "loger.h"
+#include "file/fileservice.h"
+#include "file/loger.h"
 #include "network/httpclient.h"
 #include "network/synchttpclient.h"
 #include "reportmanager.h"
-#include "settingsmanager.h"
+#include "settings/settingsmanager.h"
 
 
 NetworkService::NetworkService(FileService* fileService, ReportManager* reportManager, QObject* parent)
