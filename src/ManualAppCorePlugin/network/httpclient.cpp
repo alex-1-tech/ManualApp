@@ -62,6 +62,8 @@ void HttpClient::postJson(const QUrl& url, const QJsonObject& jsonObject)
 void HttpClient::download(const QUrl& url, const QString& filePath)
 {
   QNetworkRequest request(url);
+  request.setTransferTimeout(0);
+
   QNetworkReply* reply = m_manager.get(request);
 
   QFile* file = new QFile(filePath);
