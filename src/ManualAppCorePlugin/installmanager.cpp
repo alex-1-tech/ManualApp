@@ -113,7 +113,7 @@ void InstallManager::downloadInstaller(const QString& model, const QString& base
     return;
   }
 
-  QString url = buildDownloadUrl(model, baseUrl, railTypeMode, "/api/apps/download");
+  QString url = buildDownloadUrl(model, baseUrl, railTypeMode, "api/apps/download");
   QString path = buildInstallerPath(model);
 
   if (url.isEmpty() || path.isEmpty()) {

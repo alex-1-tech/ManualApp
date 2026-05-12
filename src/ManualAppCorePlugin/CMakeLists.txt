@@ -9,7 +9,7 @@ qt_add_qml_module(ManualAppCorePlugin
     datamanager.cpp datamanager.h
     reportmanager.cpp reportmanager.h
     installmanager.h installmanager.cpp
-
+    adminmanager.h adminmanager.cpp
     # models
     models/stepmodel.cpp models/stepmodel.h
     models/step.h
