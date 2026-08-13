@@ -16,10 +16,12 @@ public:
   bool hasLicense() const;
   QJsonObject license() const;
   void saveLicense(const QJsonObject& license);
-  void clearLicense();
+  Q_INVOKABLE void clearLicense();
   bool verifyLicense();
   Q_INVOKABLE void licenseActivationSucceeded() { setIsLicenseActivate(true); }
   Q_INVOKABLE bool isLicenseActivate() const;
+  Q_INVOKABLE QVariantMap getLicenseInfoForDisplay();
+  Q_INVOKABLE QString getCurrentLicenseKey();
   void setIsLicenseActivate(bool value);
 
   void checkLicenseKeyOnStart();

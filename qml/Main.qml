@@ -624,7 +624,7 @@ Connections {
             height: 40
             y: 330
 
-            visible: AdminManager.adminMode
+            visible: true // AdminManager.adminMode
 
             Image {
                 source: "qrc:///media/icons/icon-admin.svg"
@@ -718,7 +718,7 @@ Connections {
             id: dashboardLoader
             anchors.fill: parent
             source: "Dashboard.qml"
-            active: true
+            active: false
             visible: false
         }
 
@@ -726,7 +726,7 @@ Connections {
             id: reportsLoader
             anchors.fill: parent
             source: "Reports.qml"
-            active: true
+            active: false
             visible: false
         }
 
@@ -734,15 +734,15 @@ Connections {
             id: installPoLoader
             anchors.fill: parent
             source: "InstallPO.qml"
-            active: true
-            visible: true
+            active: false
+            visible: false
         }
 
         Loader {
             id: activateLoader
             anchors.fill: parent
             source: "Activate.qml"
-            active: true
+            active: false
             visible: false
         }
 
@@ -766,8 +766,8 @@ Connections {
             id: adminLoader
             anchors.fill: parent
             source: "Admin.qml"
-            active: false
-            visible: false
+            active: true
+            visible: true
         }
     }
 }

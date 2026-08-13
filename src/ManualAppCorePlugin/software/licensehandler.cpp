@@ -382,3 +382,71 @@ void LicenseHandler::setIsLicenseActivate(bool value)
     emit licenseActivationStatusChanged(value);
   }
 }
+
+QVariantMap LicenseHandler::getLicenseInfoForDisplay()
+{
+  QVariantMap info;
+
+  if (!hasLicense()) {
+    info["hasLicense"] = false;
+    info["message"] = "No license installed";
+    return info;
+  }
+
+  info["hasLicense"] = true;
+
+  m_settings.beginGroup("license");
+
+  info["license_key"] = m_settings.value("license_key", "").toString();
+  info["product"] = m_settings.value("product", "").toString();
+  info["company_name"] = m_settings.value("company_name", "").toString();
+  info["device_hwid"] = m_settings.value("device_hwid", "").toString();
+  info["host_hwid"] = m_settings.value("host_hwid", "").toString();
+  info["exp"] = m_settings.value("exp", "").toString();
+  info["ver"] = m_settings.value("ver", "").toString();
+
+  QString featuresStr = m_settings.value("features", "").toString();
+  if (!featuresStr.isEmpty()) {
+    QJsonDocument doc = QJsonDocument::fromJson(featuresStr.toUtf8());
+    if (doc.isObject()) {
+      QJsonObject featuresObj = doc.object();
+      QVariantMap featuresMap;
+      for (auto it = featuresObj.begin(); it != featuresObj.end(); ++it) {
+        featuresMap[it.key()] = it.value().toVariant();
+      }
+      info["features"] = featuresMap;
+    }
+  }
+
+  m_settings.endGroup();
+
+  QString expStr = info["exp"].toString();
+  if (!expStr.isEmpty()) {
+    QDate expDate = QDate::fromString(expStr, Qt::ISODate);
+    if (expDate.isValid()) {
+      info["isExpired"] = expDate < QDate::currentDate();
+      info["daysRemaining"] = QDate::currentDate().daysTo(expDate);
+      info["expDateFormatted"] = expDate.toString("dd.MM.yyyy");
+    } else {
+      info["isExpired"] = false;
+      info["daysRemaining"] = -1;
+      info["expDateFormatted"] = expStr;
+    }
+  } else {
+    info["isExpired"] = false;
+    info["daysRemaining"] = -1;
+    info["expDateFormatted"] = "Not specified";
+  }
+
+  info["isActive"] = m_isLicenseActivate;
+  qDebug() << info;
+  return info;
+}
+
+QString LicenseHandler::getCurrentLicenseKey()
+{
+  m_settings.beginGroup("license");
+  QString key = m_settings.value("license_key", "").toString();
+  m_settings.endGroup();
+  return key;
+}

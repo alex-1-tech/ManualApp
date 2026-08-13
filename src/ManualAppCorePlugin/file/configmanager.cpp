@@ -28,7 +28,7 @@ ConfigManager::ConfigManager(QObject* parent)
 
 QString ConfigManager::djangoBaseUrl() const
 {
-  return m_settings->value("base_url", "http://127.0.0.1:8000").toString();
+  return m_settings->value("base_url", "https://cloud.pulsarndt.ae").toString();
 }
 QString ConfigManager::appVersion() const
 {
