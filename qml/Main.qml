@@ -302,115 +302,14 @@ Connections {
             }
         }
 
-        Rectangle {
-            id: navDashboard
-            color: Theme.colorNavInactive
-            width: parent.width
-            height: 40
-            y: 60
 
-            Image {
-                source: "qrc:///media/icons/icon-dashboard.svg"
-                height: 20
-                width: 20
-                x: 20
-                y: 10
-            }
-
-            Text {
-                color: Theme.colorTextPrimary
-                text: qsTr("Dashboard")
-                font.pointSize: 12
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-            }
-
-            MouseArea {
-                id: mouseAreaDashboard
-                width: parent.width
-                height: parent.height
-
-                onClicked: function () {
-                    navSettings.color = Theme.colorNavInactive;
-                    navAbout.color = Theme.colorNavInactive;
-                    navReports.color = Theme.colorNavInactive;
-                    navInstallPO.color = Theme.colorNavInactive;
-                    navActivate.color = Theme.colorNavInactive;
-                    navAdmin.color = Theme.colorNavInactive;
-                    navDashboard.color = Theme.colorNavActive;
-
-                    dashboardLoader.visible = true;
-                    reportsLoader.visible = false;
-                    settingsLoader.visible = false;
-                    aboutLoader.visible = false;
-                    activateLoader.visible = false;
-                    installPoLoader.visible = false;
-                    adminLoader.visible = false;
-
-                    root.hideSidebar();
-                }
-            }
-        }
-
-        Rectangle {
-            id: navReports
-            color: Theme.colorNavInactive
-            width: parent.width
-            height: 40
-            y: 105
-
-            Image {
-                source: "qrc:///media/icons/icon-reports.svg"
-                height: 20
-                width: 20
-                x: 20
-                y: 10
-            }
-
-            Text {
-                color: Theme.colorTextPrimary
-                text: qsTr("Reports")
-                font.pointSize: 12
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-            }
-
-            MouseArea {
-                id: mouseAreaReports
-                width: parent.width
-                height: parent.height
-
-                onClicked: function () {
-                    navSettings.color = Theme.colorNavInactive;
-                    navAbout.color = Theme.colorNavInactive;
-                    navReports.color = Theme.colorNavActive;
-                    navDashboard.color = Theme.colorNavInactive;
-                    navInstallPO.color = Theme.colorNavInactive;
-                    navActivate.color = Theme.colorNavInactive;
-                    navAdmin.color = Theme.colorNavInactive;
-
-                    dashboardLoader.visible = false;
-                    settingsLoader.visible = false;
-                    aboutLoader.visible = false;
-                    installPoLoader.visible = false;
-                    activateLoader.visible = false;
-                    adminLoader.visible = false;
-
-                    reportsLoader.active = false;
-                    reportsLoader.visible = true;
-                    reportsLoader.active = true;
-
-                    root.hideSidebar();
-                }
-            }
-        }
 
         Rectangle {
             id: navInstallPO
             color: Theme.colorNavActive
             width: parent.width
             height: 40
-            y: 150
+            y: 60
 
             Image {
                 source: "qrc:///media/icons/icon-servers.svg"
@@ -436,14 +335,10 @@ Connections {
                 onClicked: function () {
                     navSettings.color = Theme.colorNavInactive;
                     navAbout.color = Theme.colorNavInactive;
-                    navReports.color = Theme.colorNavInactive;
-                    navDashboard.color = Theme.colorNavInactive;
                     navInstallPO.color = Theme.colorNavActive;
                     navActivate.color = Theme.colorNavInactive;
                     navAdmin.color = Theme.colorNavInactive;
 
-                    dashboardLoader.visible = false;
-                    reportsLoader.visible = false;
                     settingsLoader.visible = false;
                     aboutLoader.visible = false;
                     activateLoader.visible = false;
@@ -463,7 +358,7 @@ Connections {
             color: Theme.colorNavInactive
             width: parent.width
             height: 40
-            y: 195
+            y: 105
 
             Image {
                 source: "qrc:///media/icons/icon-activate.svg"
@@ -489,14 +384,10 @@ Connections {
                 onClicked: function () {
                     navSettings.color = Theme.colorNavInactive;
                     navAbout.color = Theme.colorNavInactive;
-                    navReports.color = Theme.colorNavInactive;
-                    navDashboard.color = Theme.colorNavInactive;
                     navInstallPO.color = Theme.colorNavInactive;
                     navActivate.color = Theme.colorNavActive;
                     navAdmin.color = Theme.colorNavInactive;
 
-                    dashboardLoader.visible = false;
-                    reportsLoader.visible = false;
                     settingsLoader.visible = false;
                     aboutLoader.visible = false;
                     installPoLoader.visible = false;
@@ -516,7 +407,7 @@ Connections {
             color: Theme.colorNavInactive
             width: parent.width
             height: 40
-            y: 240
+            y: 150
 
             Image {
                 source: "qrc:///media/icons/icon-settings.svg"
@@ -542,14 +433,10 @@ Connections {
                 onClicked: function () {
                     navSettings.color = Theme.colorNavActive;
                     navAbout.color = Theme.colorNavInactive;
-                    navReports.color = Theme.colorNavInactive;
-                    navDashboard.color = Theme.colorNavInactive;
                     navInstallPO.color = Theme.colorNavInactive;
                     navActivate.color = Theme.colorNavInactive;
                     navAdmin.color = Theme.colorNavInactive;
 
-                    dashboardLoader.visible = false;
-                    reportsLoader.visible = false;
                     installPoLoader.visible = false;
                     aboutLoader.visible = false;
                     activateLoader.visible = false;
@@ -569,7 +456,7 @@ Connections {
             color: Theme.colorNavInactive
             width: parent.width
             height: 40
-            y: 285
+            y: 195
 
             Image {
                 source: "qrc:///media/icons/icon-about.svg"
@@ -595,14 +482,10 @@ Connections {
                 onClicked: function () {
                     navSettings.color = Theme.colorNavInactive;
                     navAbout.color = Theme.colorNavActive;
-                    navReports.color = Theme.colorNavInactive;
-                    navDashboard.color = Theme.colorNavInactive;
                     navInstallPO.color = Theme.colorNavInactive;
                     navActivate.color = Theme.colorNavInactive;
                     navAdmin.color = Theme.colorNavInactive;
 
-                    dashboardLoader.visible = false;
-                    reportsLoader.visible = false;
                     settingsLoader.visible = false;
                     installPoLoader.visible = false;
                     activateLoader.visible = false;
@@ -622,9 +505,9 @@ Connections {
             color: Theme.colorNavInactive
             width: parent.width
             height: 40
-            y: 330
+            y: 240
 
-            visible: true // AdminManager.adminMode
+            visible: AdminManager.adminMode
 
             Image {
                 source: "qrc:///media/icons/icon-admin.svg"
@@ -650,14 +533,10 @@ Connections {
                 onClicked: function () {
                     navSettings.color = Theme.colorNavInactive;
                     navAbout.color = Theme.colorNavInactive;
-                    navReports.color = Theme.colorNavInactive;
-                    navDashboard.color = Theme.colorNavInactive;
                     navInstallPO.color = Theme.colorNavInactive;
                     navActivate.color = Theme.colorNavInactive;
                     navAdmin.color = Theme.colorNavActive;
 
-                    dashboardLoader.visible = false;
-                    reportsLoader.visible = false;
                     settingsLoader.visible = false;
                     installPoLoader.visible = false;
                     activateLoader.visible = false;
@@ -714,28 +593,13 @@ Connections {
             }
         }
 
-        Loader {
-            id: dashboardLoader
-            anchors.fill: parent
-            source: "Dashboard.qml"
-            active: false
-            visible: false
-        }
-
-        Loader {
-            id: reportsLoader
-            anchors.fill: parent
-            source: "Reports.qml"
-            active: false
-            visible: false
-        }
 
         Loader {
             id: installPoLoader
             anchors.fill: parent
             source: "InstallPO.qml"
-            active: false
-            visible: false
+            active: true
+            visible: true
         }
 
         Loader {
@@ -766,8 +630,8 @@ Connections {
             id: adminLoader
             anchors.fill: parent
             source: "Admin.qml"
-            active: true
-            visible: true
+            active: false
+            visible: false
         }
     }
 }

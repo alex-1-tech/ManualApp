@@ -9,7 +9,6 @@
 #include <QTimer>
 
 #include "networkservice.h"
-#include "reportmanager.h"
 #include "software/licensehandler.h"
 
 class InstallManager : public QObject
@@ -22,8 +21,8 @@ class InstallManager : public QObject
   Q_PROPERTY(bool isDownloading READ isDownloading NOTIFY isDownloadingChanged)
   Q_PROPERTY(double downloadProgress READ downloadProgress NOTIFY downloadProgressChanged)
 public:
-  explicit InstallManager(QObject* parent = nullptr, ReportManager* reportManager = nullptr,
-                          LicenseHandler* licenseHandler = nullptr);
+  explicit InstallManager(QObject* parent = nullptr, LicenseHandler* licenseHandler = nullptr,
+                          NetworkService* networkService = nullptr, FileService* fileService = nullptr);
   ~InstallManager();
 
   QString statusMessage() const { return m_statusMessage; }
@@ -85,6 +84,7 @@ private:
 
   QProcess* m_process;
   QTimer* m_timeoutTimer;
-  ReportManager* m_reportManager;
+  NetworkService* m_networkService;
+  FileService* m_fileService;
   LicenseHandler* m_licenseHandler;
 };

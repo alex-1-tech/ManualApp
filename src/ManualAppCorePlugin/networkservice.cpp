@@ -10,31 +10,17 @@
 #include <QTimer>
 #include <QUrlQuery>
 
-#include "file/fileservice.h"
 #include "file/loger.h"
 #include "network/httpclient.h"
 #include "network/synchttpclient.h"
-#include "reportmanager.h"
-#include "settings/settingsmanager.h"
 
 
-NetworkService::NetworkService(FileService* fileService, ReportManager* reportManager, QObject* parent)
+NetworkService::NetworkService(QObject* parent)
     : QObject(parent)
-    , m_fileService(fileService)
-    , m_reportManager(reportManager)
 {
   DEBUG_COLORED("NetworkService", "Constructor", "Initialized", COLOR_BLUE, COLOR_BLUE);
 }
 
-void NetworkService::setReportManager(ReportManager* reportManager)
-{
-  if (reportManager == nullptr) {
-    DEBUG_ERROR_COLORED("NetworkService", "setReportManager", "ReportManager is null!", COLOR_BLUE,
-                        COLOR_BLUE);
-    return;
-  }
-  m_reportManager = reportManager;
-}
 
 void NetworkService::getJsonFromDjango(const QUrl& url, std::function<void(const QJsonObject&)> onSuccess,
                                        std::function<void(const QString&)> onError)
@@ -165,89 +151,6 @@ void NetworkService::postJson(const QNetworkRequest& request, const QByteArray& 
 }
 
 
-bool NetworkService::uploadReportSynchronous(const QUrl& apiBaseUrl, const QString& reportPath,
-                                             QString uploadTime, QString numberTO)
-{
-  DEBUG_COLORED("NetworkService", "uploadReportSynchronous",
-                QString("Uploading report from: %1").arg(reportPath), COLOR_BLUE, COLOR_BLUE);
-
-  QDir reportDir(reportPath);
-  if (!reportDir.exists()) return false;
-
-  const QString reportId = reportDir.dirName();
-  if (reportId.isEmpty()) return false;
-
-  SettingsManager settings;
-  const QString serialNumber = settings.serialNumber();
-  const QString model = settings.currentModel();
-
-  if (uploadTime.isEmpty() && m_reportManager) uploadTime = m_reportManager->startTime();
-
-  if (numberTO.isEmpty() && m_reportManager) numberTO = m_reportManager->currentNumberTO();
-
-  if (serialNumber.isEmpty() || model.isEmpty()) return false;
-
-  SyncHttpClient client(30000);
-
-  const QString jsonPath = reportDir.filePath("report.json");
-  if (!QFile::exists(jsonPath)) return false;
-
-  QFile jsonFile(jsonPath);
-  if (!jsonFile.open(QIODevice::ReadOnly)) return false;
-
-  QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonFile.readAll());
-  jsonFile.close();
-
-  if (jsonDoc.isNull()) return false;
-
-  QJsonObject reportData = jsonDoc.object();
-
-  QJsonObject metadata{{"serial_number", serialNumber},
-                       {"upload_time", uploadTime},
-                       {"number_to", numberTO},
-                       {"equipment_type", model}};
-
-  reportData["metadata"] = metadata;
-  reportData["report_id"] = reportId;
-
-  QUrl jsonUrl = apiBaseUrl;
-  auto jsonResponse = client.postJson(jsonUrl, reportData);
-  if (!jsonResponse.success) return false;
-
-
-  auto uploadOptionalFile = [&](const QString& localPath, const QString& endpoint) -> bool {
-    if (!QFile::exists(localPath)) return true;
-
-    QFileInfo info(localPath);
-    if (info.size() == 0) return true;
-
-    QUrl fileUrl = buildUploadUrl(apiBaseUrl, endpoint, serialNumber, uploadTime, numberTO, model);
-
-    auto response = client.postFile(fileUrl, localPath);
-
-    if (!response.success) {
-      DEBUG_ERROR_COLORED("NetworkService", "uploadReportSynchronous",
-                          QString("Failed to upload %1: %2").arg(localPath).arg(response.errorMessage),
-                          COLOR_BLUE, COLOR_BLUE);
-      return false;
-    }
-
-    return true;
-  };
-
-
-  uploadOptionalFile(jsonPath, "/json/");
-  uploadOptionalFile(reportDir.filePath("report.pdf"), "/pdf/");
-  uploadOptionalFile(reportDir.filePath("before_to/rail_record.zip"), "/before/");
-  uploadOptionalFile(reportDir.filePath("after_to/rail_record.zip"), "/after/");
-
-  DEBUG_COLORED("NetworkService", "uploadReportSynchronous", "Report upload completed", COLOR_BLUE,
-                COLOR_BLUE);
-
-  return true;
-}
-
-
 void NetworkService::uploadFile(const QUrl& apiUrl, const QString& filePath)
 {
   DEBUG_COLORED("NetworkService", "uploadFile",
@@ -267,14 +170,6 @@ void NetworkService::uploadFile(const QUrl& apiUrl, const QString& filePath)
   });
 
   client->postFile(apiUrl, filePath);
-}
-
-void NetworkService::uploadReport(const QUrl& apiBaseUrl, const QString& reportPath, QString uploadTime,
-                                  QString numberTO)
-{
-  // For compatibility - use synchronous version internally
-  bool success = uploadReportSynchronous(apiBaseUrl, reportPath, uploadTime, numberTO);
-  emit uploadFinished(success, success ? "" : "Upload failed");
 }
 
 

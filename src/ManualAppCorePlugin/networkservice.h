@@ -12,7 +12,6 @@
 #include <QUrlQuery>
 
 class FileService;
-class ReportManager;
 
 class NetworkService : public QObject
 {
@@ -20,15 +19,9 @@ class NetworkService : public QObject
 
 public:
   // Construction/Destruction
-  explicit NetworkService(FileService* fileService, ReportManager* reportManager, QObject* parent = nullptr);
+  explicit NetworkService(QObject* parent = nullptr);
   ~NetworkService() = default;
-
-  // Status methods
-  bool isUploadingReport() const { return m_isUploadingReport; }
-
   // Synchronous upload methods
-  bool uploadReportSynchronous(const QUrl& apiBaseUrl, const QString& reportPath, QString uploadTime = "",
-                               QString numberTO = "");
   bool uploadFileSynchronous(const QUrl& apiUrl, const QString& filePath);
   bool uploadJsonToDjangoSynchronous(const QUrl& apiUrl, const QJsonObject& jsonObject);
 
@@ -37,13 +30,10 @@ public:
                          std::function<void(const QString&)> onError);
   void uploadFile(const QUrl& apiUrl, const QString& filePath);
   void uploadJsonToDjango(const QUrl& apiUrl, const QJsonObject& jsonObject);
-  void uploadReport(const QUrl& apiBaseUrl, const QString& reportPath, QString uploadTime = "",
-                    QString numberTO = "");
   void downloadFile(const QUrl& url, const QString& filePath);
 
   // Control methods
   void cancelUpload();
-  void setReportManager(ReportManager* reportManager);
 
   // Post methods
   void postJson(const QNetworkRequest& request, const QByteArray& json,
@@ -53,7 +43,6 @@ public:
 signals:
   // Upload status signals
   void uploadFinished(bool success, const QString& error);
-  void downloadFinished(bool success, const QString& filePath, const QString& error);
   void progressChanged(qint64 bytesSent, qint64 bytesTotal);
   void errorOccurred(const QString& error);
 private slots:
@@ -70,5 +59,4 @@ private:
 
   // Service dependencies
   FileService* m_fileService;
-  ReportManager* m_reportManager;
 };

@@ -8,8 +8,6 @@
         <file>qml/About.qml</file>
         <file>qml/Activate.qml</file>
         <file>qml/Admin.qml</file>
-        <file>qml/Dashboard.qml</file>
-        <file>qml/Reports.qml</file>
         <file>qml/Settings.qml</file>
         <file>qml/InstallPO.qml</file>
 
@@ -18,22 +16,15 @@
         <file>qml/models/AboutRenderer.qml</file>
     
         <!-- dasboard -->
-        <file>qml/SelectTO.qml</file>
-        <file>qml/Services.qml</file>
-        <file>qml/UploadReport.qml</file>
         <file>qml/UploadWindow.qml</file>
-        <file>qml/Summary.qml</file>
         <file>qml/ModelSelectionPage.qml</file>
         <file>qml/ModelSelectionCard.qml</file>
         <file>qml/SettingsForm.qml</file>
     
         <!-- components -->
-        <file>qml/components/RepairMethodEditor.qml</file>
         <file>qml/components/FormField.qml</file>
-        <file>qml/components/CardDelegate.qml</file>
         <file>qml/components/CardSection.qml</file>
         <file>qml/components/SettingCheckBox.qml</file>
-        <file>qml/components/Constants.qml</file>
         <file>qml/components/ModelSettingCheckBox.qml</file>
         <file>qml/components/ModelSettingDate.qml</file>
         <file>qml/components/SettingsUploadPopup.qml</file>
@@ -44,9 +35,6 @@
         <file>qml/styles/Theme.qml</file>
 
         <!-- jsons -->
-        <file>media/jsons/TO1.json</file>
-        <file>media/jsons/TO2.json</file>
-        <file>media/jsons/TO3.json</file>
         <file>media/jsons/models.json</file>
 
         <!-- icons -->

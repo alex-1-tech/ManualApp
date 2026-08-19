@@ -7,11 +7,11 @@
 #include "datamanager.h"
 #include "file/fileservice.h"
 #include "file/loger.h"
-#include "reportmanager.h"
 #include "settings/settingsmanager.h"
 #include "software/licensehandler.h"
 
-InstallManager::InstallManager(QObject* parent, ReportManager* reportManager, LicenseHandler* licenseHandler)
+InstallManager::InstallManager(QObject* parent, LicenseHandler* licenseHandler,
+                               NetworkService* networkService, FileService* fileService)
     : QObject(parent)
     , m_statusMessage("Ready to download and install")
     , m_isInstalling(false)
@@ -19,11 +19,11 @@ InstallManager::InstallManager(QObject* parent, ReportManager* reportManager, Li
     , m_downloadProgress(0.0)
     , m_process(nullptr)
     , m_timeoutTimer(nullptr)
-    , m_reportManager(nullptr)
 {
   DEBUG_COLORED("InstallManager", "Constructor", "InstallManager initialized", COLOR_CYAN, COLOR_CYAN);
-  m_reportManager = reportManager;
   m_licenseHandler = licenseHandler;
+  m_networkService = networkService;
+  m_fileService = fileService;
   initializeNetworkService();
 }
 
@@ -35,28 +35,26 @@ InstallManager::~InstallManager()
 void InstallManager::initializeNetworkService()
 {
   // Connect download progress and completion signals
-  connect(m_reportManager->networkService(), &NetworkService::progressChanged, this,
-          &InstallManager::onDownloadProgress);
-  connect(m_reportManager->networkService(), &NetworkService::uploadFinished, this,
-          [this](bool success, const QString& error) {
-            if (success) {
-              DEBUG_COLORED("InstallManager", "downloadFinished", "Download completed", COLOR_CYAN,
-                            COLOR_CYAN);
-              setStatusMessage("Download completed successfully!");
-            } else {
-              DEBUG_ERROR_COLORED("InstallManager", "downloadFinished",
-                                  QString("Download failed: %1").arg(error), COLOR_CYAN, COLOR_CYAN);
-              setStatusMessage(QString("Download failed: %1").arg(error));
-            }
-            setIsDownloading(false);
-            emit downloadFinished(success);
-          });
+  connect(m_networkService, &NetworkService::progressChanged, this, &InstallManager::onDownloadProgress);
+  connect(
+      m_networkService, &NetworkService::uploadFinished, this, [this](bool success, const QString& error) {
+        if (success) {
+          DEBUG_COLORED("InstallManager", "downloadFinished", "Download completed", COLOR_CYAN, COLOR_CYAN);
+          setStatusMessage("Download completed successfully!");
+        } else {
+          DEBUG_ERROR_COLORED("InstallManager", "downloadFinished", QString("Download failed: %1").arg(error),
+                              COLOR_CYAN, COLOR_CYAN);
+          setStatusMessage(QString("Download failed: %1").arg(error));
+        }
+        setIsDownloading(false);
+        emit downloadFinished(success);
+      });
 }
 
 QString InstallManager::buildInstallerPath(const QString& model) const
 {
   // Use application data directory instead of temp
-  QString appDataDir = m_reportManager->fileService()->getAppDataPath();
+  QString appDataDir = m_fileService->getAppDataPath();
   QString installerName;
 
   if (model.toLower() == "manual_app") {
@@ -121,7 +119,7 @@ void InstallManager::downloadInstaller(const QString& model, const QString& base
     return;
   }
 
-  QDir appDataDir(m_reportManager->fileService()->getAppDataPath());
+  QDir appDataDir(m_fileService->getAppDataPath());
   if (!appDataDir.exists()) {
     appDataDir.mkpath(".");
   }
@@ -131,7 +129,7 @@ void InstallManager::downloadInstaller(const QString& model, const QString& base
   setStatusMessage("Starting download...");
 
 
-  m_reportManager->networkService()->downloadFile(QUrl(url), path);
+  m_networkService->downloadFile(QUrl(url), path);
 }
 
 QString InstallManager::getLastUpdateDate(const QString& baseUrl, const QString& model,
@@ -160,7 +158,7 @@ QString InstallManager::getLastUpdateDate(const QString& baseUrl, const QString&
     DEBUG_ERROR_COLORED("InstallManager", "getLastUpdateDate", "Request timeout", COLOR_CYAN, COLOR_CYAN);
   });
 
-  m_reportManager->networkService()->getJsonFromDjango(
+  m_networkService->getJsonFromDjango(
       QUrl(url),
       [&](const QJsonObject& json) {
         if (json.contains("date") && json["date"].isString()) {
@@ -462,17 +460,16 @@ void InstallManager::activate(const QString& model, const QString& hostHWID, con
   QNetworkRequest request(url);
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-  m_reportManager->networkService()->postJson(
-      request, QJsonDocument(payload).toJson(),
-      [this](bool success, const QByteArray& response, const QString& error) {
-        if (!success) {
-          emit activationFailed(error);
-          setStatusMessage("Activation failed");
-          return;
-        }
+  m_networkService->postJson(request, QJsonDocument(payload).toJson(),
+                             [this](bool success, const QByteArray& response, const QString& error) {
+                               if (!success) {
+                                 emit activationFailed(error);
+                                 setStatusMessage("Activation failed");
+                                 return;
+                               }
 
-        handleActivationResponse(response);
-      });
+                               handleActivationResponse(response);
+                             });
 }
 
 

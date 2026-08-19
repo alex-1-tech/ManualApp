@@ -24,15 +24,12 @@ ApplicationWindow {
         if (firstRun) {
             contentLoader.sourceComponent = modelSelectionComponent
         } else {
-            DataManager.syncReportsWithServer();
             DataManager.syncSettingsWithServer();
             contentLoader.sourceComponent = mainComponent
         }
     }
 
-    onClosing: function () {
-        DataManager.setStartTime(null);
-    }
+    onClosing: function () {}
 
     Loader {
         id: contentLoader
