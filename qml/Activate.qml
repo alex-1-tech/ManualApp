@@ -507,11 +507,11 @@ ScrollView {
 
         var uploadUrl = DataManager.djangoBaseUrl() + "/api/activate/" + SettingsManager.serialNumber + "/";
 
-        DataManager.installManager().activate(root.currentModel, SettingsManager.hostHWID, SettingsManager.deviceHWID, root.mode, uploadUrl, licensePassword);
+        InstallManager.activate(root.currentModel, SettingsManager.hostHWID, SettingsManager.deviceHWID, root.mode, uploadUrl, licensePassword);
     }
 
     Connections {
-        target: DataManager.installManager()
+        target: InstallManager
 
         function onActivationSucceeded() {
             root.isActivating = false;

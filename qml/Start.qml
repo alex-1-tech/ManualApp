@@ -19,6 +19,7 @@ ApplicationWindow {
 
     Component.onCompleted: {
         DataManager.setSettingsManager(SettingsManager)
+        InstallManager.setAllManagers(DataManager.licenseHandler(), DataManager.networkService(), DataManager.fileService())
 
         firstRun = SettingsManager.isFirstRun
         if (firstRun) {
@@ -48,7 +49,9 @@ ApplicationWindow {
 
     Component {
         id: settingsComponent
-        SettingsForm {
+        Settings {
+            initialMode: true
+
             onSettingsCompleted: {
                 contentLoader.sourceComponent = mainComponent
             }

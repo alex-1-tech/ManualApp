@@ -1,5 +1,7 @@
 #include "modelsettings.h"
 
+#include <qcontainerfwd.h>
+
 #include <QDebug>
 #include <QMetaObject>
 #include <QMetaProperty>
@@ -12,13 +14,10 @@ QVariantMap ModelSettings::FieldMetadata::toVariantMap() const
   QVariantMap map;
   map["name"] = name;
   map["label"] = label;
-  map["placeholder"] = placeholder;
+  map["helpText"] = helpText;
   map["type"] = type;
-  map["jsonKey"] = jsonKey;
-  map["defaultValue"] = defaultValue;
-  map["cppType"] = cppType;
-  map["visibleInInitialMode"] = visibleInInitialMode;
-  map["checkboxText"] = checkboxText;
+  map["cppName"] = cppName;
+
   return map;
 }
 
@@ -121,28 +120,19 @@ void ModelSettings::createPropertiesFromConfig(const QJsonObject& config)
       FieldMetadata metadata;
       metadata.name = field["name"].toString();
       metadata.label = field["label"].toString();
-      metadata.placeholder = field["placeholder"].toString();
-      metadata.type = field["type"].toString();
-      metadata.jsonKey = field["json_key"].toString();
-      metadata.cppType = field["cpptype"].toString();
-      metadata.visibleInInitialMode = field["visibleInInitialMode"].toBool(false);
-      metadata.checkboxText = field["checkboxText"].toString();
+      metadata.cppName = field["cpp_name"].toString();
+      metadata.type = field["type"].toString("string");
+      metadata.helpText = field["help_text"].toString();
 
       QVariant defaultValue;
 
-      if (metadata.cppType == "bool")
-        defaultValue = field["default"].toBool(false);
-      else if (metadata.cppType == "int")
-        defaultValue = field["default"].toInt(0);
-      else if (metadata.cppType == "double")
-        defaultValue = field["default"].toDouble(0.0);
+      if (metadata.type == "boolean")
+        defaultValue = false;
       else
-        defaultValue = field["default"].toString("");
+        defaultValue = QString();
 
-      metadata.defaultValue = defaultValue;
-
-      m_fieldsMetadata[metadata.name] = metadata;
-      m_values[metadata.name] = defaultValue;
+      m_fieldsMetadata[metadata.cppName] = metadata;
+      m_values[metadata.cppName] = defaultValue;
 
       setProperty(metadata.name.toLatin1().constData(), defaultValue);
 
@@ -159,66 +149,49 @@ void ModelSettings::loadFromSettings(QSettings& settings, const QString& current
   QString pre = prefix.isEmpty() ? m_modelName + "/" : prefix;
 
   for (auto it = m_fieldsMetadata.begin(); it != m_fieldsMetadata.end(); ++it) {
-    const QString& fieldName = it.key();
+    const QString& cppName = it.key();
     const FieldMetadata& metadata = it.value();
 
     QVariant value;
-    QString key = pre + fieldName;
-    QString generalKey = fieldName;
+    QString key = pre + cppName;
+    QString generalKey = cppName;
 
-    if (fieldName == "serialNumber") {
+    if (cppName == "serialNumber") {
       if (settings.contains(key)) {
-        value = settings.value(key, metadata.defaultValue);
+        value = settings.value(key);
 
         if (!settings.contains(generalKey)) {
           settings.setValue(generalKey, value);
           qDebug() << "Copied serialNumber from model to General:" << value;
         }
       } else if (settings.contains(generalKey)) {
-        value = settings.value(generalKey, metadata.defaultValue);
+        value = settings.value(generalKey);
 
         settings.setValue(key, value);
         qDebug() << "Copied serialNumber from General to model:" << value;
       } else {
-        value = metadata.defaultValue;
-
-        if (value.isValid() && !value.isNull() && value.toString() != "") {
-          settings.setValue(generalKey, value);
-          settings.setValue(key, value);
-          qDebug() << "Set default serialNumber in both locations:" << value;
-        }
+        qDebug() << "Serial number not exist";
       }
     } else if (settings.contains(key)) {
-      value = settings.value(key, metadata.defaultValue);
+      value = settings.value(key);
     } else {
-      value = metadata.defaultValue;
+      if (metadata.type == "boolean") {
+        value = false;
+      } else {
+        value = QString();
+      }
     }
 
-    if (metadata.cppType == "bool") {
+    if (metadata.type == "boolean") {
       if (value.typeId() == QMetaType::QString) {
-        QString str = value.toString().toLower();
+        QString str = value.toString().trimmed().toLower();
         value = (str == "true" || str == "1" || str == "yes" || str == "да");
-      } else if (value.typeId() == QMetaType::Int) {
-        value = value.toInt() != 0;
-      } else if (value.typeId() != QMetaType::Bool) {
+      } else {
         value = value.toBool();
       }
-    } else if (metadata.cppType == "int") {
-      if (value.typeId() == QMetaType::QString) {
-        value = value.toString().toInt();
-      } else if (value.typeId() != QMetaType::Int) {
-        value = value.toInt();
-      }
-    } else if (metadata.cppType == "double") {
-      if (value.typeId() == QMetaType::QString) {
-        value = value.toString().replace(',', '.').toDouble();
-      } else if (value.typeId() != QMetaType::Double) {
-        value = value.toDouble();
-      }
     }
-
-    m_values[fieldName] = value;
-    setProperty(fieldName.toLatin1().constData(), value);
+    m_values[cppName] = value;
+    setProperty(cppName.toLatin1().constData(), value);
   }
 }
 
@@ -240,7 +213,7 @@ QJsonObject ModelSettings::toJson() const
     const QString& fieldName = it.key();
     if (m_fieldsMetadata.contains(fieldName)) {
       const FieldMetadata& metadata = m_fieldsMetadata[fieldName];
-      obj[metadata.jsonKey] = QJsonValue::fromVariant(it.value());
+      obj[metadata.name] = QJsonValue::fromVariant(it.value());
     }
   }
 
@@ -253,45 +226,14 @@ void ModelSettings::fromJson(const QJsonObject& obj)
     const QString& fieldName = it.key();
     const FieldMetadata& metadata = it.value();
 
-    if (obj.contains(metadata.jsonKey)) {
-      QJsonValue val = obj[metadata.jsonKey];
+    if (obj.contains(metadata.name)) {
+      QJsonValue val = obj[metadata.name];
       QVariant variant;
 
-      if (metadata.cppType == "bool") {
-        if (val.isBool()) {
-          variant = val.toBool();
-        } else if (val.isString()) {
-          QString str = val.toString().toLower();
-          variant = (str == "true" || str == "1" || str == "yes" || str == "да");
-        } else if (val.isDouble()) {
-          variant = val.toInt() != 0;
-        } else {
-          variant = false;
-        }
-      } else if (metadata.cppType == "int") {
-        if (val.isDouble()) {
-          variant = val.toInt();
-        } else if (val.isString()) {
-          variant = val.toString().toInt();
-        } else {
-          variant = 0;
-        }
-      } else if (metadata.cppType == "double") {
-        if (val.isDouble()) {
-          variant = val.toDouble();
-        } else if (val.isString()) {
-          variant = val.toString().replace(',', '.').toDouble();
-        } else {
-          variant = 0.0;
-        }
+      if (metadata.type == "boolean") {
+        variant = val.toBool();
       } else {
-        if (val.isNull() || val.isUndefined()) {
-          variant = QString();
-        } else if (val.isString()) {
-          variant = val.toString();
-        } else {
-          variant = val.toVariant();
-        }
+        variant = val.toString();
       }
 
       m_values[fieldName] = variant;

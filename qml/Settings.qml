@@ -3,15 +3,18 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import ManualAppCorePlugin 1.0
-import "components"
-import "models"
 import "styles"
+import "models"
+import "components"
 
 ScrollView {
     id: root
 
     clip: true
-    anchors.fill: parent
+
+    property bool initialMode: false
+
+    signal settingsCompleted
 
     contentItem: Flickable {
         id: flick
@@ -28,19 +31,68 @@ ScrollView {
             anchors.topMargin: 10
             spacing: 20
 
-            // Заголовок
             RowLayout {
-                Layout.leftMargin: 50
-                Image {
-                    source: "qrc:///media/icons/icon-settings.svg"
-                    sourceSize.width: 40
-                    sourceSize.height: 40
+                Layout.fillWidth: true
+                spacing: 15
+
+                RowLayout {
+                    id: initialHeader
+                    visible: root.initialMode
+                    Layout.fillWidth: true
+                    spacing: 15
+
+                    Rectangle {
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
+                        radius: 20
+                        color: Theme.colorButtonPrimary
+
+                        Text {
+                            text: SettingsManager.getCurrentSettings().modelTitle[0]
+                            color: "white"
+                            font.pointSize: 16
+                            font.bold: true
+                            anchors.centerIn: parent
+                        }
+                    }
+
+                    ColumnLayout {
+                        spacing: 2
+                        Layout.fillWidth: true
+
+                        Text {
+                            text: qsTr(SettingsManager.getCurrentSettings().modelTitle + " Configuration")
+                            color: Theme.colorTextPrimary
+                            font.pointSize: 24
+                            font.bold: true
+                        }
+
+                        Text {
+                            text: qsTr("Current model: %1").arg(SettingsManager.currentModel)
+                            color: Theme.colorTextSecondary
+                            font.pointSize: Theme.fontSmall
+                        }
+                    }
                 }
 
-                Text {
-                    text: qsTr("Settings")
-                    color: Theme.colorTextPrimary
-                    font.pointSize: 24
+                RowLayout {
+                    id: normalHeader
+                    visible: !root.initialMode
+                    Layout.fillWidth: true
+                    spacing: 15
+                    Layout.leftMargin: 50
+
+                    Image {
+                        source: "qrc:///media/icons/icon-settings.svg"
+                        sourceSize.width: 40
+                        sourceSize.height: 40
+                    }
+
+                    Text {
+                        text: qsTr("Settings")
+                        color: Theme.colorTextPrimary
+                        font.pointSize: 24
+                    }
                 }
             }
 
@@ -49,8 +101,8 @@ ScrollView {
                 property var currentModel: SettingsManager.currentModel
 
                 config: SettingsManager.getModelSettings(currentModel).getSectionsMetadata()
-                modelSettings: SettingsManager.getSettings(currentModel);
-                isInitialMode: false
+                modelSettings: SettingsManager.getSettings(currentModel)
+                isInitialMode: root.initialMode
             }
 
             Button {
@@ -89,7 +141,7 @@ ScrollView {
             onConfirmed: {
                 uploadPopup.open();
                 SettingsManager.saveModelSettings();
-                var uploadUrl = DataManager.djangoBaseUrl() +  "/api/" + SettingsManager.currentModel + "/";
+                var uploadUrl = DataManager.djangoBaseUrl() + "/api/" + SettingsManager.currentModel + "/";
                 DataManager.uploadSettingsToDjango(uploadUrl);
             }
 
@@ -104,6 +156,17 @@ ScrollView {
             onUploadFinished: function (success, error) {
                 if (error != "") {
                     console.log("Upload finished with result:", success, " Error:", error);
+                }
+            }
+
+            onPopupClosed: {
+                if (root.initialMode) {
+                    if (uploadPopup.uploadSuccess) {
+                        SettingsManager.completeFirstRun();
+                        root.settingsCompleted();
+                    } else {
+                        console.log("Upload failed or was cancelled, staying on settings page");
+                    }
                 }
             }
         }

@@ -18,7 +18,7 @@ ScrollView {
 
     // Main model download state
     property bool isMainDownloading: false
-    property bool isMainInstallerReady: DataManager.installManager().installerExists(currentModel)
+    property bool isMainInstallerReady: InstallManager.installerExists(currentModel)
     property bool isMainInstalled: false
     property double mainDownloadProgress: 0.0
     property string mainStatusMessage: ""
@@ -28,7 +28,7 @@ ScrollView {
 
     // ManualApp specific properties
     property bool isManualAppDownloading: false
-    property bool isManualAppInstallerReady: DataManager.installManager().installerExists("manual_app")
+    property bool isManualAppInstallerReady: InstallManager.installerExists("manual_app")
     property bool isManualAppInstalled: false
     property string manualAppStatusMessage: ""
     property double manualAppDownloadProgress: 0.0
@@ -49,7 +49,7 @@ ScrollView {
 
         root.isLoadingDates = true;
 
-        var mainServerDateStr = DataManager.installManager().getLastUpdateDate(DataManager.djangoBaseUrl(), root.currentModel, root.railTypeMode);
+        var mainServerDateStr = InstallManager.getLastUpdateDate(DataManager.djangoBaseUrl(), root.currentModel, root.railTypeMode);
         var mainServerDate = mainServerDateStr ? new Date(mainServerDateStr) : new Date(0);
 
         root.mainLatestServerDate = mainServerDate;
@@ -58,7 +58,7 @@ ScrollView {
         const needMainUpdate = !root.isMainInstallerReady || !isValidDate(root.mainLastVersionDate) || root.mainLastVersionDate < root.mainLatestServerDate;
         root.mainUpdateStatus = needMainUpdate ? (root.isMainInstallerReady ? "new_version_available" : "not_downloaded") : "up_to_date";
 
-        var manualServerDateStr = DataManager.installManager().getLastUpdateDate(DataManager.djangoBaseUrl(), "manual_app", "");
+        var manualServerDateStr = InstallManager.getLastUpdateDate(DataManager.djangoBaseUrl(), "manual_app", "");
         var manualServerDate = manualServerDateStr ? new Date(manualServerDateStr) : new Date(0);
 
         root.manualAppLatestServerDate = manualServerDate;
@@ -91,14 +91,14 @@ ScrollView {
     function resetMainDownloadState() {
         root.isMainDownloading = false;
         root.mainDownloadProgress = 0;
-        root.isMainInstallerReady = DataManager.installManager().installerExists(root.currentModel);
+        root.isMainInstallerReady = InstallManager.installerExists(root.currentModel);
         root.checkForUpdates();
     }
 
     function resetManualAppDownloadState() {
         root.isManualAppDownloading = false;
         root.manualAppDownloadProgress = 0;
-        root.isManualAppInstallerReady = DataManager.installManager().installerExists("manual_app");
+        root.isManualAppInstallerReady = InstallManager.installerExists("manual_app");
         root.checkForUpdates();
     }
 
@@ -381,7 +381,7 @@ ScrollView {
                         }
 
                         Text {
-                            text: "Path: " + DataManager.installManager().buildInstallerPath(SettingsManager.currentModel)
+                            text: "Path: " + InstallManager.buildInstallerPath(SettingsManager.currentModel)
                             color: Theme.colorTextMuted
                             font.pointSize: Theme.fontSmall
                             Layout.fillWidth: true
@@ -412,7 +412,7 @@ ScrollView {
                                 "Download";
                         }
 
-                        enabled: !root.isMainDownloading && !DataManager.installManager().isInstalling && !root.isManualAppDownloading
+                        enabled: !root.isMainDownloading && !InstallManager.isInstalling && !root.isManualAppDownloading
 
                         background: Rectangle {
                             color: {
@@ -441,7 +441,7 @@ ScrollView {
                             root.mainStatusMessage = "Starting download...";
                             root.mainDownloadProgress = 0;
 
-                            DataManager.installManager().downloadInstaller(root.currentModel, url, root.railTypeMode);
+                            InstallManager.downloadInstaller(root.currentModel, url, root.railTypeMode);
                         }
                     }
 
@@ -451,12 +451,12 @@ ScrollView {
                         Layout.preferredHeight: 42
 
                         text: {
-                            if (DataManager.installManager().isInstalling)
+                            if (InstallManager.isInstalling)
                                 return "Installing...";
                             return "Run Installer";
                         }
 
-                        enabled: !DataManager.installManager().isInstalling && !root.isMainDownloading && !DataManager.installManager().isDownloading && root.isMainInstallerReady
+                        enabled: !InstallManager.isInstalling && !root.isMainDownloading && !InstallManager.isDownloading && root.isMainInstallerReady
 
                         background: Rectangle {
                             color: parent.enabled ? (root.mainUpdateStatus === "new_version_available" ? Theme.colorUpdate : Theme.colorButtonPrimary) : Theme.colorButtonDisabled
@@ -473,7 +473,7 @@ ScrollView {
                         }
 
                         onClicked: {
-                            DataManager.installManager().runInstaller(root.currentModel);
+                            InstallManager.runInstaller(root.currentModel);
 
                             if (root.mainUpdateStatus === "new_version_available") {
                                 SettingsManager.lastUpdateSoftwareDate = root.mainLatestServerDate.toLocaleDateString(Qt.ISODate);
@@ -634,7 +634,7 @@ ScrollView {
                         }
 
                         Text {
-                            text: "Path: " + DataManager.installManager().buildInstallerPath("manual_app")
+                            text: "Path: " + InstallManager.buildInstallerPath("manual_app")
                             color: Theme.colorTextMuted
                             font.pointSize: Theme.fontSmall
                             Layout.fillWidth: true
@@ -662,7 +662,7 @@ ScrollView {
                             return "Download";
                         }
 
-                        enabled: !root.isManualAppDownloading && !DataManager.installManager().isDownloading && !DataManager.installManager().isInstalling
+                        enabled: !root.isManualAppDownloading && !InstallManager.isDownloading && !InstallManager.isInstalling
 
                         background: Rectangle {
                             color: {
@@ -689,7 +689,7 @@ ScrollView {
                             root.isManualAppDownloading = true;
                             root.manualAppStatusMessage = "Starting download...";
                             root.manualAppDownloadProgress = 0;
-                            DataManager.installManager().downloadInstaller("manual_app", url, "");
+                            InstallManager.downloadInstaller("manual_app", url, "");
                         }
                     }
 
@@ -699,14 +699,14 @@ ScrollView {
                         Layout.preferredHeight: 42
 
                         text: {
-                            if (DataManager.installManager().isInstalling)
+                            if (InstallManager.isInstalling)
                                 return "Installing...";
                             if (root.manualAppUpdateStatus === "new_version_available" && root.isManualAppInstallerReady)
                                 return "Install Update";
                             return "Run Application";
                         }
 
-                        enabled: root.isManualAppInstallerReady && !DataManager.installManager().isInstalling && !root.isManualAppDownloading && !DataManager.installManager().isDownloading
+                        enabled: root.isManualAppInstallerReady && !InstallManager.isInstalling && !root.isManualAppDownloading && !InstallManager.isDownloading
 
                         background: Rectangle {
                             color: parent.enabled ? (root.manualAppUpdateStatus === "new_version_available" ? Theme.colorUpdate : Theme.colorButtonPrimary) : Theme.colorButtonDisabled
@@ -723,7 +723,7 @@ ScrollView {
                         }
 
                         onClicked: {
-                            DataManager.installManager().runInstaller("manual_app");
+                            InstallManager.runInstaller("manual_app");
 
                             if (root.manualAppUpdateStatus === "new_version_available") {
                                 root.checkForUpdates();
@@ -734,16 +734,16 @@ ScrollView {
             }
 
             Connections {
-                target: DataManager.installManager()
+                target: InstallManager
 
                 function onDownloadProgressChanged() {
                     if (root.isMainDownloading) {
-                        root.mainDownloadProgress = DataManager.installManager().downloadProgress;
+                        root.mainDownloadProgress = InstallManager.downloadProgress;
                         root.mainStatusMessage = "Downloading: " + Math.round(root.mainDownloadProgress) + "%";
                     }
 
                     if (root.isManualAppDownloading) {
-                        root.manualAppDownloadProgress = DataManager.installManager().downloadProgress;
+                        root.manualAppDownloadProgress = InstallManager.downloadProgress;
                         root.manualAppStatusMessage = "Downloading: " + Math.round(root.manualAppDownloadProgress) + "%";
                     }
                 }
@@ -752,7 +752,7 @@ ScrollView {
                     // ===== MAIN MODEL =====
                     if (root.isMainDownloading) {
                         root.isMainDownloading = false;
-                        root.isMainInstallerReady = DataManager.installManager().installerExists(root.currentModel);
+                        root.isMainInstallerReady = InstallManager.installerExists(root.currentModel);
 
                         if (success) {
                             root.mainDownloadProgress = 100;
@@ -772,7 +772,7 @@ ScrollView {
                     // ===== MANUAL APP =====
                     if (root.isManualAppDownloading) {
                         root.isManualAppDownloading = false;
-                        root.isManualAppInstallerReady = DataManager.installManager().installerExists("manual_app");
+                        root.isManualAppInstallerReady = InstallManager.installerExists("manual_app");
 
                         if (success) {
                             root.manualAppDownloadProgress = 100;
@@ -804,11 +804,11 @@ ScrollView {
             }
 
             Connections {
-                target: DataManager.installManager()
+                target: InstallManager
 
                 function onInstallerPathChanged() {
-                    root.isMainInstallerReady = DataManager.installManager().installerExists(root.currentModel);
-                    root.isManualAppInstallerReady = DataManager.installManager().installerExists("manual_app");
+                    root.isMainInstallerReady = InstallManager.installerExists(root.currentModel);
+                    root.isManualAppInstallerReady = InstallManager.installerExists("manual_app");
                     root.checkForUpdates();
                 }
             }

@@ -309,7 +309,7 @@ Connections {
             color: Theme.colorNavActive
             width: parent.width
             height: 40
-            y: 60
+            y: 70
 
             Image {
                 source: "qrc:///media/icons/icon-servers.svg"
@@ -334,13 +334,11 @@ Connections {
 
                 onClicked: function () {
                     navSettings.color = Theme.colorNavInactive;
-                    navAbout.color = Theme.colorNavInactive;
                     navInstallPO.color = Theme.colorNavActive;
                     navActivate.color = Theme.colorNavInactive;
                     navAdmin.color = Theme.colorNavInactive;
 
                     settingsLoader.visible = false;
-                    aboutLoader.visible = false;
                     activateLoader.visible = false;
                     adminLoader.visible = false;
 
@@ -358,7 +356,7 @@ Connections {
             color: Theme.colorNavInactive
             width: parent.width
             height: 40
-            y: 105
+            y: 115
 
             Image {
                 source: "qrc:///media/icons/icon-activate.svg"
@@ -383,13 +381,11 @@ Connections {
 
                 onClicked: function () {
                     navSettings.color = Theme.colorNavInactive;
-                    navAbout.color = Theme.colorNavInactive;
                     navInstallPO.color = Theme.colorNavInactive;
                     navActivate.color = Theme.colorNavActive;
                     navAdmin.color = Theme.colorNavInactive;
 
                     settingsLoader.visible = false;
-                    aboutLoader.visible = false;
                     installPoLoader.visible = false;
                     adminLoader.visible = false;
 
@@ -407,7 +403,7 @@ Connections {
             color: Theme.colorNavInactive
             width: parent.width
             height: 40
-            y: 150
+            y: 160
 
             Image {
                 source: "qrc:///media/icons/icon-settings.svg"
@@ -432,13 +428,11 @@ Connections {
 
                 onClicked: function () {
                     navSettings.color = Theme.colorNavActive;
-                    navAbout.color = Theme.colorNavInactive;
                     navInstallPO.color = Theme.colorNavInactive;
                     navActivate.color = Theme.colorNavInactive;
                     navAdmin.color = Theme.colorNavInactive;
 
                     installPoLoader.visible = false;
-                    aboutLoader.visible = false;
                     activateLoader.visible = false;
                     adminLoader.visible = false;
 
@@ -452,60 +446,11 @@ Connections {
         }
 
         Rectangle {
-            id: navAbout
-            color: Theme.colorNavInactive
-            width: parent.width
-            height: 40
-            y: 195
-
-            Image {
-                source: "qrc:///media/icons/icon-about.svg"
-                height: 20
-                width: 20
-                x: 20
-                y: 10
-            }
-
-            Text {
-                color: Theme.colorTextPrimary
-                text: qsTr("About")
-                font.pointSize: 12
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-            }
-
-            MouseArea {
-                id: mouseAreaAbout
-                width: parent.width
-                height: parent.height
-
-                onClicked: function () {
-                    navSettings.color = Theme.colorNavInactive;
-                    navAbout.color = Theme.colorNavActive;
-                    navInstallPO.color = Theme.colorNavInactive;
-                    navActivate.color = Theme.colorNavInactive;
-                    navAdmin.color = Theme.colorNavInactive;
-
-                    settingsLoader.visible = false;
-                    installPoLoader.visible = false;
-                    activateLoader.visible = false;
-                    adminLoader.visible = false;
-
-                    aboutLoader.active = false;
-                    aboutLoader.visible = true;
-                    aboutLoader.active = true;
-
-                    root.hideSidebar();
-                }
-            }
-        }
-
-        Rectangle {
             id: navAdmin
             color: Theme.colorNavInactive
             width: parent.width
             height: 40
-            y: 240
+            y: 205
 
             visible: AdminManager.adminMode
 
@@ -532,7 +477,6 @@ Connections {
 
                 onClicked: function () {
                     navSettings.color = Theme.colorNavInactive;
-                    navAbout.color = Theme.colorNavInactive;
                     navInstallPO.color = Theme.colorNavInactive;
                     navActivate.color = Theme.colorNavInactive;
                     navAdmin.color = Theme.colorNavActive;
@@ -540,7 +484,6 @@ Connections {
                     settingsLoader.visible = false;
                     installPoLoader.visible = false;
                     activateLoader.visible = false;
-                    aboutLoader.visible = false;
 
                     adminLoader.active = false;
                     adminLoader.visible = true;
@@ -614,14 +557,6 @@ Connections {
             id: settingsLoader
             anchors.fill: parent
             source: "Settings.qml"
-            active: false
-            visible: false
-        }
-
-        Loader {
-            id: aboutLoader
-            anchors.fill: parent
-            source: "About.qml"
             active: false
             visible: false
         }

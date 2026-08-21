@@ -1,7 +1,9 @@
 #pragma once
 
 #include <qqmlintegration.h>
+#include <qtmetamacros.h>
 
+#include <QCoreApplication>
 #include <QFile>
 #include <QObject>
 #include <QProcess>
@@ -15,14 +17,16 @@ class InstallManager : public QObject
 {
   Q_OBJECT
 
+  QML_ELEMENT
+  QML_SINGLETON
+
   Q_PROPERTY(QString statusMessage READ statusMessage NOTIFY statusMessageChanged)
   Q_PROPERTY(bool isInstalling READ isInstalling NOTIFY isInstallingChanged)
   Q_PROPERTY(QString installerPath READ installerPath NOTIFY installerPathChanged)
   Q_PROPERTY(bool isDownloading READ isDownloading NOTIFY isDownloadingChanged)
   Q_PROPERTY(double downloadProgress READ downloadProgress NOTIFY downloadProgressChanged)
 public:
-  explicit InstallManager(QObject* parent = nullptr, LicenseHandler* licenseHandler = nullptr,
-                          NetworkService* networkService = nullptr, FileService* fileService = nullptr);
+  explicit InstallManager(QObject* parent = nullptr);
   ~InstallManager();
 
   QString statusMessage() const { return m_statusMessage; }
@@ -30,6 +34,10 @@ public:
   QString installerPath() const { return m_installerPath; }
   bool isDownloading() const { return m_isDownloading; }
   double downloadProgress() const { return m_downloadProgress; }
+
+  Q_INVOKABLE void setAllManagers(LicenseHandler* licenseHandler = nullptr,
+                                  NetworkService* networkService = nullptr,
+                                  FileService* fileService = nullptr);
 
   Q_INVOKABLE bool installerExists(const QString& model) const;
   Q_INVOKABLE void downloadInstaller(const QString& model, const QString& baseUrl,

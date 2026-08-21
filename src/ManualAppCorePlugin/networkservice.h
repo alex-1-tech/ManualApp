@@ -21,9 +21,6 @@ public:
   // Construction/Destruction
   explicit NetworkService(QObject* parent = nullptr);
   ~NetworkService() = default;
-  // Synchronous upload methods
-  bool uploadFileSynchronous(const QUrl& apiUrl, const QString& filePath);
-  bool uploadJsonToDjangoSynchronous(const QUrl& apiUrl, const QJsonObject& jsonObject);
 
   // Asynchronous methods (kept for compatibility)
   void getJsonFromDjango(const QUrl& url, std::function<void(const QJsonObject&)> onSuccess,

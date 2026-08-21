@@ -12,8 +12,8 @@ RowLayout {
     property string text: ""
     property string settingName: ""
     property var modelSettings: SettingsManager
-    property bool checked: modelSettings && settingName ? modelSettings[settingName] || false : false
-
+    property bool checked: modelSettings && settingName ? modelSettings.getValue(settingName) || false : false
+    
     Layout.fillWidth: true
     spacing: 12
 
@@ -55,7 +55,7 @@ RowLayout {
                 root.checked = !root.checked;
 
                 if (root.modelSettings && root.settingName)
-                    root.modelSettings[root.settingName] = root.checked;
+                    root.modelSettings.setValue(root.settingName, root.checked);
             }
         }
 

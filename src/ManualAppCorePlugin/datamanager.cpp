@@ -9,7 +9,6 @@
 
 #include "file/fileservice.h"
 #include "file/loger.h"
-#include "installmanager.h"
 #include "networkservice.h"
 #include "software/licensehandler.h"
 
@@ -20,9 +19,6 @@ DataManager::DataManager(QObject* parent)
   m_fileService = std::make_unique<FileService>(this);
   m_networkService = std::make_unique<NetworkService>(this);
   m_licenseHandler = std::make_unique<LicenseHandler>(this);
-  m_installManager = std::make_unique<InstallManager>(this, m_licenseHandler.get(), m_networkService.get(),
-                                                      m_fileService.get());
-
 
   DEBUG_COLORED("DataManager", "Constructor", "DataManager initialized", COLOR_CYAN, COLOR_CYAN);
 }

@@ -13,6 +13,7 @@ RowLayout {
     property string settingName: ""
     property bool multiline: false
     property var modelSettings: SettingsManager
+    property bool readOnly: false
 
     Layout.fillWidth: true
     spacing: 8
@@ -35,16 +36,18 @@ RowLayout {
 
         TextField {
             id: textField
-            placeholderText: root.placeholder
+            placeholderText: root.settingName
             text: root.modelSettings && root.modelSettings.getValue ? root.modelSettings.getValue(root.settingName) : ""
             
+            readOnly: root.readOnly
+            selectByMouse: root.readOnly
 
             onTextChanged: {
                 if (root.modelSettings && root.settingName && textField.activeFocus)
                     root.modelSettings.setValue(root.settingName, text);
             }
 
-            color: Theme.colorTextPrimary
+            color: root.readOnly ? Theme.colorTextMuted : Theme.colorTextPrimary
             placeholderTextColor: Theme.colorTextPlaceholder
             selectionColor: Theme.colorAccent
             selectedTextColor: Theme.colorTextPrimary

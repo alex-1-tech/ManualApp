@@ -12,7 +12,6 @@
 
 #include "file/loger.h"
 #include "network/httpclient.h"
-#include "network/synchttpclient.h"
 
 
 NetworkService::NetworkService(QObject* parent)
@@ -70,22 +69,6 @@ QUrl NetworkService::buildUploadUrl(const QUrl& apiBaseUrl, const QString& endpo
   return url;
 }
 
-bool NetworkService::uploadFileSynchronous(const QUrl& apiUrl, const QString& filePath)
-{
-  DEBUG_COLORED("NetworkService", "uploadFileSynchronous",
-                QString("Uploading file: %1 to %2").arg(filePath).arg(apiUrl.toString()), COLOR_BLUE,
-                COLOR_BLUE);
-  SyncHttpClient client(30000);
-
-  auto response = client.postFile(apiUrl, filePath);
-
-  if (!response.success) {
-    DEBUG_ERROR_COLORED("NetworkService", "uploadFileSynchronous", response.errorMessage, COLOR_BLUE,
-                        COLOR_BLUE);
-    return false;
-  }
-  return true;
-}
 
 void NetworkService::uploadJsonToDjango(const QUrl& apiUrl, const QJsonObject& jsonObject)
 {

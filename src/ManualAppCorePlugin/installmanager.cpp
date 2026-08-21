@@ -4,14 +4,12 @@
 #include <QDir>
 #include <QNetworkRequest>
 
-#include "datamanager.h"
 #include "file/fileservice.h"
 #include "file/loger.h"
 #include "settings/settingsmanager.h"
 #include "software/licensehandler.h"
 
-InstallManager::InstallManager(QObject* parent, LicenseHandler* licenseHandler,
-                               NetworkService* networkService, FileService* fileService)
+InstallManager::InstallManager(QObject* parent)
     : QObject(parent)
     , m_statusMessage("Ready to download and install")
     , m_isInstalling(false)
@@ -21,12 +19,16 @@ InstallManager::InstallManager(QObject* parent, LicenseHandler* licenseHandler,
     , m_timeoutTimer(nullptr)
 {
   DEBUG_COLORED("InstallManager", "Constructor", "InstallManager initialized", COLOR_CYAN, COLOR_CYAN);
+}
+void InstallManager::setAllManagers(LicenseHandler* licenseHandler, NetworkService* networkService,
+                                    FileService* fileService)
+{
   m_licenseHandler = licenseHandler;
   m_networkService = networkService;
   m_fileService = fileService;
+
   initializeNetworkService();
 }
-
 InstallManager::~InstallManager()
 {
   cleanupProcess();

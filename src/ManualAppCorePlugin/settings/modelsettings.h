@@ -39,13 +39,9 @@ public:
   struct FieldMetadata {
     QString name;
     QString label;
-    QString placeholder;
+    QString helpText;
+    QString cppName;
     QString type;
-    QString jsonKey;
-    QVariant defaultValue;
-    QString cppType;
-    bool visibleInInitialMode;
-    QString checkboxText;
 
     QVariantMap toVariantMap() const;
   };

@@ -5,7 +5,6 @@
 
         <!-- main -->
         <file>qml/Main.qml</file>
-        <file>qml/About.qml</file>
         <file>qml/Activate.qml</file>
         <file>qml/Admin.qml</file>
         <file>qml/Settings.qml</file>
@@ -13,14 +12,11 @@
 
         <!-- models -->
         <file>qml/models/DynamicFormRenderer.qml</file>
-        <file>qml/models/AboutRenderer.qml</file>
     
         <!-- dasboard -->
-        <file>qml/UploadWindow.qml</file>
         <file>qml/ModelSelectionPage.qml</file>
         <file>qml/ModelSelectionCard.qml</file>
-        <file>qml/SettingsForm.qml</file>
-    
+
         <!-- components -->
         <file>qml/components/FormField.qml</file>
         <file>qml/components/CardSection.qml</file>
