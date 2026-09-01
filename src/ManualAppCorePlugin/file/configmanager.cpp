@@ -12,23 +12,33 @@ ConfigManager& ConfigManager::instance()
 ConfigManager::ConfigManager(QObject* parent)
     : QObject(parent)
 {
-  QDir currentDir = QDir::current();
-  QString configPath = QCoreApplication::applicationDirPath() + "/.config.ini";
+  QString exeDir = QCoreApplication::applicationDirPath();
+  QStringList searchPaths = {exeDir + "/.config.ini",    // build/Debug
+                             exeDir + "/../.config.ini", // build/
+                             exeDir + "/../../.config.ini", QDir::current().absoluteFilePath(".config.ini")};
 
-  if (!QFile::exists(configPath)) {
-    qWarning() << "Config file not found:" << configPath;
-    configPath = currentDir.absoluteFilePath(".config.ini");
+  QString finalPath = searchPaths.last();
+
+  for (const QString& path : searchPaths) {
+    if (QFile::exists(path)) {
+      finalPath = path;
+      break;
+    }
   }
 
-  m_configPath = configPath;
-  m_settings = new QSettings(configPath, QSettings::IniFormat, this);
+  if (!QFile::exists(finalPath)) {
+    qWarning() << "Config file not found in any standard locations. Defaulting to:" << finalPath;
+  }
 
-  qDebug() << "Config loaded from:" << configPath;
+  m_configPath = QDir::cleanPath(finalPath);
+  m_settings = new QSettings(m_configPath, QSettings::IniFormat, this);
+
+  qDebug() << "Config loaded from:" << m_configPath;
 }
 
 QString ConfigManager::djangoBaseUrl() const
 {
-  return m_settings->value("base_url", "https://cloud.pulsarndt.ae").toString();
+  return m_settings->value("base_url", "http://127.0.0.1:8000").toString();
 }
 QString ConfigManager::appVersion() const
 {

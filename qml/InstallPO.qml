@@ -4,6 +4,7 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import ManualAppCorePlugin 1.0
 import "styles"
+import "components"
 
 ScrollView {
     id: root
@@ -13,13 +14,13 @@ ScrollView {
 
     // ====== State ===========================================================
     property string currentModel: SettingsManager.currentModel
-    property string railTypeMode: "irs52"
+    property string railType: SettingsManager.railType
+    property string version: SettingsManager.currentVersion
     property bool isInitialized: false
 
     // Main model download state
     property bool isMainDownloading: false
     property bool isMainInstallerReady: InstallManager.installerExists(currentModel)
-    property bool isMainInstalled: false
     property double mainDownloadProgress: 0.0
     property string mainStatusMessage: ""
     property string mainUpdateStatus: "" // "new_version_available", "up_to_date", "not_downloaded"
@@ -29,7 +30,6 @@ ScrollView {
     // ManualApp specific properties
     property bool isManualAppDownloading: false
     property bool isManualAppInstallerReady: InstallManager.installerExists("manual_app")
-    property bool isManualAppInstalled: false
     property string manualAppStatusMessage: ""
     property double manualAppDownloadProgress: 0.0
     property string manualAppUpdateStatus: "" // "new_version_available", "up_to_date", "not_downloaded"
@@ -44,12 +44,12 @@ ScrollView {
     }
 
     function checkForUpdates() {
-        if (root.currentModel === "" || root.railTypeMode === "")
+        if (root.currentModel === "" || root.railType === "")
             return;
 
         root.isLoadingDates = true;
 
-        var mainServerDateStr = InstallManager.getLastUpdateDate(DataManager.djangoBaseUrl(), root.currentModel, root.railTypeMode);
+        var mainServerDateStr = InstallManager.getLastUpdateDate(DataManager.djangoBaseUrl(), root.currentModel, root.railType, root.version);
         var mainServerDate = mainServerDateStr ? new Date(mainServerDateStr) : new Date(0);
 
         root.mainLatestServerDate = mainServerDate;
@@ -58,7 +58,7 @@ ScrollView {
         const needMainUpdate = !root.isMainInstallerReady || !isValidDate(root.mainLastVersionDate) || root.mainLastVersionDate < root.mainLatestServerDate;
         root.mainUpdateStatus = needMainUpdate ? (root.isMainInstallerReady ? "new_version_available" : "not_downloaded") : "up_to_date";
 
-        var manualServerDateStr = InstallManager.getLastUpdateDate(DataManager.djangoBaseUrl(), "manual_app", "");
+        var manualServerDateStr = InstallManager.getLastUpdateDate(DataManager.djangoBaseUrl(), "manual_app", "", "");
         var manualServerDate = manualServerDateStr ? new Date(manualServerDateStr) : new Date(0);
 
         root.manualAppLatestServerDate = manualServerDate;
@@ -71,21 +71,6 @@ ScrollView {
         }
 
         root.isLoadingDates = false;
-    }
-
-    function saveRailTypeForCurrentModel() {
-        if (root.currentModel === "kalmar32") {
-            SettingsManager.railType = root.railTypeMode;
-        }
-    }
-
-    function loadRailTypeForCurrentModel() {
-        if (root.currentModel === "kalmar32") {
-            var savedType = SettingsManager.railType;
-            if (savedType) {
-                root.railTypeMode = savedType;
-            }
-        }
     }
 
     function resetMainDownloadState() {
@@ -103,21 +88,16 @@ ScrollView {
     }
 
     Component.onCompleted: {
-        loadRailTypeForCurrentModel();
         isInitialized = true;
         checkForUpdates();
     }
 
     onCurrentModelChanged: {
-        loadRailTypeForCurrentModel();
         if (isInitialized)
             checkForUpdates();
     }
 
-    onRailTypeModeChanged: {
-        if (root.currentModel === "kalmar32") {
-            saveRailTypeForCurrentModel();
-        }
+    onRailTypeChanged: {
         if (isInitialized)
             checkForUpdates();
     }
@@ -181,7 +161,6 @@ ScrollView {
                         Layout.fillWidth: true
                     }
 
-                    // Индикатор загрузки
                     BusyIndicator {
                         visible: root.isLoadingDates
                         running: visible
@@ -191,544 +170,115 @@ ScrollView {
                 }
             }
 
-            // Download & Installation Section
-            ColumnLayout {
+            InstallSection {
                 Layout.fillWidth: true
-                spacing: 15
+                sectionTitle: "Download & Install Software"
+                updateStatus: root.mainUpdateStatus
+                isDownloading: root.isMainDownloading
+                isInstallerReady: root.isMainInstallerReady
+                downloadProgress: root.mainDownloadProgress
+                statusMessage: root.mainStatusMessage || (root.isMainInstallerReady ? "Installer ready" : "Not downloaded")
+                idleStatusColor: Theme.colorError
+                latestServerDate: root.mainLatestServerDate
+                lastVersionDate: root.mainLastVersionDate
+                versionRowLabel: "Downloaded version:"
+                infoLine1: "Installer: " + SettingsManager.getCurrentSettings().modelInstallerPath
+                infoLine2: "Path: " + InstallManager.buildInstallerPath(SettingsManager.currentModel)
+                cardHeight: root.currentModel === "kalmar32" ? 250 : 200
 
-                RowLayout {
-                    Layout.fillWidth: true
+                downloadButtonText: root.isMainDownloading ? "Downloading..." : (root.mainUpdateStatus === "new_version_available" ? "Update Now" : (root.isMainInstallerReady ? "Redownload" : "Download"))
+                downloadEnabled: !root.isMainDownloading && !InstallManager.isInstalling && !root.isManualAppDownloading
 
-                    Text {
-                        text: "Download & Install Software"
-                        color: Theme.colorTextPrimary
-                        font.pointSize: Theme.fontSubtitle
-                        font.bold: true
-                    }
+                installButtonText: InstallManager.isInstalling ? "Installing..." : "Run Installer"
+                installEnabled: !InstallManager.isInstalling && !root.isMainDownloading && !InstallManager.isDownloading && root.isMainInstallerReady
 
-                    Item {
-                        Layout.fillWidth: true
-                    }
-
-                    Rectangle {
-                        visible: root.mainUpdateStatus === "new_version_available"
-                        color: Theme.colorUpdate
-                        radius: 4
-                        height: 24
-                        width: 160
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "Update Available!"
-                            color: "white"
-                            font.pointSize: Theme.fontSmall
-                            font.bold: true
-                        }
-                    }
-
-                    Rectangle {
-                        visible: root.mainUpdateStatus === "up_to_date"
-                        color: Theme.colorSuccess
-                        radius: 4
-                        height: 24
-                        width: 100
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "Up to Date"
-                            color: "white"
-                            font.pointSize: Theme.fontSmall
-                            font.bold: true
-                        }
-                    }
-                }
-
-                // Status Card
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: root.currentModel === "kalmar32" ? 250 : 200
-                    color: Theme.colorBgMuted
-                    radius: Theme.radiusCard
-                    border.color: Theme.colorBorder
-
+                extraContent: Component {
                     ColumnLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 15
-                        anchors.rightMargin: 15
-                        anchors.topMargin: 15
-                        anchors.bottomMargin: 20
-                        spacing: 2
+                        Layout.fillWidth: true
+                        visible: root.railType !== ""
 
-                        RowLayout {
-                            Layout.fillWidth: true
-
-                            Text {
-                                text: root.mainStatusMessage || (root.isMainInstallerReady ? "Installer ready" : "Not downloaded")
-                                color: {
-                                    if (root.isMainDownloading)
-                                        Theme.colorUpdate;
-                                    else if (root.mainUpdateStatus === "new_version_available")
-                                        Theme.colorUpdate;
-                                    else if (root.isMainInstallerReady)
-                                        Theme.colorSuccess;
-                                    else
-                                        Theme.colorError;
-                                }
-                                font.pointSize: Theme.fontBody
-                                font.bold: root.mainUpdateStatus === "new_version_available"
-                            }
-
-                            Item {
-                                Layout.fillWidth: true
-                            }
-                        }
-
-                        GridLayout {
-                            columns: 2
-                            columnSpacing: 20
-                            rowSpacing: 5
-                            Layout.fillWidth: true
-
-                            Text {
-                                text: "Latest server version:"
-                                color: Theme.colorTextMuted
-                                font.pointSize: Theme.fontSmall
-                            }
-
-                            Text {
-                                text: root.mainLatestServerDate > new Date(0) ? Qt.formatDate(root.mainLatestServerDate, "yyyy-MM-dd") : "Not available"
-                                color: Theme.colorTextPrimary
-                                font.pointSize: Theme.fontSmall
-                                font.bold: root.mainLastVersionDate < root.mainLatestServerDate
-                            }
-
-                            Text {
-                                text: "Downloaded version:"
-                                color: Theme.colorTextMuted
-                                font.pointSize: Theme.fontSmall
-                            }
-
-                            Text {
-                                text: root.mainLastVersionDate > new Date(0) ? Qt.formatDate(root.mainLastVersionDate, "yyyy-MM-dd") : "Never"
-                                color: root.mainLastVersionDate < root.mainLatestServerDate ? Theme.colorUpdate : Theme.colorTextPrimary
-                                font.pointSize: Theme.fontSmall
-                                font.bold: root.mainLastVersionDate < root.mainLatestServerDate
-                            }
-                        }
-
-                        ProgressBar {
-                            Layout.fillWidth: true
-                            visible: root.isMainDownloading
-                            value: root.mainDownloadProgress
-                            from: 0
-                            to: 100
-                        }
-
-                        // Rail type mode
-                        ColumnLayout {
-                            id: railTypeModeSection
-                            anchors.margins: 5
-                            spacing: 5
-                            visible: root.currentModel === "kalmar32"
-
-                            Text {
-                                text: "Rail type: "
-                                color: Theme.colorTextMuted
-                                font.pointSize: Theme.fontSmall
-                                font.bold: true
-                            }
-
-                            RowLayout {
-                                spacing: 10
-                                Layout.alignment: Qt.AlignLeft
-
-                                Repeater {
-                                    model: ["p65", "irs52", "uic60"]
-
-                                    Rectangle {
-                                        id: railTypeCard
-                                        required property var modelData
-
-                                        width: 100
-                                        height: 30
-                                        radius: 4
-                                        color: root.railTypeMode === modelData ? Theme.colorButtonPrimary : Theme.colorBgPrimary
-                                        border.color: root.railTypeMode === modelData ? Theme.colorButtonPrimary : Theme.colorBorder
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: railTypeCard.modelData.toUpperCase()
-                                            color: root.railTypeMode === railTypeCard.modelData ? "white" : Theme.colorTextMuted
-                                            font.pointSize: Theme.fontSmall
-                                        }
-
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            onClicked: {
-                                                root.railTypeMode = railTypeCard.modelData;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                        Text {
+                            text: "Rail type: " + root.railType.toUpperCase()
+                            color: Theme.colorTextMuted
+                            font.pointSize: Theme.fontSmall
+                            font.weight: Font.Normal
                         }
 
                         Text {
-                            text: "Installer: " + SettingsManager.getCurrentSettings().modelInstallerPath;
+                            text: "Version: " + root.version.toUpperCase()
                             color: Theme.colorTextMuted
                             font.pointSize: Theme.fontSmall
-                            Layout.fillWidth: true
-                        }
-
-                        Text {
-                            text: "Path: " + InstallManager.buildInstallerPath(SettingsManager.currentModel)
-                            color: Theme.colorTextMuted
-                            font.pointSize: Theme.fontSmall
-                            Layout.fillWidth: true
+                            font.weight: Font.Normal
                         }
                     }
                 }
 
-                // Download & Install Buttons
-                RowLayout {
-                    Layout.alignment: Qt.AlignHCenter
-                    Layout.topMargin: -36
-                    spacing: 12
-                    z: 2
+                onDownloadRequested: {
+                    var url = DataManager.djangoBaseUrl();
+                    root.isMainDownloading = true;
+                    root.mainStatusMessage = "Starting download...";
+                    root.mainDownloadProgress = 0;
+                    InstallManager.downloadInstaller(root.currentModel, url, root.railType, root.version);
+                }
 
-                    Button {
-                        id: downloadButton
-                        Layout.preferredWidth: 170
-                        Layout.preferredHeight: 42
-
-                        text: {
-                            if (root.isMainDownloading)
-                                "Downloading...";
-                            else if (root.mainUpdateStatus === "new_version_available")
-                                "Update Now";
-                            else if (root.isMainInstallerReady)
-                                "Redownload";
-                            else
-                                "Download";
-                        }
-
-                        enabled: !root.isMainDownloading && !InstallManager.isInstalling && !root.isManualAppDownloading
-
-                        background: Rectangle {
-                            color: {
-                                if (!parent.enabled)
-                                    return Theme.colorButtonDisabled;
-                                if (root.mainUpdateStatus === "new_version_available")
-                                    return Theme.colorUpdate;
-                                return Theme.colorButtonSecondary;
-                            }
-                            radius: Theme.radiusButton
-                        }
-
-                        contentItem: Text {
-                            text: downloadButton.text
-                            color: "white"
-                            font.pointSize: Theme.fontBody
-                            font.bold: true
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-
-                        onClicked: {
-                            var url = DataManager.djangoBaseUrl();
-
-                            root.isMainDownloading = true;
-                            root.mainStatusMessage = "Starting download...";
-                            root.mainDownloadProgress = 0;
-
-                            InstallManager.downloadInstaller(root.currentModel, url, root.railTypeMode);
-                        }
-                    }
-
-                    Button {
-                        id: installButton
-                        Layout.preferredWidth: 170
-                        Layout.preferredHeight: 42
-
-                        text: {
-                            if (InstallManager.isInstalling)
-                                return "Installing...";
-                            return "Run Installer";
-                        }
-
-                        enabled: !InstallManager.isInstalling && !root.isMainDownloading && !InstallManager.isDownloading && root.isMainInstallerReady
-
-                        background: Rectangle {
-                            color: parent.enabled ? (root.mainUpdateStatus === "new_version_available" ? Theme.colorUpdate : Theme.colorButtonPrimary) : Theme.colorButtonDisabled
-                            radius: Theme.radiusButton
-                        }
-
-                        contentItem: Text {
-                            text: installButton.text
-                            color: "white"
-                            font.pointSize: Theme.fontBody
-                            font.bold: true
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-
-                        onClicked: {
-                            InstallManager.runInstaller(root.currentModel);
-
-                            if (root.mainUpdateStatus === "new_version_available") {
-                                SettingsManager.lastUpdateSoftwareDate = root.mainLatestServerDate.toLocaleDateString(Qt.ISODate);
-
-                                root.mainLastVersionDate = root.mainLatestServerDate;
-                                root.checkForUpdates();
-                            }
-                        }
+                onInstallRequested: {
+                    InstallManager.runInstaller(root.currentModel);
+                    if (root.mainUpdateStatus === "new_version_available") {
+                        SettingsManager.lastUpdateSoftwareDate = root.mainLatestServerDate.toLocaleDateString(Qt.ISODate);
+                        root.mainLastVersionDate = root.mainLatestServerDate;
+                        root.checkForUpdates();
                     }
                 }
             }
 
-            // ====== ManualApp Update Section ============================================
-            ColumnLayout {
+            InstallSection {
                 Layout.fillWidth: true
-                spacing: 15
+                sectionTitle: "Update ManualApp"
+                updateStatus: root.manualAppUpdateStatus
+                isDownloading: root.isManualAppDownloading
+                isInstallerReady: root.isManualAppInstallerReady
+                downloadProgress: root.manualAppDownloadProgress
+                statusMessage: {
+                    if (root.manualAppStatusMessage)
+                        return root.manualAppStatusMessage;
+                    if (root.manualAppUpdateStatus === "new_version_available")
+                        return "Update available";
+                    if (root.isManualAppInstallerReady)
+                        return "Ready to run";
+                    return "The new version is not found";
+                }
+                idleStatusColor: Theme.colorTextMuted
+                latestServerDate: root.manualAppLatestServerDate
+                lastVersionDate: root.manualAppLastVersionDate
+                versionRowLabel: "Current version date:"
+                infoLine1: "Executable: ManualApp.exe"
+                infoLine2: "Path: " + InstallManager.buildInstallerPath("manual_app")
+                cardHeight: 180
 
-                RowLayout {
-                    Layout.fillWidth: true
+                downloadButtonText: root.isManualAppDownloading ? "Downloading..." : (root.manualAppUpdateStatus === "new_version_available" ? "Update Now" : "Download")
+                downloadEnabled: !root.isManualAppDownloading && !InstallManager.isDownloading && !InstallManager.isInstalling
 
-                    Text {
-                        text: "Update ManualApp"
-                        color: Theme.colorTextPrimary
-                        font.pointSize: Theme.fontSubtitle
-                        font.bold: true
-                    }
+                installButtonText: {
+                    if (InstallManager.isInstalling)
+                        return "Installing...";
+                    if (root.manualAppUpdateStatus === "new_version_available" && root.isManualAppInstallerReady)
+                        return "Install Update";
+                    return "Run Application";
+                }
+                installEnabled: root.isManualAppInstallerReady && !InstallManager.isInstalling && !root.isManualAppDownloading && !InstallManager.isDownloading
 
-                    Item {
-                        Layout.fillWidth: true
-                    }
-
-                    Rectangle {
-                        visible: root.manualAppUpdateStatus === "new_version_available"
-                        color: Theme.colorUpdate
-                        radius: 4
-                        height: 24
-                        width: 160
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "Update Available!"
-                            color: "white"
-                            font.pointSize: Theme.fontSmall
-                            font.bold: true
-                        }
-                    }
-
-                    Rectangle {
-                        visible: root.manualAppUpdateStatus === "up_to_date"
-                        color: Theme.colorSuccess
-                        radius: 4
-                        height: 24
-                        width: 100
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "Up to Date"
-                            color: "white"
-                            font.pointSize: Theme.fontSmall
-                            font.bold: true
-                        }
-                    }
+                onDownloadRequested: {
+                    var url = DataManager.djangoBaseUrl();
+                    root.isManualAppDownloading = true;
+                    root.manualAppStatusMessage = "Starting download...";
+                    root.manualAppDownloadProgress = 0;
+                    InstallManager.downloadInstaller("manual_app", url, "", "");
                 }
 
-                // Status Card
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 180
-                    color: Theme.colorBgMuted
-                    radius: Theme.radiusCard
-                    border.color: Theme.colorBorder
-
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 15
-                        anchors.rightMargin: 15
-                        anchors.topMargin: 15
-                        anchors.bottomMargin: 20
-                        spacing: 2
-
-                        RowLayout {
-                            Layout.fillWidth: true
-
-                            Text {
-                                id: manualAppStatusText
-                                text: {
-                                    if (root.manualAppStatusMessage)
-                                        return root.manualAppStatusMessage;
-                                    if (root.manualAppUpdateStatus === "new_version_available")
-                                        return "Update available";
-                                    if (root.isManualAppInstallerReady)
-                                        return "Ready to run";
-                                    return "The new version is not found";
-                                }
-
-                                color: {
-                                    if (root.isManualAppDownloading)
-                                        return Theme.colorUpdate;
-                                    if (root.manualAppUpdateStatus === "new_version_available")
-                                        return Theme.colorUpdate;
-                                    if (root.isManualAppInstallerReady)
-                                        return Theme.colorSuccess;
-                                    return Theme.colorTextMuted;
-                                }
-                                font.pointSize: Theme.fontBody
-                                font.bold: root.manualAppUpdateStatus === "new_version_available"
-                                Layout.fillWidth: true
-                            }
-                        }
-
-                        GridLayout {
-                            columns: 2
-                            columnSpacing: 20
-                            rowSpacing: 5
-                            Layout.fillWidth: true
-
-                            Text {
-                                text: "Latest server version:"
-                                color: Theme.colorTextMuted
-                                font.pointSize: Theme.fontSmall
-                            }
-
-                            Text {
-                                text: root.manualAppLatestServerDate > new Date(0) ? Qt.formatDate(root.manualAppLatestServerDate, "yyyy-MM-dd") : "Not available"
-                                color: Theme.colorTextPrimary
-                                font.pointSize: Theme.fontSmall
-                                font.bold: root.manualAppLastVersionDate < root.manualAppLatestServerDate
-                            }
-
-                            Text {
-                                text: "Current version date:"
-                                color: Theme.colorTextMuted
-                                font.pointSize: Theme.fontSmall
-                            }
-
-                            Text {
-                                text: root.manualAppLastVersionDate > new Date(0) ? Qt.formatDate(root.manualAppLastVersionDate, "yyyy-MM-dd") : "Unknown"
-                                color: root.manualAppLastVersionDate < root.manualAppLatestServerDate ? Theme.colorUpdate : Theme.colorTextPrimary
-                                font.pointSize: Theme.fontSmall
-                                font.bold: root.manualAppLastVersionDate < root.manualAppLatestServerDate
-                            }
-                        }
-
-                        ProgressBar {
-                            id: manualAppDownloadProgress
-                            Layout.fillWidth: true
-                            visible: root.isManualAppDownloading
-                            value: root.manualAppDownloadProgress
-                            from: 0
-                            to: 100
-                        }
-
-                        Text {
-                            text: "Executable: ManualApp.exe"
-                            color: Theme.colorTextMuted
-                            font.pointSize: Theme.fontSmall
-                            Layout.fillWidth: true
-                        }
-
-                        Text {
-                            text: "Path: " + InstallManager.buildInstallerPath("manual_app")
-                            color: Theme.colorTextMuted
-                            font.pointSize: Theme.fontSmall
-                            Layout.fillWidth: true
-                        }
-                    }
-                }
-
-                // Download & Install Buttons
-                RowLayout {
-                    Layout.alignment: Qt.AlignHCenter
-                    Layout.topMargin: -36
-                    spacing: 12
-                    z: 2
-
-                    Button {
-                        id: manualAppDownloadButton
-                        Layout.preferredWidth: 170
-                        Layout.preferredHeight: 42
-
-                        text: {
-                            if (root.isManualAppDownloading)
-                                return "Downloading...";
-                            if (root.manualAppUpdateStatus === "new_version_available")
-                                return "Update Now";
-                            return "Download";
-                        }
-
-                        enabled: !root.isManualAppDownloading && !InstallManager.isDownloading && !InstallManager.isInstalling
-
-                        background: Rectangle {
-                            color: {
-                                if (!parent.enabled)
-                                    return Theme.colorButtonDisabled;
-                                if (root.manualAppUpdateStatus === "new_version_available")
-                                    return Theme.colorUpdate;
-                                return Theme.colorButtonSecondary;
-                            }
-                            radius: Theme.radiusButton
-                        }
-
-                        contentItem: Text {
-                            text: manualAppDownloadButton.text
-                            color: "white"
-                            font.pointSize: Theme.fontBody
-                            font.bold: true
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-
-                        onClicked: {
-                            var url = DataManager.djangoBaseUrl();
-                            root.isManualAppDownloading = true;
-                            root.manualAppStatusMessage = "Starting download...";
-                            root.manualAppDownloadProgress = 0;
-                            InstallManager.downloadInstaller("manual_app", url, "");
-                        }
-                    }
-
-                    Button {
-                        id: manualAppInstallButton
-                        Layout.preferredWidth: 170
-                        Layout.preferredHeight: 42
-
-                        text: {
-                            if (InstallManager.isInstalling)
-                                return "Installing...";
-                            if (root.manualAppUpdateStatus === "new_version_available" && root.isManualAppInstallerReady)
-                                return "Install Update";
-                            return "Run Application";
-                        }
-
-                        enabled: root.isManualAppInstallerReady && !InstallManager.isInstalling && !root.isManualAppDownloading && !InstallManager.isDownloading
-
-                        background: Rectangle {
-                            color: parent.enabled ? (root.manualAppUpdateStatus === "new_version_available" ? Theme.colorUpdate : Theme.colorButtonPrimary) : Theme.colorButtonDisabled
-                            radius: Theme.radiusButton
-                        }
-
-                        contentItem: Text {
-                            text: manualAppInstallButton.text
-                            color: "white"
-                            font.pointSize: Theme.fontBody
-                            font.bold: true
-                            horizontalAlignment: Text.AlignHCenter
-                            verticalAlignment: Text.AlignVCenter
-                        }
-
-                        onClicked: {
-                            InstallManager.runInstaller("manual_app");
-
-                            if (root.manualAppUpdateStatus === "new_version_available") {
-                                root.checkForUpdates();
-                            }
-                        }
+                onInstallRequested: {
+                    InstallManager.runInstaller("manual_app");
+                    if (root.manualAppUpdateStatus === "new_version_available") {
+                        root.checkForUpdates();
                     }
                 }
             }

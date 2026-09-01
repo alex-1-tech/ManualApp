@@ -25,7 +25,9 @@
         <file>qml/components/ModelSettingDate.qml</file>
         <file>qml/components/SettingsUploadPopup.qml</file>
         <file>qml/components/ConfirmSavePopup.qml</file>
-
+        <file>qml/components/SchemaComboBox.qml</file>
+        <file>qml/components/InstallSection.qml</file>
+        
         <!-- styles -->
         <file>qml/styles/qmldir</file>
         <file>qml/styles/Theme.qml</file>

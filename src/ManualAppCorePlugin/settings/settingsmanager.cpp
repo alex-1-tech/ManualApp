@@ -55,7 +55,7 @@ SettingsManager::~SettingsManager()
 
 void SettingsManager::initializeModels()
 {
-  QString configPath = QCoreApplication::applicationDirPath() + "/media/jsons/models.json";
+  QString configPath = QCoreApplication::applicationDirPath() + "/media/jsons/versions.json";
   m_configPath = configPath;
 
   QJsonObject rootObj = readJsonFile(configPath);
@@ -64,29 +64,72 @@ void SettingsManager::initializeModels()
     return;
   }
 
-  if (!rootObj.contains("models") || !rootObj["models"].isObject()) {
-    qWarning() << "JSON does not contain 'models' object";
-    return;
-  }
-
-  QJsonObject modelsObj = rootObj["models"].toObject();
-  QStringList modelNames = modelsObj.keys();
-
-  if (modelNames.isEmpty()) {
-    qWarning() << "No models found in configuration file";
-    return;
-  }
-
-  for (const QString& modelName : modelNames) {
+  for (const QString& modelName : rootObj.keys()) {
     ModelSettings* settings = new ModelSettings(modelName, this);
+    settings->parseModelMetadata(rootObj[modelName].toObject());
+    m_models[modelName] = settings;
+  }
+  loadCurrentModelScheme();
+}
 
-    if (!settings->loadConfiguration(configPath)) {
-      qWarning() << "Failed to load configuration for model:" << modelName;
-    } else {
-      m_models[modelName] = settings;
+void SettingsManager::loadCurrentModelScheme()
+{
+  QString model = currentModel();
+  if (model.isEmpty() || !m_models.contains(model)) return;
+
+  QString currentFile = currentSchemaFile();
+  if (!currentFile.isEmpty()) {
+    QString path = QCoreApplication::applicationDirPath() + "/media/jsons/" + model + "/" + currentFile;
+    if (QFile::exists(path)) {
+      loadSchemaFile(model, currentFile);
+      return;
     }
   }
+
+  auto files = getAvailableSchemaFiles(model);
+  if (!files.isEmpty()) {
+    loadSchemaFile(model, files.first());
+  } else {
+    qWarning() << "No schema files found for model" << model;
+  }
 }
+
+QStringList SettingsManager::getAvailableSchemaFiles(const QString& model) const
+{
+  QString dirPath = QCoreApplication::applicationDirPath() + "/media/jsons/" + model;
+  QDir dir(dirPath);
+  if (!dir.exists()) return {};
+  QStringList files = dir.entryList(QStringList() << "*.json", QDir::Files);
+  files.sort();
+  return files;
+}
+
+QString SettingsManager::getSchemaTitle(const QString& model, const QString& schemaFile) const
+{
+  QString path = QCoreApplication::applicationDirPath() + "/media/jsons/" + model + "/" + schemaFile;
+  QFile file(path);
+  if (!file.open(QIODevice::ReadOnly)) return schemaFile; // fallback
+
+  QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+  QJsonObject root = doc.object();
+  if (root.contains("title") && root["title"].isString()) return root["title"].toString();
+  return schemaFile;
+}
+
+bool SettingsManager::loadSchemaFile(const QString& model, const QString& schemaFile)
+{
+  if (!m_models.contains(model)) return false;
+  QString path = QCoreApplication::applicationDirPath() + "/media/jsons/" + model + "/" + schemaFile;
+  bool ok = m_models[model]->loadScheme(path);
+  if (ok) {
+    m_models[model]->loadFromSettings(m_settings, model);
+    setcurrentSchemaFile(schemaFile);
+    emit modelSettingsChanged(model);
+    emit currentSchemaFileChanged();
+  }
+  return ok;
+}
+
 
 QJsonObject SettingsManager::readJsonFile(const QString& filePath)
 {
@@ -184,6 +227,7 @@ void SettingsManager::loadAllSettings()
     it.value()->loadFromSettings(m_settings, currentModel());
   }
 
+  loadCurrentModelScheme();
   emit modelsChanged();
 }
 
@@ -240,6 +284,10 @@ QJsonObject SettingsManager::toJsonForDjango() const
       obj[it.key()] = it.value();
     }
   }
+
+  obj["device_version"] = currentVersion();
+  obj["rail_type"] = railType();
+  obj["configuration"] = currentSchemaFile();
 
   return obj;
 }

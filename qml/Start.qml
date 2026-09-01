@@ -18,15 +18,15 @@ ApplicationWindow {
     property bool firstRun: true
 
     Component.onCompleted: {
-        DataManager.setSettingsManager(SettingsManager)
-        InstallManager.setAllManagers(DataManager.licenseHandler(), DataManager.networkService(), DataManager.fileService())
+        DataManager.setSettingsManager(SettingsManager);
+        InstallManager.setAllManagers(DataManager.licenseHandler(), DataManager.networkService(), DataManager.fileService());
 
-        firstRun = SettingsManager.isFirstRun
+        firstRun = SettingsManager.isFirstRun;
         if (firstRun) {
-            contentLoader.sourceComponent = modelSelectionComponent
+            contentLoader.sourceComponent = modelSelectionComponent;
         } else {
             DataManager.syncSettingsWithServer();
-            contentLoader.sourceComponent = mainComponent
+            contentLoader.sourceComponent = mainComponent;
         }
     }
 
@@ -40,9 +40,9 @@ ApplicationWindow {
     Component {
         id: modelSelectionComponent
         ModelSelectionPage {
-            onModelSelected: function(modelType) {
-                SettingsManager.currentModel = modelType
-                contentLoader.sourceComponent = settingsComponent
+            onModelSelected: function (modelType) {
+                SettingsManager.currentModel = modelType;
+                contentLoader.sourceComponent = settingsComponent;
             }
         }
     }
@@ -53,14 +53,17 @@ ApplicationWindow {
             initialMode: true
 
             onSettingsCompleted: {
-                contentLoader.sourceComponent = mainComponent
+                contentLoader.sourceComponent = mainComponent;
+            }
+
+            onBackToModelSelection: {
+                contentLoader.sourceComponent = modelSelectionComponent;
             }
         }
     }
 
     Component {
         id: mainComponent
-        Main {
-        }
+        Main {}
     }
 }

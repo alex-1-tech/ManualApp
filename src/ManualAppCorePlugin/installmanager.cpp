@@ -69,20 +69,22 @@ QString InstallManager::buildInstallerPath(const QString& model) const
 }
 
 QString InstallManager::buildDownloadUrl(const QString& model, const QString& baseUrl,
-                                         const QString& railTypeMode, const QString& apiUrl) const
+                                         const QString& railTypeMode, const QString& version,
+                                         const QString& apiUrl) const
 {
-  if (model.toLower() == "kalmar32") {
-    QUrl url(baseUrl + "/" + apiUrl + "/kalmar32/");
+  if (model.toLower() == "manual_app") {
+    return baseUrl + "/" + apiUrl + "/manual_app/";
+  } else {
+    QUrl url(baseUrl + "/" + apiUrl + "/" + model.toLower() + "/");
     QUrlQuery query;
     if (!railTypeMode.isEmpty()) {
       query.addQueryItem("rail_type", railTypeMode.toUpper().trimmed());
     }
+    if (!version.isEmpty()) {
+      query.addQueryItem("version", version.trimmed());
+    }
     url.setQuery(query);
     return url.toString();
-  } else if (model.toLower() == "manual_app") {
-    return baseUrl + "/" + apiUrl + "/manual_app/";
-  } else {
-    return baseUrl + "/" + apiUrl + "/" + model.toLower() + "/";
   }
 }
 
@@ -102,7 +104,7 @@ bool InstallManager::installerExists(const QString& model) const
 }
 
 void InstallManager::downloadInstaller(const QString& model, const QString& baseUrl,
-                                       const QString& railTypeMode)
+                                       const QString& railTypeMode, const QString& version)
 {
   DEBUG_COLORED("InstallManager", "downloadInstaller", QString("Starting download for model: %1").arg(model),
                 COLOR_CYAN, COLOR_CYAN);
@@ -113,7 +115,7 @@ void InstallManager::downloadInstaller(const QString& model, const QString& base
     return;
   }
 
-  QString url = buildDownloadUrl(model, baseUrl, railTypeMode, "api/apps/download");
+  QString url = buildDownloadUrl(model, baseUrl, railTypeMode, version, "api/apps/download");
   QString path = buildInstallerPath(model);
 
   if (url.isEmpty() || path.isEmpty()) {
@@ -135,12 +137,12 @@ void InstallManager::downloadInstaller(const QString& model, const QString& base
 }
 
 QString InstallManager::getLastUpdateDate(const QString& baseUrl, const QString& model,
-                                          const QString& railTypeMode)
+                                          const QString& railTypeMode, const QString& version)
 {
   DEBUG_COLORED("InstallManager", "getLastUpdateDate",
                 QString("Requesting last update date: %1").arg(baseUrl), COLOR_CYAN, COLOR_CYAN);
 
-  QString url = buildDownloadUrl(model, baseUrl, railTypeMode, "api/apps/last_version");
+  QString url = buildDownloadUrl(model, baseUrl, railTypeMode, version, "api/apps/last_version");
 
   if (url.isEmpty()) {
     setStatusMessage("Invalid update url path");

@@ -1,0 +1,84 @@
+{
+    "kalmar32": {
+        "fields": {
+            "title": "KALMAR-32",
+            "description": "rail weld inspection",
+            "installer_path": "Kalmar32.exe"
+        },
+        "variants": [
+            { "type_rail": "IRS52", "version": "Ver_3" },
+            { "type_rail": "IRS52", "version": "Ver_4" },
+            { "type_rail": "UIC60", "version": "Ver_1" },
+            { "type_rail": "UIC60", "version": "Ver2 Plant" },
+            { "type_rail": "UIC60", "version": "Ver_3" },
+            { "type_rail": "UIC60", "version": "Ver_4" },
+            { "type_rail": "R65",   "version": "Ver_4" }
+        ]
+    },
+    "phasarsl": {
+        "fields": {
+            "title": "PHASAR-SL",
+            "description": "5-channel single-layer phased arrays",
+            "installer_path": "PhasarSL.exe"
+        },
+        "variants": [
+            { "version": "Ver_1" },
+            { "version": "Ver_2" },
+            { "version": "Ver_3" }
+        ]
+    },
+    "phasarlt": {
+        "fields": {
+            "title": "PHASAR-LT",
+            "description": "4-channel single-layer phased arrays (lite version)",
+            "installer_path": "PhasarLT.exe"
+        },
+        "variants": [
+            { "version": "Ver_1" },
+            { "version": "Ver_2" }
+        ]
+    },
+    "phasardl": {
+        "fields": {
+            "title": "PHASAR-DL",
+            "description": "dual-layer phased arrays",
+            "installer_path": "PhasarDL.exe"
+        },
+        "variants": [
+            { "version": "Ver_1" },
+            { "version": "Ver_2" }
+        ]
+    },
+    "chameleon32": {
+        "fields": {
+            "title": "CHAMELEON-32",
+            "description": "single-rail phased arrays scanner",
+            "installer_path": "Chameleon32.exe"
+        },
+        "variants": [
+            { "version": "Ver_1" },
+            { "version": "Ver_2" }
+        ]
+    },
+    
+    "wizard6": {
+        "fields": {
+            "title": "WIZARD-6",
+            "description": "blade borescope for aviation",
+            "installer_path": "Wizard6.exe"
+        },
+        "variants": [
+            { "version": "Ver_1" }
+        ]
+    },
+    "wizard8": {
+        "fields": {
+            "title": "WIZARD-8",
+            "description": "blade borescope for aviation",
+            "installer_path": "Wizard8.exe"
+        },
+        "variants": [
+            { "version": "Ver_1" }
+        ]
+    }
+}

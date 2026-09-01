@@ -15,6 +15,7 @@ ScrollView {
     property bool initialMode: false
 
     signal settingsCompleted
+    signal backToModelSelection
 
     contentItem: Flickable {
         id: flick
@@ -37,23 +38,14 @@ ScrollView {
 
                 RowLayout {
                     id: initialHeader
-                    visible: root.initialMode
+
                     Layout.fillWidth: true
+                    Layout.leftMargin: 50
                     spacing: 15
-
-                    Rectangle {
-                        Layout.preferredWidth: 40
-                        Layout.preferredHeight: 40
-                        radius: 20
-                        color: Theme.colorButtonPrimary
-
-                        Text {
-                            text: SettingsManager.getCurrentSettings().modelTitle[0]
-                            color: "white"
-                            font.pointSize: 16
-                            font.bold: true
-                            anchors.centerIn: parent
-                        }
+                    Image {
+                        source: "qrc:///media/icons/icon-settings.svg"
+                        sourceSize.width: 40
+                        sourceSize.height: 40
                     }
 
                     ColumnLayout {
@@ -68,30 +60,48 @@ ScrollView {
                         }
 
                         Text {
-                            text: qsTr("Current model: %1").arg(SettingsManager.currentModel)
+                            text: {
+                                var versionText = SettingsManager.currentVersion || "";
+                                var railText = SettingsManager.railType || "";
+                                if (railText !== "") {
+                                    return qsTr("Current version: %1 (%2)").arg(versionText).arg(railText.toUpperCase());
+                                } else {
+                                    return qsTr("Current version: %1").arg(versionText);
+                                }
+                            }
                             color: Theme.colorTextSecondary
                             font.pointSize: Theme.fontSmall
                         }
                     }
                 }
+            }
 
-                RowLayout {
-                    id: normalHeader
-                    visible: !root.initialMode
+            RowLayout {
+                visible: root.initialMode
+                Layout.fillWidth: true
+                spacing: 15
+
+                Label {
+                    text: "Schema:"
+                    color: Theme.colorTextPrimary
+                    font.pointSize: Theme.fontBody
+                }
+
+                SchemaComboBox {
+                    id: schemaCombo
                     Layout.fillWidth: true
-                    spacing: 15
-                    Layout.leftMargin: 50
 
-                    Image {
-                        source: "qrc:///media/icons/icon-settings.svg"
-                        sourceSize.width: 40
-                        sourceSize.height: 40
-                    }
+                    schemaModel: SettingsManager.getAvailableSchemaFiles(SettingsManager.currentModel)
+                    currentModel: SettingsManager.currentModel
+                    currentSchemaFile: SettingsManager.currentSchemaFile
 
-                    Text {
-                        text: qsTr("Settings")
-                        color: Theme.colorTextPrimary
-                        font.pointSize: 24
+                    onSchemaSelected: function (filePath) {
+                        SettingsManager.loadSchemaFile(SettingsManager.currentModel, filePath);
+
+                        if (mainRenderer) {
+                            mainRenderer.config = SettingsManager.getModelSettings(SettingsManager.currentModel).getSectionsMetadata();
+                            mainRenderer.modelSettings = SettingsManager.getSettings(SettingsManager.currentModel);
+                        }
                     }
                 }
             }
@@ -104,31 +114,67 @@ ScrollView {
                 modelSettings: SettingsManager.getSettings(currentModel)
                 isInitialMode: root.initialMode
             }
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 5
+                spacing: 20
 
-            Button {
-                id: button
-                text: qsTr("Save")
-                font.pixelSize: 18
-                onClicked: confirmPopup.open()
-                Layout.preferredWidth: 240
-                Layout.preferredHeight: 40
-                Layout.alignment: Qt.AlignHCenter
-
-                background: Rectangle {
-                    color: button.enabled ? (button.pressed ? Theme.colorButtonPrimaryHover : Theme.colorButtonPrimary) : Theme.colorButtonDisabled
-                    radius: 4
+                Item {
+                    Layout.fillWidth: true
                 }
 
-                contentItem: Text {
-                    text: button.text
+                Button {
+                    id: backButton
+                    text: qsTr("← Back to models")
                     font.pixelSize: 18
-                    color: "white"
-                    anchors.centerIn: parent
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
+                    onClicked: root.backToModelSelection()
+                    Layout.preferredWidth: 200
+                    Layout.preferredHeight: 40
+                    visible: root.initialMode
+                    background: Rectangle {
+                        color: backButton.down ? Theme.colorButtonSecondaryHover : "transparent"
+                        border.color: Theme.colorButtonSecondary
+                        border.width: 1
+                        radius: 4
+                    }
+
+                    contentItem: Text {
+                        text: backButton.text
+                        font.pixelSize: 18
+                        color: Theme.colorTextPrimary
+                        anchors.centerIn: parent
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+
+                Button {
+                    id: button
+                    text: qsTr("Save")
+                    font.pixelSize: 18
+                    onClicked: confirmPopup.open()
+                    Layout.preferredWidth: 200
+                    Layout.preferredHeight: 40
+
+                    background: Rectangle {
+                        color: button.enabled ? (button.pressed ? Theme.colorButtonPrimaryHover : Theme.colorButtonPrimary) : Theme.colorButtonDisabled
+                        radius: 4
+                    }
+
+                    contentItem: Text {
+                        text: button.text
+                        font.pixelSize: 18
+                        color: "white"
+                        anchors.centerIn: parent
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+
+                Item {
+                    Layout.fillWidth: true
                 }
             }
-
             Item {
                 Layout.fillHeight: true
                 Layout.minimumHeight: 400
@@ -169,6 +215,32 @@ ScrollView {
                     }
                 }
             }
+        }
+    }
+
+    Connections {
+        target: SettingsManager
+        function onCurrentModelChanged() {
+            schemaCombo.schemaModel = SettingsManager.getAvailableSchemaFiles(SettingsManager.currentModel);
+            schemaCombo.currentModel = SettingsManager.currentModel;
+            schemaCombo.currentSchemaFile = SettingsManager.currentSchemaFile;
+            if (mainRenderer) {
+                mainRenderer.config = SettingsManager.getModelSettings(SettingsManager.currentModel).getSectionsMetadata();
+                mainRenderer.modelSettings = SettingsManager.getSettings(SettingsManager.currentModel);
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        if (!SettingsManager.currentSchemaFile) {
+            var files = SettingsManager.getAvailableSchemaFiles(SettingsManager.currentModel);
+            if (files.length > 0) {
+                SettingsManager.loadSchemaFile(SettingsManager.currentModel, files[0]);
+            }
+        }
+        if (mainRenderer) {
+            mainRenderer.config = SettingsManager.getModelSettings(SettingsManager.currentModel).getSectionsMetadata();
+            mainRenderer.modelSettings = SettingsManager.getSettings(SettingsManager.currentModel);
         }
     }
 }

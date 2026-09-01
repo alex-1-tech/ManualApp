@@ -48,6 +48,8 @@ QtObject {
     property color colorButtonSecondaryHover: "#64748B"
     property color colorButtonDisabled: "#bdc3c7"
 
+    property color colorSurface: "#374A5E"
+
     // ==== Sizes ====
     property int radiusCard: 12
     property int radiusPill: 999

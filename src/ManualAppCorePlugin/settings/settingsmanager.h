@@ -56,6 +56,8 @@ class SettingsManager : public QObject
   DEFINE_SETTING(QString, serialNumber, QString())
 
   DEFINE_SETTING(QString, currentModel, QString("kalmar32"))
+  DEFINE_SETTING(QString, currentVersion, QString())
+  DEFINE_SETTING(QString, currentSchemaFile, QString())
   DEFINE_DATE_SETTING(lastUpdateManualAppDate)
   DEFINE_DATE_SETTING(lastUpdateSoftwareDate)
   DEFINE_SETTING(QString, deviceHWID, QString())
@@ -68,6 +70,10 @@ public:
   ~SettingsManager();
 
   Q_INVOKABLE ModelSettings* getModelSettings(const QString& modelName = QString()) const;
+  Q_INVOKABLE void loadCurrentModelScheme();
+  Q_INVOKABLE QStringList getAvailableSchemaFiles(const QString& model) const;
+  Q_INVOKABLE bool loadSchemaFile(const QString& model, const QString& schemaFile);
+  Q_INVOKABLE QString getSchemaTitle(const QString& model, const QString& schemaFile) const;
   Q_INVOKABLE QStringList availableModels() const { return m_models.keys(); }
 
   Q_INVOKABLE ModelSettings* getSettings(const QString& name) const { return getModelSettings(name); }

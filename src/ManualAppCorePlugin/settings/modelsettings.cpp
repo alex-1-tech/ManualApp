@@ -68,25 +68,31 @@ void ModelSettings::parseModelMetadata(const QJsonObject& config)
   m_modelTitle.clear();
   m_modelDescription.clear();
 
-  QJsonObject metadata;
-
   if (config.contains("fields") && config["fields"].isObject()) {
-    metadata = config["fields"].toObject();
+    QJsonObject metadata = config["fields"].toObject();
+    m_modelTitle = metadata["title"].toString();
+    m_modelDescription = metadata["description"].toString();
+    m_modelInstallerPath = metadata["installer_path"].toString();
   }
 
-  if (!metadata.isEmpty()) {
-    if (metadata.contains("title")) {
-      m_modelTitle = metadata["title"].toString();
-    }
-
-    if (metadata.contains("description")) {
-      m_modelDescription = metadata["description"].toString();
-    }
-
-    if (metadata.contains("installer_path")) {
-      m_modelInstallerPath = metadata["installer_path"].toString();
-    }
+  if (config.contains("variants") && config["variants"].isArray()) {
+    m_modelVariants = config["variants"].toArray().toVariantList();
   }
+}
+
+bool ModelSettings::loadScheme(const QString& jsonPath)
+{
+  QFile file(jsonPath);
+  if (!file.open(QIODevice::ReadOnly)) return false;
+
+  QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+  QJsonObject root = doc.object();
+
+  if (root.contains("sections") && root["sections"].isArray()) {
+    createPropertiesFromConfig(root);
+    return true;
+  }
+  return false;
 }
 
 void ModelSettings::createPropertiesFromConfig(const QJsonObject& config)

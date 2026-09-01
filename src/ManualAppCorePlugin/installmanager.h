@@ -41,13 +41,13 @@ public:
 
   Q_INVOKABLE bool installerExists(const QString& model) const;
   Q_INVOKABLE void downloadInstaller(const QString& model, const QString& baseUrl,
-                                     const QString& railTypeMode);
+                                     const QString& railTypeMode, const QString& version);
   Q_INVOKABLE void runInstaller(const QString& model);
   Q_INVOKABLE void activate(const QString& model, const QString& hostHWID, const QString& deviceHWID,
                             const QString& mode, const QString& url, const QString& licensePassword);
   Q_INVOKABLE QString buildInstallerPath(const QString& model) const;
   Q_INVOKABLE QString getLastUpdateDate(const QString& baseUrl, const QString& model,
-                                        const QString& railTypeMode);
+                                        const QString& railTypeMode, const QString& version);
 
 signals:
   void statusMessageChanged();
@@ -81,7 +81,7 @@ private:
 
 
   QString buildDownloadUrl(const QString& model, const QString& baseUrl, const QString& railTypeMode,
-                           const QString& apiUrl) const;
+                           const QString& version, const QString& apiUrl) const;
   void initializeNetworkService();
 
   QString m_statusMessage;

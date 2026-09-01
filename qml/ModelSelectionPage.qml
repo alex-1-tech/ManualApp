@@ -7,7 +7,6 @@ import "styles"
 
 Page {
     id: root
-
     signal modelSelected(string modelType)
 
     background: Rectangle {
@@ -15,9 +14,9 @@ Page {
     }
 
     ColumnLayout {
-        anchors.centerIn: parent
-        spacing: 40
-        width: Math.min(parent.width * 0.8, 600)
+        anchors.fill: parent
+        anchors.margins: 40
+        spacing: 24
 
         Text {
             text: qsTr("Select Model")
@@ -27,32 +26,51 @@ Page {
             Layout.alignment: Qt.AlignHCenter
         }
 
-        ColumnLayout {
-            spacing: 20
+        ScrollView {
+            id: scrollArea
             Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
 
-            Repeater {
-                id: modelRepeater
-                model: SettingsManager.availableModels
+            Item {
+                width: scrollArea.availableWidth
+                implicitHeight: contentColumn.implicitHeight
 
-                delegate: ModelSelectionCard {
-                    required property string modelData
-                    
-                    title: {
-                        var settings = SettingsManager.getSettings(modelData)
-                        return settings ? settings.modelTitle : modelData
+                ColumnLayout {
+                    id: contentColumn
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: Math.max(scrollArea.availableWidth * 0.7, 600)
+                    spacing: 20
+
+                    Repeater {
+                        model: SettingsManager.availableModels
+                        delegate: ModelSelectionCard {
+                            required property string modelData
+                            title: {
+                                var s = SettingsManager.getSettings(modelData);
+                                return s ? s.modelTitle : modelData;
+                            }
+                            description: {
+                                var s = SettingsManager.getSettings(modelData);
+                                return s ? s.modelDescription : "";
+                            }
+                            modelType: modelData
+                            variants: {
+                                var s = SettingsManager.getSettings(modelData);
+                                return s ? s.modelVariants : [];
+                            }
+                            onSelected: function (modelType, variantData) {
+                                SettingsManager.currentModel = modelType;
+                                SettingsManager.currentVersion = variantData.version;
+                                if (variantData.type_rail)
+                                    SettingsManager.railType = variantData.type_rail;
+                                SettingsManager.loadCurrentModelScheme();
+                                root.modelSelected(modelType);
+                            }
+                            Layout.fillWidth: true
+                        }
                     }
-                    description: {
-                        var settings = SettingsManager.getSettings(modelData)
-                        return settings ? settings.modelDescription : ""
-                    }
-                    modelType: modelData
-                    
-                    onSelected: function(modelType) {
-                        root.modelSelected(modelType)
-                    }
-                    
-                    Layout.fillWidth: true
                 }
             }
         }

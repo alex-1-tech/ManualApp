@@ -20,12 +20,14 @@ class ModelSettings : public QObject
   Q_PROPERTY(QString modelDescription READ modelDescription CONSTANT)
   Q_PROPERTY(QString modelInstallerPath READ modelInstallerPath CONSTANT)
   Q_PROPERTY(QVariantList fieldsMetadata READ getFieldsMetadata NOTIFY fieldsChanged)
+  Q_PROPERTY(QVariantList modelVariants READ modelVariants CONSTANT)
 
 public:
   explicit ModelSettings(const QString& modelName, QObject* parent = nullptr);
   ~ModelSettings() = default;
 
   bool loadConfiguration(const QString& jsonPath);
+  bool loadScheme(const QString& jsonPath);
   void loadFromSettings(QSettings& settings, const QString& currentModel, const QString& prefix = "");
   void saveToSettings(QSettings& settings, const QString& prefix = "") const;
   QJsonObject toJson() const;
@@ -54,11 +56,13 @@ public:
   Q_INVOKABLE QVariantMap getFieldMetadata(const QString& fieldName) const;
   Q_INVOKABLE QVariantList getSectionsMetadata() const;
   Q_INVOKABLE QVariantList getFieldsMetadata() const;
+  void parseModelMetadata(const QJsonObject& config);
 
   QString modelName() const { return m_modelName; }
   QString modelTitle() const { return m_modelTitle; }
   QString modelDescription() const { return m_modelDescription; }
   QString modelInstallerPath() const { return m_modelInstallerPath; }
+  QVariantList modelVariants() const { return m_modelVariants; }
 signals:
   void propertyChanged(const QString& name, const QVariant& value);
   void fieldsChanged();
@@ -66,7 +70,7 @@ signals:
 private:
   void createPropertiesFromConfig(const QJsonObject& config);
   void registerDynamicProperty(const QString& name, const QVariant& defaultValue);
-  void parseModelMetadata(const QJsonObject& config);
+
 
   QString m_modelName;
   QString m_modelTitle;
@@ -76,6 +80,7 @@ private:
   QList<Section> m_sections;
   QMap<QString, FieldMetadata> m_fieldsMetadata;
   QMap<QString, QVariant> m_values;
+  QVariantList m_modelVariants;
 
   static int s_propertyCounter;
 };
