@@ -72,6 +72,7 @@ void SettingsManager::initializeModels()
   loadCurrentModelScheme();
 }
 
+
 void SettingsManager::loadCurrentModelScheme()
 {
   QString model = currentModel();
@@ -129,7 +130,41 @@ bool SettingsManager::loadSchemaFile(const QString& model, const QString& schema
   }
   return ok;
 }
+bool SettingsManager::migrateFromPhasar01ToPhasarSL()
+{
+  if (!m_settings.childGroups().contains("phasar01")) {
+    qDebug() << "No phasar01 data to migrate";
+    return false;
+  }
 
+  m_settings.beginGroup("phasar01");
+  QStringList keys = m_settings.childKeys();
+  QMap<QString, QVariant> data;
+  for (const QString& key : keys) {
+    data[key] = m_settings.value(key);
+  }
+  m_settings.endGroup();
+
+  if (data.isEmpty()) {
+    return false;
+  }
+
+  m_settings.beginGroup("phasarsl");
+  for (auto it = data.begin(); it != data.end(); ++it) {
+    m_settings.setValue(it.key(), it.value());
+  }
+  m_settings.endGroup();
+
+  setcurrentModel("phasarsl");
+  loadCurrentModelScheme();
+
+  m_settings.sync();
+
+  emit modelsChanged();
+
+  qDebug() << "Migration from phasar01 to phasarsl completed";
+  return true;
+}
 
 QJsonObject SettingsManager::readJsonFile(const QString& filePath)
 {

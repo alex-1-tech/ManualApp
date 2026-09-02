@@ -16,12 +16,18 @@ ApplicationWindow {
     title: qsTr("ManualApp")
     color: Theme.colorBgPrimary
     property bool firstRun: true
+    property bool hasAllFields: true
 
     Component.onCompleted: {
         DataManager.setSettingsManager(SettingsManager);
         InstallManager.setAllManagers(DataManager.licenseHandler(), DataManager.networkService(), DataManager.fileService());
 
+        hasAllFields = SettingsManager.currentModel !== "" && SettingsManager.currentSchemaFile !== "" && SettingsManager.currentVersion !== "";
+        if(!hasAllFields){
+            SettingsManager.isFirstRun = true;
+        }
         firstRun = SettingsManager.isFirstRun;
+        
         if (firstRun) {
             contentLoader.sourceComponent = modelSelectionComponent;
         } else {
@@ -35,6 +41,7 @@ ApplicationWindow {
     Loader {
         id: contentLoader
         anchors.fill: parent
+        active: true
     }
 
     Component {
@@ -58,6 +65,11 @@ ApplicationWindow {
 
             onBackToModelSelection: {
                 contentLoader.sourceComponent = modelSelectionComponent;
+            }
+
+            onReloadRequested: {
+                contentLoader.sourceComponent = undefined;
+                contentLoader.sourceComponent = settingsComponent;
             }
         }
     }

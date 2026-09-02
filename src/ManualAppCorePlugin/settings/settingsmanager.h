@@ -53,8 +53,6 @@ class SettingsManager : public QObject
   Q_PROPERTY(QStringList availableModels READ availableModels NOTIFY modelsChanged)
 
   // Common properties for all models
-  DEFINE_SETTING(QString, serialNumber, QString())
-
   DEFINE_SETTING(QString, currentModel, QString("kalmar32"))
   DEFINE_SETTING(QString, currentVersion, QString())
   DEFINE_SETTING(QString, currentSchemaFile, QString())
@@ -75,10 +73,14 @@ public:
   Q_INVOKABLE bool loadSchemaFile(const QString& model, const QString& schemaFile);
   Q_INVOKABLE QString getSchemaTitle(const QString& model, const QString& schemaFile) const;
   Q_INVOKABLE QStringList availableModels() const { return m_models.keys(); }
+  Q_INVOKABLE bool migrateFromPhasar01ToPhasarSL();
 
   Q_INVOKABLE ModelSettings* getSettings(const QString& name) const { return getModelSettings(name); }
   Q_INVOKABLE ModelSettings* getCurrentSettings() const { return getModelSettings(currentModel()); }
-
+  Q_INVOKABLE QString serialNumber() const
+  {
+    return getCurrentSettings()->getValue("serialNumber").toString();
+  }
   Q_INVOKABLE void completeFirstRun();
 
   Q_INVOKABLE void saveModelSettings();

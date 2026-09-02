@@ -16,6 +16,7 @@ ScrollView {
 
     signal settingsCompleted
     signal backToModelSelection
+    signal reloadRequested
 
     contentItem: Flickable {
         id: flick
@@ -71,6 +72,26 @@ ScrollView {
                             }
                             color: Theme.colorTextSecondary
                             font.pointSize: Theme.fontSmall
+                        }
+                    }
+
+                    ColumnLayout {
+                        visible: SettingsManager.currentModel === "phasarsl"
+                        spacing: 10
+                        Layout.fillWidth: true
+
+                        Button {
+                            text: "Migrate settings from PHASAR-01"
+                            Layout.fillWidth: true
+                            onClicked: {
+                                if (SettingsManager.migrateFromPhasar01ToPhasarSL()) {
+                                    console.log("Migration successful");
+                                    SettingsManager.loadCurrentModelScheme();
+                                    root.reloadRequested();
+                                } else {
+                                    console.log("Migration failed or no data");
+                                }
+                            }
                         }
                     }
                 }

@@ -131,7 +131,13 @@ ColumnLayout {
                 placeholder: dateFieldLayout.placeholder
                 settingName: dateFieldLayout.settingName
                 modelSettings: dateFieldLayout.modelSettings
-                initialDate: modelSettings && modelSettings.getValue ? modelSettings.getValue(dateFieldLayout.settingName) : ""
+                initialDate: {
+                    if (modelSettings && modelSettings.getValue) {
+                        var v = modelSettings.getValue(dateFieldLayout.settingName);
+                        return v ? v : new Date();
+                    }
+                    return new Date();
+                }
                 readOnly: dateFieldLayout.readOnly
             }
         }
