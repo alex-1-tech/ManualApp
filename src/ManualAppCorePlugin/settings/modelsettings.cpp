@@ -163,22 +163,13 @@ void ModelSettings::loadFromSettings(QSettings& settings, const QString& current
     QString generalKey = cppName;
 
     if (cppName == "serialNumber") {
-      if (settings.contains(key)) {
-        value = settings.value(key);
-
-        if (!settings.contains(generalKey)) {
-          settings.setValue(generalKey, value);
-          qDebug() << "Copied serialNumber from model to General:" << value;
-        }
-      } else if (settings.contains(generalKey)) {
-        value = settings.value(generalKey);
-
-        settings.setValue(key, value);
-        qDebug() << "Copied serialNumber from General to model:" << value;
-      } else {
-        qDebug() << "Serial number not exist";
+      if (settings.contains(generalKey)) {
+        settings.remove(generalKey);
+        qDebug() << "Removed global serialNumber:" << generalKey;
       }
-    } else if (settings.contains(key)) {
+    }
+
+    if (settings.contains(key)) {
       value = settings.value(key);
     } else {
       if (metadata.type == "boolean") {
