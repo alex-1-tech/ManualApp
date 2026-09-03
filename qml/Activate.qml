@@ -505,7 +505,7 @@ ScrollView {
         SettingsManager.deviceHWID = root.tempDeviceHWID.trim();
         var licensePassword = root.tempLicensePassword.trim();
 
-        var uploadUrl = DataManager.djangoBaseUrl() + "/api/activate/" + SettingsManager.serialNumber + "/";
+        var uploadUrl = DataManager.djangoBaseUrl() + "/api/activate/" + SettingsManager.serialNumber() + "/";
 
         InstallManager.activate(root.currentModel, SettingsManager.hostHWID, SettingsManager.deviceHWID, root.mode, uploadUrl, licensePassword);
     }
