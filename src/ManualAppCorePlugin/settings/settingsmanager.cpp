@@ -44,6 +44,7 @@ SettingsManager::SettingsManager(QObject* parent)
     : QObject(parent)
     , m_settings("technovotum", "ManualApp")
 {
+  initializeModels();
   loadAllSettings();
 }
 
