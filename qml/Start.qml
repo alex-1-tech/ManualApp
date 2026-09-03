@@ -88,6 +88,7 @@ ApplicationWindow {
     }
 
     function initializeApp() {
+        SettingsManager.initializeModels();
         var hasAllFields = SettingsManager.currentModel !== "" &&
                            SettingsManager.currentSchemaFile !== "" &&
                            SettingsManager.currentVersion !== "";

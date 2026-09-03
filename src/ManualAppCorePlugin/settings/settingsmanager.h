@@ -71,6 +71,7 @@ public:
 
   Q_INVOKABLE ModelSettings* getModelSettings(const QString& modelName = QString()) const;
   Q_INVOKABLE void loadCurrentModelScheme();
+  Q_INVOKABLE void initializeModels();
   Q_INVOKABLE QStringList getAvailableSchemaFiles(const QString& model) const;
   Q_INVOKABLE bool loadSchemaFile(const QString& model, const QString& schemaFile);
   Q_INVOKABLE QString getSchemaTitle(const QString& model, const QString& schemaFile) const;
@@ -102,9 +103,6 @@ public:
 signals:
   void modelsChanged();
   void modelSettingsChanged(const QString& modelName);
-
-private:
-  void initializeModels();
 
 private:
   QSettings m_settings;
