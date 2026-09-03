@@ -27,13 +27,11 @@
         <file>qml/components/ConfirmSavePopup.qml</file>
         <file>qml/components/SchemaComboBox.qml</file>
         <file>qml/components/InstallSection.qml</file>
+        <file>qml/components/LoadingScreen.qml</file>
         
         <!-- styles -->
         <file>qml/styles/qmldir</file>
         <file>qml/styles/Theme.qml</file>
-
-        <!-- jsons -->
-        <file>media/jsons/models.json</file>
 
         <!-- icons -->
         <file>media/icons/icon-settings.svg</file>

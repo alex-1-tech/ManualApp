@@ -104,6 +104,117 @@ void DataManager::setCurrentSettings(const QUrl& apiUrl)
       });
 }
 
+void DataManager::fetchVersions()
+{
+  if (m_fetchingVersions) {
+    qDebug() << "fetchVersions already in progress";
+    return;
+  }
+
+  QString url = ConfigManager::instance().djangoBaseUrl() + "/api/versions/";
+  DEBUG_COLORED("DataManager", "fetchVersions", "Fetching versions from: " + url, COLOR_CYAN, COLOR_CYAN);
+
+  m_fetchingVersions = true;
+
+  m_networkService->getJsonFromDjango(
+      QUrl(url),
+      [this](const QJsonObject& json) {
+        DEBUG_COLORED("DataManager", "fetchVersions", "Versions downloaded successfully", COLOR_CYAN,
+                      COLOR_CYAN);
+
+        QString filePath = m_fileService->getFullFilePath("versions.json");
+        if (m_fileService->saveJsonToFile(filePath, json)) {
+          DEBUG_COLORED("DataManager", "fetchVersions", "Saved versions to: " + filePath, COLOR_CYAN,
+                        COLOR_CYAN);
+        } else {
+          DEBUG_ERROR_COLORED("DataManager", "fetchVersions", "Failed to save versions file", COLOR_CYAN,
+                              COLOR_CYAN);
+        }
+
+        m_fetchingVersions = false;
+        emit versionsFetched(true, "");
+      },
+      [this](const QString& error) {
+        DEBUG_ERROR_COLORED("DataManager", "fetchVersions", "Download failed: " + error, COLOR_CYAN,
+                            COLOR_CYAN);
+
+        QString filePath = m_fileService->getFullFilePath("versions.json");
+        QJsonObject localJson;
+
+        m_fetchingVersions = false;
+        emit versionsFetched(false, error);
+      });
+}
+
+// datamanager.cpp
+void DataManager::fetchSchemes()
+{
+  QString url = djangoBaseUrl() + "/api/schemes/all/";
+  DEBUG_COLORED("DataManager", "fetchSchemes", "Fetching schemes from: " + url, COLOR_CYAN, COLOR_CYAN);
+
+  m_networkService->getJsonFromDjango(
+      QUrl(url),
+      [this](const QJsonObject& json) {
+        DEBUG_COLORED("DataManager", "fetchSchemes", "Schemes downloaded successfully", COLOR_CYAN,
+                      COLOR_CYAN);
+
+        // Ожидаем структуру: { "modelName": [ { "version": 1, ... }, ... ], ... }
+        QJsonObject root = json;
+
+        bool anySaved = false;
+        for (auto it = root.begin(); it != root.end(); ++it) {
+          QString modelName = it.key();
+          QJsonValue schemesVal = it.value();
+          if (!schemesVal.isArray()) continue;
+
+          QJsonArray schemes = schemesVal.toArray();
+          if (schemes.isEmpty()) continue;
+
+          QString modelDir = m_fileService->getAppDataPath() + "/" + modelName;
+          QDir dir(modelDir);
+          if (!dir.exists()) {
+            if (!dir.mkpath(".")) {
+              DEBUG_ERROR_COLORED("DataManager", "fetchSchemes", "Failed to create directory: " + modelDir,
+                                  COLOR_CYAN, COLOR_CYAN);
+              continue;
+            }
+          }
+
+          for (const QJsonValue& schemeVal : schemes) {
+            if (!schemeVal.isObject()) continue;
+            QJsonObject schemeObj = schemeVal.toObject();
+
+            int version = schemeObj.value("version").toInt(-1);
+
+            if (version < 1) {
+              DEBUG_ERROR_COLORED("DataManager", "fetchSchemes", "Scheme without valid version, skipped",
+                                  COLOR_CYAN, COLOR_CYAN);
+              continue;
+            }
+
+            QString fileName = "v" + QString::number(version) + ".json";
+            QString fullPath = modelDir + "/" + fileName;
+
+            if (m_fileService->saveJsonToFile(fullPath, schemeObj)) {
+              anySaved = true;
+              DEBUG_COLORED("DataManager", "fetchSchemes", "Saved scheme: " + fullPath, COLOR_CYAN,
+                            COLOR_CYAN);
+            } else {
+              DEBUG_ERROR_COLORED("DataManager", "fetchSchemes", "Failed to save scheme: " + fullPath,
+                                  COLOR_CYAN, COLOR_CYAN);
+            }
+          }
+        }
+
+        emit schemesFetched(anySaved, anySaved ? "" : "No schemes were saved");
+      },
+      [this](const QString& error) {
+        DEBUG_ERROR_COLORED("DataManager", "fetchSchemes", "Download failed: " + error, COLOR_CYAN,
+                            COLOR_CYAN);
+        emit schemesFetched(false, error);
+      });
+}
+
 void DataManager::uploadSettingsToDjango(const QUrl& apiUrl)
 {
   DEBUG_COLORED("DataManager", "uploadSettingsToDjango",

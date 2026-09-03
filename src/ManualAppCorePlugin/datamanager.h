@@ -45,7 +45,8 @@ public:
   Q_INVOKABLE bool deleteSettingsJsonFile(const QString& filePath);
   Q_INVOKABLE void uploadSettingsToDjango(const QUrl& apiUrl);
   Q_INVOKABLE void setCurrentSettings(const QUrl& apiUrl);
-
+  Q_INVOKABLE void fetchVersions();
+  Q_INVOKABLE void fetchSchemes();
 
   // Q_INVOKABLE methods - Config Operations
   Q_INVOKABLE QString djangoBaseUrl() const { return ConfigManager::instance().djangoBaseUrl(); };
@@ -71,6 +72,8 @@ signals:
   void errorOccurred(const QString& error);
   void settingsSyncFinished(bool success);
   void settingsUploadFinished(bool success);
+  void versionsFetched(bool success, const QString& error = QString());
+  void schemesFetched(bool success, const QString& error = QString());
 
 private:
   // Private setters
@@ -81,6 +84,7 @@ private:
 private:
   // State management
   bool m_loading = false;
+  bool m_fetchingVersions = false;
   QString m_error;
 
   // Core components

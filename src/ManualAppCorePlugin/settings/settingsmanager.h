@@ -1,5 +1,6 @@
 #pragma once
 
+#include <qfileinfo.h>
 #include <qtmetamacros.h>
 
 #include <QDate>
@@ -9,6 +10,7 @@
 #include <QQmlEngine>
 #include <QSettings>
 
+#include "file/fileservice.h"
 #include "modelsettings.h"
 
 
@@ -82,6 +84,7 @@ public:
     return getCurrentSettings()->getValue("serialNumber").toString();
   }
   Q_INVOKABLE void completeFirstRun();
+  Q_INVOKABLE void setFileService(FileService* fileService);
 
   Q_INVOKABLE void saveModelSettings();
   Q_INVOKABLE void debugPrint() const;
@@ -107,4 +110,5 @@ private:
   QSettings m_settings;
   QMap<QString, ModelSettings*> m_models;
   QString m_configPath;
+  FileService* m_fileService = nullptr;
 };

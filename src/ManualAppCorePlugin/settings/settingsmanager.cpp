@@ -55,7 +55,7 @@ SettingsManager::~SettingsManager()
 
 void SettingsManager::initializeModels()
 {
-  QString configPath = QCoreApplication::applicationDirPath() + "/media/jsons/versions.json";
+  QString configPath = m_fileService->getFullFilePath("versions.json");
   m_configPath = configPath;
 
   QJsonObject rootObj = readJsonFile(configPath);
@@ -97,7 +97,7 @@ void SettingsManager::loadCurrentModelScheme()
 
 QStringList SettingsManager::getAvailableSchemaFiles(const QString& model) const
 {
-  QString dirPath = QCoreApplication::applicationDirPath() + "/media/jsons/" + model;
+  QString dirPath = m_fileService->getAppDataPath() + "/" + model;
   QDir dir(dirPath);
   if (!dir.exists()) return {};
   QStringList files = dir.entryList(QStringList() << "*.json", QDir::Files);
@@ -107,7 +107,7 @@ QStringList SettingsManager::getAvailableSchemaFiles(const QString& model) const
 
 QString SettingsManager::getSchemaTitle(const QString& model, const QString& schemaFile) const
 {
-  QString path = QCoreApplication::applicationDirPath() + "/media/jsons/" + model + "/" + schemaFile;
+  QString path = m_fileService->getFullFilePath(model + "/" + schemaFile);
   QFile file(path);
   if (!file.open(QIODevice::ReadOnly)) return schemaFile; // fallback
 
@@ -120,7 +120,7 @@ QString SettingsManager::getSchemaTitle(const QString& model, const QString& sch
 bool SettingsManager::loadSchemaFile(const QString& model, const QString& schemaFile)
 {
   if (!m_models.contains(model)) return false;
-  QString path = QCoreApplication::applicationDirPath() + "/media/jsons/" + model + "/" + schemaFile;
+  QString path = m_fileService->getFullFilePath(model + "/" + schemaFile);
   bool ok = m_models[model]->loadScheme(path);
   if (ok) {
     m_models[model]->loadFromSettings(m_settings, model);
@@ -204,6 +204,12 @@ void SettingsManager::completeFirstRun()
   updateLastManualAppDate();
 }
 
+void SettingsManager::setFileService(FileService* fileService)
+{
+  if (m_fileService != fileService) {
+    m_fileService = fileService;
+  }
+}
 void SettingsManager::saveModelSettings()
 {
   DEBUG_COLORED("SettingsManager", "saveModelSettings", "Saving model-specific settings", COLOR_GREEN,
