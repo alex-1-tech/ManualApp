@@ -18,6 +18,23 @@ RowLayout {
     Layout.fillWidth: true
     spacing: 8
 
+    onSettingNameChanged: trySaveDefault()
+    onModelSettingsChanged: trySaveDefault()
+    Component.onCompleted: trySaveDefault()
+
+    function trySaveDefault() {
+        if (!root.modelSettings || !root.settingName)
+            return;
+        if (typeof root.modelSettings.getValue !== "function")
+            return;
+
+        var v = root.modelSettings.getValue(root.settingName);
+        if (v === undefined || v === null || v === "") {
+            var def = new Date();
+            root.modelSettings.setValue(root.settingName, def);
+            root.initialDate = def;
+        }
+    }
     Label {
         Layout.preferredWidth: parent.width < 700 ? 280 : 450
         text: root.label
